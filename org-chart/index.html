@@ -1,1 +1,1773 @@
 
+<!-- 文档类型声明：使用 HTML5 标准 -->
+<!DOCTYPE html>
+<!-- HTML 根元素，设置语言为简体中文 -->
+<html lang="zh-CN">
+<head>
+    <!-- 字符编码设置为 UTF-8，支持中文显示 -->
+    <meta charset="UTF-8">
+    <!-- 视口设置：用于响应式布局，宽度等于设备宽度，初始缩放比例为 1.0 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 页面标题 -->
+    <title>组织架构图</title>
+    <!-- 页面样式定义 -->
+    <style>
+        /* ============================================================
+         * CSS 模块结构
+         * 1. 基础样式 - 全局重置、body
+         * 2. 布局容器 - header、container、SVG层、组织树
+         * 3. 节点样式 - item、node、node-content
+         * 4. 层级颜色 - level-0 到 level-11
+         * 5. 布局模式 - 横向布局、纵向布局
+         * 6. 控制组件 - 控制面板、图例、提示
+         * 7. 交互元素 - 操作按钮、颜色选择器
+         * ============================================================ */
+
+        /* -------------------- 1. 基础样式 -------------------- */
+        /* 全局重置：清除所有元素的默认外边距、内边距，盒模型使用 border-box */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* 页面主体样式：设置字体、背景、最小高度和内边距 */
+        body {
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #e3f2fd;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 头部区域：居中对齐，底部留白 */
+        .header { text-align: center; margin-bottom: 30px; }
+        /* 头部标题：蓝色、大字体 */
+        .header h1 {
+            color: #1976d2;
+            font-size: 28px;
+            margin-bottom: 10px;
+            cursor: text;
+            outline: none;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .header h1:focus {
+            background-color: #f5f5f5;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
+        }
+        /* 头部统计信息：灰色小字 */
+        .header .stats { color: #666; font-size: 14px; }
+
+        /* -------------------- 2. 布局容器 -------------------- */
+        /* 容器：使用 flex 布局，可滚动，占满全宽，相对定位作为SVG基准 */
+        .container {
+            position: relative;
+            display: flex;
+            overflow: auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        /* SVG连线层：绝对定位，覆盖整个容器，不阻挡鼠标事件 */
+        .connector-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 组织树容器：垂直排列，居中对齐，宽度自适应内容，在SVG层上方 */
+        .org-tree {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: fit-content;        /* 宽度自适应内容，容纳横向展开的子节点 */
+            max-width: none;           /* 不限制最大宽度 */
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* -------------------- 3. 节点样式 -------------------- */
+        /* 节点容器 - flex column 布局 */
+        .item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 节点本身 */
+        .node { position: relative; }
+
+        /* 节点显示框：白色背景、圆角、阴影、悬停效果、左侧彩色边框 */
+        .node-content {
+            background: white;
+            border-radius: 8px;
+            padding: 10px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+            position: relative;
+            min-width: 120px;
+            width: fit-content;
+            max-width: 200px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 当悬停在节点容器上时显示该节点的操作按钮 */
+        .item:hover > .node-content > .node-actions {
+            display: flex;
+        }
+
+        /* 节点悬停效果：加深阴影 */
+        .node-content:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        /* -------------------- 4. 层级颜色 -------------------- */
+        /* 层级颜色样式：不同层级使用不同的左侧边框颜色和背景色 */
+        /* Level 0（根节点）：蓝色系 */
+        .item.level-0 .node-content { border-left-color: #1976d2; background: #e3f2fd; }
+        /* Level 1（一级节点）：绿色系 */
+        .item.level-1 .node-content { border-left-color: #388e3c; background: #e8f5e9; }
+        /* Level 2（二级节点）：橙色系 */
+        .item.level-2 .node-content { border-left-color: #f57c00; background: #fff3e0; }
+        /* Level 3（三级节点）：紫色系 */
+        .item.level-3 .node-content { border-left-color: #7b1fa2; background: #f3e5f5; }
+        /* Level 4（四级节点）：粉色系 */
+        .item.level-4 .node-content { border-left-color: #c2185b; background: #fce4ec; }
+        /* Level 5（五级节点）：青色系 */
+        .item.level-5 .node-content { border-left-color: #00838f; background: #e0f7fa; }
+        /* Level 6（六级节点）：棕褐色系 */
+        .item.level-6 .node-content { border-left-color: #5d4037; background: #efebe9; }
+        /* Level 7（七级节点）：靛蓝色系 */
+        .item.level-7 .node-content { border-left-color: #303f9f; background: #e8eaf6; }
+        /* Level 8（八级节点）：黄褐色系 */
+        .item.level-8 .node-content { border-left-color: #f57f17; background: #fffde7; }
+        /* Level 9（九级节点）：蓝绿色系 */
+        .item.level-9 .node-content { border-left-color: #00695c; background: #e0f2f1; }
+        /* Level 10（十级节点）：红褐色系 */
+        .item.level-10 .node-content { border-left-color: #bf360c; background: #fbe9e7; }
+        /* Level 11（十一级节点）：深紫色系 */
+        .item.level-11 .node-content { border-left-color: #4a148c; background: #f3e5f5; }
+
+        /* 节点标题：粗体，14px */
+        .node-title { font-weight: bold; font-size: 14px; color: #333; }
+        /* 节点人数统计：12px，灰色 */
+        .node-count { font-size: 12px; color: #666; margin-top: 2px; }
+
+        /* 城市目标标签：显示在节点右下角，小字体蓝色 */
+        .node-target {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 10px;
+            color: #1976d2;
+        }
+
+        /* -------------------- 5. 布局模式 -------------------- */
+        /* ===== 横向布局 (城市): 子节点在同一水平线上，整体居中分布 ===== */
+        /* 水平子节点容器：flex 水平排列，顶部对齐，居中分布，不换行（空间不足时横向滚动） */
+        .children-h {
+            display: flex;
+            justify-content: center;   /* 主轴(水平)居中分布 */
+            align-items: flex-start;   /* 交叉轴(垂直)顶部对齐 */
+            flex-wrap: nowrap;         /* 不换行，空间不足时通过容器横向滚动 */
+            margin-top: 30px;
+        }
+
+        /* 水平子节点：内容居中，左右留白 */
+        .children-h > .item {
+            align-items: center;
+            margin: 0 15px;
+        }
+
+        /* ===== 纵向布局 (岗位、部门): 子节点在同一纵向线上左对齐，层级递进缩进 ===== */
+        /* 垂直子节点容器：flex 垂直排列，左对齐，向右缩进 */
+        .children-v {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;   /* 交叉轴(水平)左对齐 */
+            margin-top: 8px;
+            margin-left: 20px;         /* 层级递进缩进 */
+            padding-left: 15px;
+        }
+
+        /* 垂直子节点：默认左对齐，上下留白 */
+        .children-v > .item {
+            align-items: flex-start;
+            margin: 4px 0;
+        }
+
+        /* ===== 动态对齐：根据子节点布局类型决定父节点对齐 ===== */
+        /* 有横向子节点的父节点：居中对齐（覆盖纵向布局的左对齐） */
+        .item.has-horizontal-children,
+        .children-v > .item.has-horizontal-children {
+            align-items: center;
+        }
+
+        /* 有纵向子节点的父节点：左对齐 */
+        .item.has-vertical-children {
+            align-items: flex-start;
+        }
+
+        /* 隐藏类：用于折叠功能 */
+        .hidden { display: none !important; }
+
+        /* -------------------- 6. 控制组件 -------------------- */
+        /* 控制面板：固定在页面右下角，半透明背景 */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 缩放控制区域：白色背景，带边框 */
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        /* 缩放级别显示文字 */
+        #zoom-level { font-size: 12px; color: #666; min-width: 30px; text-align: center; }
+
+        /* 通用按钮样式：白色背景，蓝色边框和文字 */
+        .btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #1976d2;
+            border-radius: 4px;
+            color: #1976d2;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* 按钮悬停效果：蓝色背景，白色文字 */
+        .btn:hover { background: #1976d2; color: white; }
+        /* 缩放控制区内的按钮：更小的内边距 */
+        .zoom-controls .btn { padding: 3px 6px; font-size: 11px; }
+
+        /* 提示信息：固定在右下角，半透明背景，小字体 */
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 引导弹窗样式 */
+        .guide-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .guide-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 500px;
+            width: 80%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .guide-content h3 {
+            margin-top: 0;
+            color: #1976d2;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .guide-content ul {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+
+        .guide-content li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .guide-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* 隐藏默认样式 */
+        .guide-modal.hidden {
+            display: none;
+        }
+
+        /* 确认弹窗样式 */
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .confirm-content {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 500px;
+            width: 80%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .confirm-content h3 {
+            margin-top: 0;
+            color: #f57c00;
+            border-bottom: 2px solid #ffebee;
+            padding-bottom: 10px;
+        }
+
+        .confirm-content p {
+            margin: 15px 0;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .confirm-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .confirm-actions .btn {
+            margin: 0 5px;
+        }
+
+        .confirm-btn {
+            background: #f57c00;
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background: #d84315;
+        }
+
+        .cancel-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .cancel-btn:hover {
+            background: #bdbdbd;
+        }
+
+        /* 隐藏默认样式 */
+        .confirm-modal.hidden {
+            display: none;
+        }
+
+        /* 图例：固定在左下角，白色背景带阴影 */
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 图例标题 */
+        .legend-header {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        /* 图例项：水平排列 */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+            position: relative;
+        }
+        /* 图例颜色块：可点击 */
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .legend-color:hover {
+            transform: scale(1.1);
+        }
+
+        /* 颜色选择器：横向展开 */
+        .color-picker {
+            position: absolute;
+            left: 0;
+            top: 24px;
+            display: none;
+            gap: 4px;
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+        .color-picker.show {
+            display: flex;
+        }
+        .color-option {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option:hover {
+            transform: scale(1.2);
+            border-color: #333;
+        }
+        .color-option.selected {
+            border-color: #333;
+        }
+
+        /* -------------------- 7. 交互元素 -------------------- */
+        /* ===== 节点操作按钮 ===== */
+        /* 操作按钮组：右上角，固定布局 */
+        .node-actions {
+            position: absolute;
+            top: 0;
+            right: -14px;  /* 与节点边缘重叠14px */
+            display: none;
+            z-index: 10;
+            flex-direction: column;
+            gap: 4px;
+        }
+        /* 鼠标停留时显示按钮 */
+        .node-content:hover .node-actions {
+            display: flex;
+        }
+
+        /* 操作按钮通用样式 */
+        .action-btn {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .action-btn:hover { transform: scale(1.1); }
+
+        /* 删除按钮：第一个位置（最上方） */
+        .del-btn {
+            background: #f50000;
+        }
+
+        /* 新增按钮：第二个位置 */
+        .add-btn {
+            background: #388e3c;
+        }
+
+        /* 布局按钮：第三个位置（最下方） */
+        .layout-btn {
+            background: #7b1fa2;
+            font-size: 10px;
+        }
+
+        /* 按钮提示工具样式 */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        [data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% - 1px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        /* 为toggle-btn特别调整tooltip位置，因位于左下角显示在下方 */
+        .toggle-btn[data-tooltip]:hover::after {
+            bottom: auto;
+            top: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .toggle-btn[data-tooltip]:hover::before {
+            bottom: auto;
+            top: calc(100% - 1px);
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* 展开/折叠按钮：左下角，有子节点时显示 */
+        .toggle-btn {
+            position: absolute;
+            bottom: -8px;
+            left: -8px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1976d2;
+            color: white;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: none;  /* 默认隐藏，有子节点时显示 */
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* 有子节点且鼠标停留时显示 */
+        .node-content.has-children:hover .toggle-btn {
+            display: flex;
+        }
+
+        /* 折叠状态下按钮颜色变为橙色 */
+        .node-content.collapsed .toggle-btn { background: #f57c00; }
+        /* 注意：符号现在通过JavaScript动态设置，不再使用::after伪元素 */
+
+        /* 有子节点且鼠标停留时显示 */
+        .node-content.has-children:hover .toggle-btn {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部区域：包含标题 -->
+    <div class="header">
+        <h1 id="mainTitle" contenteditable="true">组织架构图</h1>
+    </div>
+
+    <!-- 控制面板：包含清除缓存和缩放控制 -->
+    <div class="controls">
+        <!-- 清除缓存按钮 -->
+        <button class="btn" onclick="clearCache()">清除缓存</button>
+        <!-- 缩放控制组：缩小、显示比例、放大 -->
+        <span class="zoom-controls">
+            <button class="btn" onclick="zoomOut()">-</button>
+            <span id="zoom-level">100%</span>
+            <button class="btn" onclick="zoomIn()">+</button>
+        </span>
+</div>
+
+    <!-- 主容器：包含SVG连线层和组织树 -->
+    <div class="container">
+        <!-- SVG连线层：绘制折线连接 -->
+        <svg class="connector-svg" id="connectorSvg"></svg>
+        <!-- 组织树根节点容器，由 JavaScript 动态生成内容 -->
+        <div class="org-tree" id="orgTree"></div>
+    </div>
+
+    <!-- 图例区域：说明不同颜色代表的层级 -->
+    <div class="legend" id="legend">
+        <div class="legend-header">颜色编辑</div>
+        <div class="legend-item" id="bg-color-picker">
+            <div class="legend-color" style="background: #e3f2fd; border-left: 3px solid #1976d2;" id="bg-color-display"></div>
+            <span>背景色</span>
+        </div>
+        <!-- 由 JavaScript 动态生成 -->
+    </div>
+
+    <!-- 操作提示：固定在右下角 -->
+
+    <!-- 引导弹窗 -->
+    <div class="guide-modal" id="guideModal">
+        <div class="guide-content">
+            <h3>欢迎使用组织结构图</h3>
+            <ul>
+                <li><strong>点击文字编辑：</strong>点击节点标题或描述可以直接编辑</li>
+                <li><strong>节点操作：</strong>悬停节点显示操作按钮（删除、新增、切换布局）</li>
+                <li><strong>折叠展开：</strong>点击左下角 +/- 按钮可折叠展开子节点</li>
+                <li><strong>拖拽节点：</strong>点击并拖拽可移动节点位置</li>
+                <li><strong>缩放页面：</strong>Ctrl + 鼠标滚轮可缩放整个页面</li>
+            </ul>
+            <div class="guide-actions">
+                <button class="btn" onclick="closeGuide()">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="confirm-modal hidden" id="confirmModal">
+        <div class="confirm-content">
+            <h3>确认清除缓存</h3>
+            <p>您确定要清除所有缓存数据吗？此操作将重置组织结构图到初始状态，所有未保存的更改将会丢失。</p>
+            <div class="confirm-actions">
+                <button class="btn cancel-btn" onclick="cancelClearCache()">取消</button>
+                <button class="btn confirm-btn" onclick="confirmClearCache()">确定清除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 代码：处理组织树的生成和交互 -->
+    <script>
+        /* ============================================================
+         * JavaScript 模块结构
+         * 1. 工具函数 - UUID生成
+         * 2. 配置和常量 - 缓存Key、层级颜色配置
+         * 3. 缓存管理 - localStorage读写
+         * 4. 数据结构 - 默认节点创建、初始数据
+         * 5. 节点查找 - 按ID查找、计算层级
+         * 6. 节点操作 - CRUD、布局切换、折叠展开
+         * 7. DOM渲染 - 创建节点DOM、重建树
+         * 8. 层级颜色管理 - 颜色配置、图例渲染、颜色选择器
+         * 9. 折叠展开 - 全部折叠、全部展开
+         * 10. CSV导入 - 解析、上传处理
+         * 11. 缩放功能 - 放大、缩小、滚轮缩放
+         * 12. SVG连线系统 - 连接点计算、路径绘制、DOM监听
+         * 13. 初始化 - 加载缓存、初始化渲染
+         * ============================================================ */
+
+        // ============================================================
+        // 模块1: 工具函数
+        // ============================================================
+        // ===== UUID 生成函数 =====
+        function generateUUID() {
+            return 'n' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        // ============================================================
+        // 模块2: 配置和常量
+        // ============================================================
+        // ===== 缓存 Key =====
+        const CACHE_KEY = 'org-chart-cache-v1';
+        const LEVEL_COLORS_KEY = 'org-chart-level-colors-v1';
+
+        // ===== 层级颜色配置（用户自定义）=====
+        // 存储格式：{ 0: { bg: '#xxx', border: '#xxx' }, 1: {...}, ... }
+        let levelColorsConfig = {};
+
+        // ===== 默认颜色配置 =====
+        const DEFAULT_LEVEL_COLORS = [
+            { bg: '#e3f2fd', border: '#1976d2' }, // Level 0: 蓝色
+            { bg: '#e8f5e9', border: '#388e3c' }, // Level 1: 绿色
+            { bg: '#fff3e0', border: '#f57c00' }, // Level 2: 橙色
+            { bg: '#f3e5f5', border: '#7b1fa2' }, // Level 3: 紫色
+            { bg: '#fce4ec', border: '#c2185b' }, // Level 4: 粉色
+            { bg: '#e0f7fa', border: '#00838f' }, // Level 5: 青色
+            { bg: '#efebe9', border: '#5d4037' }, // Level 6: 棕褐色
+            { bg: '#e8eaf6', border: '#303f9f' }, // Level 7: 靛蓝色
+            { bg: '#fffde7', border: '#f57f17' }, // Level 8: 黄褐色
+            { bg: '#e0f2f1', border: '#00695c' }, // Level 9: 蓝绿色
+            { bg: '#fbe9e7', border: '#bf360c' }  // Level 10: 红褐色
+        ];
+
+        // ===== 背景色配置 =====
+        const BG_COLORS_KEY = 'org-chart-bg-colors-v1';
+        let backgroundColor = '#e3f2fd'; // 默认背景色
+
+        // 11种Excel风格背景色选项
+        const BG_COLOR_OPTIONS = [
+            { bg: '#ffffff', border: '#cccccc' }, // 纯白
+            { bg: '#e3f2fd', border: '#1976d2' }, // 浅蓝
+            { bg: '#e8f5e9', border: '#388e3c' }, // 浅绿
+            { bg: '#fff3e0', border: '#f57c00' }, // 浅橙
+            { bg: '#f3e5f5', border: '#7b1fa2' }, // 浅紫
+            { bg: '#fce4ec', border: '#c2185b' }, // 浅粉
+            { bg: '#e0f7fa', border: '#00838f' }, // 浅青
+            { bg: '#f0f0f0', border: '#a0a0a0' }, // 浅灰
+            { bg: '#e8f4f8', border: '#2a5caa' }, // Excel浅蓝
+            { bg: '#ebf4e1', border: '#3d703d' }, // Excel浅绿
+            { bg: '#fef2e4', border: '#d06800' }  // Excel浅橙
+        ];
+
+        // ===== 创建默认节点 =====
+        function createDefaultNode(header = '新的节点', count = 0, target = '') {
+            return {
+                id: generateUUID(),
+                header: header,
+                count: count,
+                target: target,
+                children: [],
+                collapsed: false,
+                layout: null
+            };
+        }
+
+        // ===== 创建节点描述文本 =====
+        function getNodeDescription(data) {
+            // 如果有 target 属性（城市节点），显示 target
+            if (data.target) return data.target;
+            // 如果 count 是字符串且不是数字，直接显示
+            if (typeof data.count === 'string') return data.count;
+            // 如果 count 大于 0，显示人数
+            if (data.count > 0) return data.count + '人';
+            // 否则显示默认描述
+            return '描述';
+        }
+
+        // ===== 初始根节点数据 =====
+        function getInitialData() {
+            // 按照标准组织结构图示例创建默认数据
+            // Level 0: 根节点（蓝色）
+            const root = createDefaultNode('根节点', '描述', '');
+            root.layout = 'h'; // 横向布局
+
+            // Level 1: 三个一级节点（绿色）
+            const level1_1 = createDefaultNode('一级节点', '描述', '');
+            const level1_2 = createDefaultNode('一级节点', '描述', '');
+            const level1_3 = createDefaultNode('一级节点', '描述', '');
+
+            // 第一个一级节点：纵向布局，有 2 个二级节点
+            level1_1.layout = 'v';
+            const level2_1_1 = createDefaultNode('二级节点', '描述', '');
+            const level2_1_2 = createDefaultNode('二级节点', '描述', '');
+            level2_1_1.layout = 'v'; // 纵向布局
+            level2_1_1.children.push(createDefaultNode('三级节点', '描述', ''));
+            level1_1.children.push(level2_1_1, level2_1_2);
+
+            // 第二个一级节点：纵向布局，有 1 个二级节点（该二级节点有 2 个三级子节点）
+            level1_2.layout = 'v';
+            const level2_2_1 = createDefaultNode('二级节点', '描述', '');
+            level2_2_1.layout = 'h'; // 横向布局
+            level2_2_1.children.push(
+                createDefaultNode('三级节点', '描述', ''),
+                createDefaultNode('三级节点', '描述', '')
+            );
+            level1_2.children.push(level2_2_1);
+
+            // 第三个一级节点：无子节点
+
+            root.children.push(level1_1, level1_2, level1_3);
+            return root;
+        }
+
+        // ===== 树数据（全局变量）=====
+        let treeData = null;
+
+        // ============================================================
+        // 模块3: 缓存管理
+        // ============================================================
+        // ===== 缓存机制 =====
+        function saveCache() {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(treeData));
+            } catch (e) {
+                console.warn('缓存保存失败:', e);
+            }
+        }
+
+        function loadCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) return JSON.parse(cached);
+            } catch (e) {
+                console.warn('缓存加载失败:', e);
+            }
+            return null;
+        }
+
+        function clearCache() {
+            // 显示确认弹窗
+            const confirmModal = document.getElementById('confirmModal');
+            confirmModal.classList.remove('hidden');
+        }
+
+        // 确认清除缓存
+        function confirmClearCache() {
+            const confirmModal = document.getElementById('confirmModal');
+            localStorage.removeItem(CACHE_KEY);
+            treeData = getInitialData();
+            rebuildTree();
+
+            // 重置主标题为默认值
+            document.getElementById('mainTitle').textContent = '组织架构图';
+
+            confirmModal.classList.add('hidden');
+        }
+
+        // 取消清除缓存
+        function cancelClearCache() {
+            const confirmModal = document.getElementById('confirmModal');
+            confirmModal.classList.add('hidden');
+        }
+
+        // ===== 层级颜色配置缓存 =====
+        function saveLevelColors() {
+            try {
+                localStorage.setItem(LEVEL_COLORS_KEY, JSON.stringify(levelColorsConfig));
+            } catch (e) {
+                console.warn('层级颜色配置保存失败:', e);
+            }
+        }
+
+        function loadLevelColors() {
+            try {
+                const cached = localStorage.getItem(LEVEL_COLORS_KEY);
+                if (cached) levelColorsConfig = JSON.parse(cached);
+            } catch (e) {
+                console.warn('层级颜色配置加载失败:', e);
+            }
+        }
+
+        // 防抖保存
+        let saveTimeout = null;
+        function debouncedSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveCache, 500);
+        }
+
+        // ===== 背景色配置管理 =====
+        function saveBackgroundColor() {
+            try {
+                localStorage.setItem(BG_COLORS_KEY, backgroundColor);
+            } catch (e) {
+                console.warn('背景色配置保存失败:', e);
+            }
+        }
+
+        function loadBackgroundColor() {
+            try {
+                const cached = localStorage.getItem(BG_COLORS_KEY);
+                if (cached) backgroundColor = cached;
+            } catch (e) {
+                console.warn('背景色配置加载失败:', e);
+            }
+        }
+
+        function setBackgroundColor(colorIndex) {
+            const color = BG_COLOR_OPTIONS[colorIndex];
+            if (color) {
+                backgroundColor = color.bg;
+                saveBackgroundColor();
+                applyBackgroundColor();
+            }
+        }
+
+        function applyBackgroundColor() {
+            document.body.style.background = backgroundColor;
+            // 更新图例中的颜色显示
+            const bgDisplay = document.getElementById('bg-color-display');
+            if (bgDisplay) {
+                const selectedColor = BG_COLOR_OPTIONS.find(c => c.bg === backgroundColor);
+                if (selectedColor) {
+                    bgDisplay.style.background = selectedColor.bg;
+                    bgDisplay.style.borderLeft = `3px solid ${selectedColor.border}`;
+                }
+            }
+        }
+
+        // ============================================================
+        // 模块5: 节点查找
+        // ============================================================
+        // ===== 查找节点 =====
+        function findNodeById(node, id) {
+            if (node.id === id) return node;
+            if (node.children) {
+                for (const child of node.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function findParentNode(root, targetId, parent = null) {
+            if (root.id === targetId) return parent;
+            if (root.children) {
+                for (const child of root.children) {
+                    const found = findParentNode(child, targetId, root);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // ===== 计算节点层级 =====
+        function getNodeLevel(root, nodeId, level = 0) {
+            if (root.id === nodeId) return level;
+            if (root.children) {
+                for (const child of root.children) {
+                    const found = getNodeLevel(child, nodeId, level + 1);
+                    if (found !== -1) return found;
+                }
+            }
+            return -1;
+        }
+
+        // ============================================================
+        // 模块6: 节点操作 (CRUD)
+        // ============================================================
+        // ===== CRUD 操作 =====
+        function addChildNode(parentId) {
+            const parent = findNodeById(treeData, parentId);
+            if (parent) {
+                const parentLevel = getNodeLevel(treeData, parentId);
+                const childLevel = parentLevel + 1;
+
+                let levelName = '';
+                switch(childLevel) {
+                    case 0: levelName = '根节点'; break;
+                    case 1: levelName = '一级节点'; break;
+                    case 2: levelName = '二级节点'; break;
+                    case 3: levelName = '三级节点'; break;
+                    case 4: levelName = '四级节点'; break;
+                    case 5: levelName = '五级节点'; break;
+                    case 6: levelName = '六级节点'; break;
+                    case 7: levelName = '七级节点'; break;
+                    case 8: levelName = '八级节点'; break;
+                    case 9: levelName = '九级节点'; break;
+                    case 10: levelName = '十级节点'; break;
+                    case 11: levelName = '十一级节点'; break;
+                    case 12: levelName = '十二级节点'; break;
+                    default: levelName = `${childLevel}级节点`; break;
+                }
+
+                const newNode = createDefaultNode(levelName);
+                parent.children.push(newNode);
+                parent.collapsed = false;
+                saveCache();
+                rebuildTree();
+            }
+        }
+
+        function deleteNode(nodeId) {
+            // 根节点重置
+            if (treeData.id === nodeId) {
+                treeData.children = [];
+                treeData.header = '根节点';
+                treeData.body = '描述';
+                treeData.detail = '';
+            } else {
+                const parent = findParentNode(treeData, nodeId);
+                if (parent) {
+                    parent.children = parent.children.filter(c => c.id !== nodeId);
+                }
+            }
+            saveCache();
+            rebuildTree();
+        }
+
+        function toggleNodeLayout(nodeId) {
+            const node = findNodeById(treeData, nodeId);
+            if (node && node.children && node.children.length) {
+                // 切换布局：'h' <-> 'v'（两个状态）
+                node.layout = node.layout === 'h' ? 'v' : 'h';
+                saveCache();
+                rebuildTree();
+            }
+        }
+
+        function toggleCollapse(nodeId) {
+            const node = findNodeById(treeData, nodeId);
+            if (node && node.children && node.children.length) {
+                node.collapsed = !node.collapsed;
+                saveCache();
+                rebuildTree();
+            }
+        }
+
+        // ============================================================
+        // 模块7: DOM渲染
+        // ============================================================
+        // ===== 创建节点 DOM =====
+        function createNode(data, level = 0) {
+            const div = document.createElement('div');
+            div.className = `item level-${level}`;
+            div.dataset.id = data.id;
+
+            // 添加.node包装器以匹配org-chart.html的结构
+            const node = document.createElement('div');
+            node.className = 'node';
+
+            const content = document.createElement('div');
+            content.className = 'node-content';
+            if (data.children && data.children.length) content.classList.add('has-children');
+            if (data.collapsed) content.classList.add('collapsed');
+
+            // 三区域结构：标题、人数统计、目标
+            const title = document.createElement('div');
+            title.className = 'node-title';
+            title.textContent = data.header;
+            title.setAttribute('contenteditable', 'true');
+
+            const count = document.createElement('div');
+            count.className = 'node-count';
+            count.textContent = getNodeDescription(data);
+            count.setAttribute('contenteditable', 'true');
+
+            // 只有城市层级(level 1)才显示目标标签
+            const target = document.createElement('div');
+            target.className = 'node-target';
+            if (level === 1) {
+                target.textContent = data.target;
+                target.setAttribute('contenteditable', 'true');
+            } else {
+                target.style.display = 'none'; // 对于非城市层级，隐藏目标标签
+            }
+
+            content.appendChild(title);
+            content.appendChild(count);
+            content.appendChild(target);
+
+            // 操作按钮（右上角）
+            const actions = document.createElement('div');
+            actions.className = 'node-actions';
+
+            const delBtn = document.createElement('span');
+            delBtn.className = 'action-btn del-btn';
+            delBtn.textContent = '×';
+            delBtn.setAttribute('data-tooltip', '删除节点');
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteNode(data.id); };
+            actions.appendChild(delBtn);
+
+            const addBtn = document.createElement('span');
+            addBtn.className = 'action-btn add-btn';
+            addBtn.textContent = '+';
+            addBtn.setAttribute('data-tooltip', '新增子节点');
+            addBtn.onclick = (e) => { e.stopPropagation(); addChildNode(data.id); };
+            actions.appendChild(addBtn);
+
+            if (data.children && data.children.length) {
+                const layoutBtn = document.createElement('span');
+                layoutBtn.className = 'action-btn layout-btn';
+                layoutBtn.textContent = data.layout === 'h' ? '↔' : '↕';
+                layoutBtn.setAttribute('data-tooltip', '切换横/纵');
+                layoutBtn.onclick = (e) => { e.stopPropagation(); toggleNodeLayout(data.id); };
+                actions.appendChild(layoutBtn);
+
+                // 展开/折叠按钮（左下角）
+                const toggleBtn = document.createElement('span');
+                toggleBtn.className = 'toggle-btn';
+                toggleBtn.setAttribute('data-tooltip', '展开/折叠');
+                // 根据节点的折叠状态设置按钮符号
+                toggleBtn.textContent = data.collapsed ? '+' : '-';
+                toggleBtn.onclick = (e) => { e.stopPropagation(); toggleCollapse(data.id); };
+                content.appendChild(toggleBtn);
+            }
+
+            content.appendChild(actions);
+            node.appendChild(content);  // 将content放入node包装器
+            div.appendChild(node);      // 将node包装器放入主div
+
+            if (data.children && data.children.length) {
+                const childLayout = data.layout || (level === 0 ? 'h' : 'v');
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = `children-${childLayout}`;
+
+                // 根据子布局类型调整父节点的对齐方式
+                if (childLayout === 'h') {
+                    div.classList.add('has-horizontal-children');
+                    div.classList.remove('has-vertical-children');
+                } else {
+                    div.classList.add('has-vertical-children');
+                    div.classList.remove('has-horizontal-children');
+                }
+
+                if (data.collapsed) childrenDiv.classList.add('hidden');
+
+                data.children.forEach(child => {
+                    childrenDiv.appendChild(createNode(child, level + 1));
+                });
+
+                div.appendChild(childrenDiv);
+            }
+
+            // 编辑事件
+            [title, count].forEach((el, index) => {
+                if (index < 2) { // 只对标题和描述进行编辑
+                    el.addEventListener('input', function() {
+                        if (index === 0) {
+                            data.header = title.textContent;
+                        } else if (index === 1) {
+                            // 解析输入：如果是数字则保存到 count，否则保存为文本描述
+                            const numMatch = count.textContent.match(/^(\d+)/);
+                            if (numMatch) {
+                                data.count = parseInt(numMatch[1]);
+                            } else {
+                                // 非数字输入，保存到 count 作为描述（负数标记）
+                                data.count = count.textContent;
+                            }
+                        }
+                        debouncedSave();
+                    });
+                }
+            });
+
+            // 对于城市层级(level 1)，还要监听target的编辑
+            if (level === 1) {
+                target.addEventListener('input', function() {
+                    data.target = target.textContent;
+                    debouncedSave();
+                });
+            }
+
+            return div;
+        }
+
+        // ============================================================
+        // 模块8: 层级颜色管理
+        // ============================================================
+        // ===== 层级名称映射 =====
+        const LEVEL_NAMES = ['根节点', '一级节点', '二级节点', '三级节点', '四级节点', '五级节点'];
+
+        /**
+         * 获取层级名称
+         */
+        function getLevelName(level) {
+            // 6 级及以上使用数字生成：六级节点、七级节点、八级节点...
+            if (level >= 6) {
+                const numMap = ['六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五'];
+                if (level < 16) {
+                    return numMap[level - 6] + '级节点';
+                }
+                return level + '级节点';
+            }
+            return LEVEL_NAMES[level] || level + '级节点';
+        }
+
+        /**
+         * 获取层级颜色配置
+         * 优先使用用户自定义颜色，否则使用默认颜色
+         */
+        function getLevelColors(level) {
+            // 优先返回用户自定义颜色
+            if (levelColorsConfig[level]) {
+                return levelColorsConfig[level];
+            }
+            // 否则使用默认颜色
+            return DEFAULT_LEVEL_COLORS[level % DEFAULT_LEVEL_COLORS.length];
+        }
+
+        /**
+         * 设置层级颜色
+         */
+        function setLevelColor(level, colorIndex) {
+            const color = DEFAULT_LEVEL_COLORS[colorIndex];
+            if (color) {
+                levelColorsConfig[level] = { ...color };
+                saveLevelColors();
+                applyLevelColors();
+            }
+        }
+
+        /**
+         * 应用层级颜色到所有节点
+         */
+        function applyLevelColors() {
+            document.querySelectorAll('.item').forEach(item => {
+                const level = parseInt(item.className.match(/level-(\d+)/)?.[1] || 0);
+                const colors = getLevelColors(level);
+                const content = item.querySelector('.node-content');
+                if (content && colors) {
+                    content.style.borderLeftColor = colors.border;
+                    content.style.background = colors.bg;
+                }
+            });
+            // 更新图例颜色
+            updateLegendColors();
+        }
+
+        /**
+         * 更新图例颜色显示
+         */
+        function updateLegendColors() {
+            document.querySelectorAll('.legend-item').forEach(item => {
+                const level = parseInt(item.dataset.level);
+                const colors = getLevelColors(level);
+                const colorBox = item.querySelector('.legend-color');
+                if (colorBox && colors) {
+                    colorBox.style.background = colors.bg;
+                    colorBox.style.borderLeft = `3px solid ${colors.border}`;
+                }
+            });
+        }
+
+        /**
+         * 动态生成图例
+         */
+        function renderLegend() {
+            const legend = document.getElementById('legend');
+            if (!legend) return;
+
+            // 保留背景色编辑部分，清空其他内容
+            const bgPickerElement = document.getElementById('bg-color-picker');
+            const bgHeader = legend.querySelector('.legend-header');
+            legend.innerHTML = '';
+            legend.appendChild(bgHeader);
+            legend.appendChild(bgPickerElement);
+
+            // 遍历树，收集所有存在的层级
+            const levels = new Set();
+            function collectLevels(node, level) {
+                levels.add(level);
+                if (node.children && node.children.length) {
+                    node.children.forEach(c => collectLevels(c, level + 1));
+                }
+            }
+            if (treeData) collectLevels(treeData, 0);
+
+            // 为每个存在的层级生成图例项
+            levels.forEach(level => {
+                const colors = getLevelColors(level);
+                const name = getLevelName(level);
+
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                item.dataset.level = level;
+
+                const colorBox = document.createElement('div');
+                colorBox.className = 'legend-color';
+                colorBox.style.background = colors.bg;
+                colorBox.style.borderLeft = `3px solid ${colors.border}`;
+                colorBox.style.cursor = 'pointer';
+                colorBox.title = '点击更换颜色';
+
+                // 点击颜色块显示颜色选择器
+                colorBox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showColorPicker(item, level);
+                });
+
+                const label = document.createElement('span');
+                label.textContent = name;
+
+                item.appendChild(colorBox);
+                item.appendChild(label);
+                legend.appendChild(item);
+            });
+        }
+
+        /**
+         * 显示颜色选择器
+         */
+        function showColorPicker(legendItem, level) {
+            // 关闭其他已打开的选择器
+            document.querySelectorAll('.color-picker.show').forEach(p => p.classList.remove('show'));
+
+            // 查找或创建颜色选择器
+            let picker = legendItem.querySelector('.color-picker');
+            if (!picker) {
+                picker = document.createElement('div');
+                picker.className = 'color-picker';
+
+                // 创建颜色选项
+                DEFAULT_LEVEL_COLORS.forEach((color, index) => {
+                    const option = document.createElement('div');
+                    option.className = 'color-option';
+                    option.style.background = color.bg;
+                    option.style.borderLeft = `3px solid ${color.border}`;
+                    option.dataset.colorIndex = index;
+                    option.title = `颜色 ${index + 1}`;
+
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        setLevelColor(level, index);
+                        picker.classList.remove('show');
+                    });
+
+                    picker.appendChild(option);
+                });
+
+                legendItem.appendChild(picker);
+            }
+
+            // 标记当前选中的颜色
+            const currentColors = getLevelColors(level);
+            picker.querySelectorAll('.color-option').forEach((option, index) => {
+                const defaultColor = DEFAULT_LEVEL_COLORS[index];
+                if (currentColors.bg === defaultColor.bg && currentColors.border === defaultColor.border) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            // 切换显示
+            picker.classList.toggle('show');
+
+            // 点击其他地方关闭
+            setTimeout(() => {
+                const closePicker = (e) => {
+                    if (!picker.contains(e.target) && !legendItem.querySelector('.legend-color').contains(e.target)) {
+                        picker.classList.remove('show');
+                        document.removeEventListener('click', closePicker);
+                    }
+                };
+                document.addEventListener('click', closePicker);
+            }, 0);
+        }
+
+        /**
+         * 显示背景色选择器
+         */
+        function showBgColorPicker() {
+            // 关闭其他已打开的选择器
+            document.querySelectorAll('.color-picker.show').forEach(p => p.classList.remove('show'));
+
+            // 查找或创建背景色选择器
+            let picker = document.getElementById('bg-color-picker').querySelector('.color-picker');
+            if (!picker) {
+                picker = document.createElement('div');
+                picker.className = 'color-picker';
+                picker.id = 'bg-color-picker-list';
+
+                // 创建背景色选项
+                BG_COLOR_OPTIONS.forEach((color, index) => {
+                    const option = document.createElement('div');
+                    option.className = 'color-option';
+                    option.style.background = color.bg;
+                    option.style.borderLeft = `3px solid ${color.border}`;
+                    option.dataset.colorIndex = index;
+                    option.title = `背景色 ${index + 1}`;
+
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        setBackgroundColor(index);
+                        picker.classList.remove('show');
+                    });
+
+                    picker.appendChild(option);
+                });
+
+                document.getElementById('bg-color-picker').appendChild(picker);
+            }
+
+            // 标记当前选中的背景色
+            picker.querySelectorAll('.color-option').forEach((option, index) => {
+                const bgColor = BG_COLOR_OPTIONS[index];
+                if (backgroundColor === bgColor.bg) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            // 切换显示
+            picker.classList.toggle('show');
+
+            // 点击其他地方关闭
+            setTimeout(() => {
+                const closePicker = (e) => {
+                    if (!picker.contains(e.target) && !document.getElementById('bg-color-display').contains(e.target)) {
+                        picker.classList.remove('show');
+                        document.removeEventListener('click', closePicker);
+                    }
+                };
+                document.addEventListener('click', closePicker);
+            }, 0);
+        }
+
+        // ===== 重建树 =====
+        function rebuildTree() {
+            const tree = document.getElementById('orgTree');
+            tree.innerHTML = '';
+            if (treeData) {
+                tree.appendChild(createNode(treeData, 0));
+            }
+            // 更新图例
+            renderLegend();
+            // 应用层级颜色
+            applyLevelColors();
+        }
+
+        // ============================================================
+        // 模块9: 折叠展开
+        // ============================================================
+        // ===== 折叠/展开 =====
+        function collapseAll() {
+            function collapseRecursive(node) {
+                if (node.children && node.children.length) {
+                    node.collapsed = true;
+                    node.children.forEach(c => collapseRecursive(c));
+                }
+            }
+            collapseRecursive(treeData);
+            saveCache();
+            rebuildTree();
+        }
+
+        function expandAll() {
+            function expandRecursive(node) {
+                if (node.children && node.children.length) {
+                    node.collapsed = false;
+                    node.children.forEach(c => expandRecursive(c));
+                }
+            }
+            expandRecursive(treeData);
+            saveCache();
+            rebuildTree();
+        }
+
+        // ============================================================
+        // 模块10: CSV导入
+        // ============================================================
+        // ===== CSV 解析 =====
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            // 检查是否有标题行（第一行包含"层级"）
+            const startIdx = lines[0].includes('层级') ? 1 : 0;
+
+            // 解析每行数据
+            const nodes = [];
+            for (let i = startIdx; i < lines.length; i++) {
+                const parts = lines[i].split(',').map(p => p.trim());
+                const level = parseInt(parts[0]) || 1;
+                const header = parts[1] || '新的节点';
+                // parts[2] 应该是人数
+                const count = parseInt(parts[2]) || 0;
+                // parts[3] 应该是目标
+                const target = parts[3] || '';
+
+                nodes.push({
+                    level: level,
+                    node: createDefaultNode(header, count, target)
+                });
+            }
+
+            // 构建树结构（使用栈）
+            if (nodes.length === 0) return getInitialData();
+
+            // 第一行作为根节点
+            const root = nodes[0].node;
+            const stack = [{ level: nodes[0].level, node: root }];
+
+            for (let i = 1; i < nodes.length; i++) {
+                const { level, node } = nodes[i];
+
+                // 找到正确的父节点（栈中最后一个 level < 当前 level 的节点）
+                while (stack.length > 1 && stack[stack.length - 1].level >= level) {
+                    stack.pop();
+                }
+
+                const parent = stack[stack.length - 1].node;
+                parent.children.push(node);
+                stack.push({ level, node });
+            }
+
+            return root;
+        }
+
+        function handleCSVUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const newTree = parseCSV(text);
+                // 备份当前数据
+                saveCache();
+                treeData = newTree;
+                saveCache();
+                rebuildTree();
+            };
+            reader.readAsText(file);
+            input.value = ''; // 清空，允许重复上传同一文件
+        }
+
+        // ============================================================
+        // 模块11: 缩放功能
+        // ============================================================
+        // ===== 缩放功能 =====
+        let zoom = 1;
+        function updateZoom() {
+            document.getElementById('orgTree').style.transform = `scale(${zoom})`;
+            document.getElementById('zoom-level').textContent = Math.round(zoom * 100) + '%';
+            // 缩放后需要重新计算坐标并绘制连线
+            requestAnimationFrame(drawConnectors);
+        }
+        function zoomIn() { if (zoom < 2) { zoom += 0.1; updateZoom(); } }
+        function zoomOut() { if (zoom > 0.3) { zoom -= 0.1; updateZoom(); } }
+
+        document.querySelector('.container').addEventListener('wheel', function(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                e.deltaY < 0 ? zoomIn() : zoomOut();
+            }
+        });
+
+        // ============================================================
+        // 模块12: SVG连线系统
+        // ============================================================
+        // ===== SVG连线系统 =====
+
+        /**
+         * 获取节点的连接点坐标（相对于容器）
+         */
+        function getNodeConnectionPoints(nodeElement, container) {
+            const nodeRect = nodeElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            // 计算相对于容器的坐标（考虑滚动）
+            const relativeTop = nodeRect.top - containerRect.top + container.scrollTop;
+            const relativeLeft = nodeRect.left - containerRect.left + container.scrollLeft;
+
+            return {
+                top: {
+                    x: relativeLeft + nodeRect.width / 2,
+                    y: relativeTop
+                },
+                bottom: {
+                    x: relativeLeft + nodeRect.width / 2,
+                    y: relativeTop + nodeRect.height
+                },
+                left: {
+                    x: relativeLeft,
+                    y: relativeTop + nodeRect.height / 2
+                },
+                right: {
+                    x: relativeLeft + nodeRect.width,
+                    y: relativeTop + nodeRect.height / 2
+                }
+            };
+        }
+
+        /**
+         * 计算横向布局的折线路径
+         * 父节点底部中线 → 垂直向下 → 水平横线 → 垂直向下 → 子节点顶部中线
+         */
+        function calculateHorizontalLayoutPaths(parent, children) {
+            const paths = [];
+            if (children.length === 0) return paths;
+
+            const gap = 30; // 父子节点间距的一半
+            const midY = parent.bottom.y + gap / 2;
+
+            // 父节点向下的垂直线
+            paths.push(`M ${parent.bottom.x} ${parent.bottom.y} L ${parent.bottom.x} ${midY}`);
+
+            if (children.length === 1) {
+                // 单个子节点：直接连接到顶部中线
+                const child = children[0];
+                paths.push(`M ${parent.bottom.x} ${midY} L ${child.top.x} ${child.top.y}`);
+            } else {
+                // 多个子节点：水平横线 + 垂直分支到顶部中线
+                const xCoords = children.map(c => c.top.x).sort((a, b) => a - b);
+                paths.push(`M ${xCoords[0]} ${midY} L ${xCoords[xCoords.length - 1]} ${midY}`);
+                children.forEach(child => {
+                    paths.push(`M ${child.top.x} ${midY} L ${child.top.x} ${child.top.y}`);
+                });
+            }
+            return paths;
+        }
+
+        /**
+         * 计算纵向布局的折线路径
+         * 父节点左下角 → 垂直向下到子节点左侧中线位置 → 水平向右连接到子节点左侧中线
+         */
+        function calculateTreeLayoutPaths(parent, children) {
+            const paths = [];
+            if (children.length === 0) return paths;
+
+            // 父节点左下角作为起点
+            const startX = parent.left.x;
+            const startY = parent.bottom.y;
+
+            if (children.length === 1) {
+                // 单个子节点：直接向下 → 水平连接
+                const child = children[0];
+                paths.push(`M ${startX} ${startY} L ${startX} ${child.left.y} L ${child.left.x} ${child.left.y}`);
+            } else {
+                // 多个子节点：先画垂直干线到最远子节点位置，再水平分支
+                const yCoords = children.map(c => c.left.y).sort((a, b) => a - b);
+                // 垂直干线
+                paths.push(`M ${startX} ${startY} L ${startX} ${yCoords[yCoords.length - 1]}`);
+                // 每个子节点的水平线
+                children.forEach(child => {
+                    paths.push(`M ${startX} ${child.left.y} L ${child.left.x} ${child.left.y}`);
+                });
+            }
+            return paths;
+        }
+
+        /**
+         * 主绘制函数：遍历所有节点，绘制连线
+         */
+        function drawConnectors() {
+            const container = document.querySelector('.container');
+            const svg = document.getElementById('connectorSvg');
+            const orgTree = document.getElementById('orgTree');
+
+            if (!svg || !orgTree) return;
+
+            // 清空现有路径
+            svg.innerHTML = '';
+
+            // 更新SVG尺寸以覆盖整个树
+            svg.setAttribute('width', orgTree.scrollWidth + 40);
+            svg.setAttribute('height', orgTree.scrollHeight + 40);
+
+            const allPaths = [];
+
+            // 遍历所有有子节点的元素
+            document.querySelectorAll('.item').forEach(item => {
+                const nodeContent = item.querySelector(':scope > .node > .node-content');
+                const childrenH = item.querySelector(':scope > .children-h:not(.hidden)');
+                const childrenV = item.querySelector(':scope > .children-v:not(.hidden)');
+
+                if (!nodeContent) return;
+
+                const parentPoints = getNodeConnectionPoints(nodeContent, container);
+
+                // 处理横向布局的子节点
+                if (childrenH) {
+                    const childNodes = Array.from(childrenH.querySelectorAll(':scope > .item > .node > .node-content'));
+                    const childPoints = childNodes.map(n => getNodeConnectionPoints(n, container));
+                    allPaths.push(...calculateHorizontalLayoutPaths(parentPoints, childPoints));
+                }
+
+                // 处理纵向布局的子节点
+                if (childrenV) {
+                    const childNodes = Array.from(childrenV.querySelectorAll(':scope > .item > .node > .node-content'));
+                    const childPoints = childNodes.map(n => getNodeConnectionPoints(n, container));
+                    allPaths.push(...calculateTreeLayoutPaths(parentPoints, childPoints));
+                }
+            });
+
+            // 创建SVG路径元素
+            allPaths.forEach(d => {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', '#90a4ae');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                svg.appendChild(path);
+            });
+        }
+
+        /**
+         * 初始化连线系统：设置MutationObserver监听DOM变化
+         */
+        function initConnectorSystem() {
+            const orgTree = document.getElementById('orgTree');
+
+            // MutationObserver监听DOM变化（折叠/展开、添加/删除节点）
+            const observer = new MutationObserver(() => {
+                requestAnimationFrame(drawConnectors);
+            });
+            observer.observe(orgTree, {
+                attributes: true,
+                attributeFilter: ['class', 'style'],
+                childList: true,
+                subtree: true
+            });
+
+            // 窗口resize时重绘
+            window.addEventListener('resize', () => {
+                requestAnimationFrame(drawConnectors);
+            });
+
+            // 容器滚动时重绘（坐标需要重新计算）
+            document.querySelector('.container').addEventListener('scroll', () => {
+                requestAnimationFrame(drawConnectors);
+            });
+
+            // 初始绘制
+            requestAnimationFrame(drawConnectors);
+        }
+
+        // ============================================================
+        // 模块13: 初始化
+        // ============================================================
+        // ===== 初始化 =====
+        loadLevelColors(); // 加载层级颜色配置
+        loadBackgroundColor(); // 加载背景色配置
+        treeData = loadCache() || getInitialData();
+        rebuildTree();
+        applyBackgroundColor(); // 应用背景色
+        initConnectorSystem(); // 初始化SVG连线系统
+
+        // 为背景色显示添加点击事件
+        document.getElementById('bg-color-display').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showBgColorPicker();
+        });
+
+        // 全局函数：关闭引导弹窗
+        function closeGuide() {
+            const guideModal = document.getElementById('guideModal');
+            guideModal.classList.add('hidden');
+            localStorage.setItem('guideShown', 'true');
+        }
+
+        // 显示引导弹窗（仅首次访问）
+        function showGuide() {
+            const guideShown = localStorage.getItem('guideShown');
+            const guideModal = document.getElementById('guideModal');
+
+            if (!guideShown) {
+                guideModal.classList.remove('hidden');
+            }
+        }
+
+        // 页面加载完成后显示引导
+        window.addEventListener('load', showGuide);
+    </script>
+
+</body>
+</html>
