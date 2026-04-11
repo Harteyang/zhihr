@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态甘特图</title>
+    <!-- 国内开源中文字体 -->
+    <style>
+        /* 阿里巴巴普惠体 - 商务首选 */
+        @font-face {
+            font-family: 'Alibaba PuHuiTi';
+            src: url('https://fonts.alicdn.com/AlibabaPuHuiTi/AlibabaPuHuiTi-2/AlibabaPuHuiTi-2-105/AlibabaPuHuiTi-2-105.woff2') format('woff2');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'Alibaba PuHuiTi';
+            src: url('https://fonts.alicdn.com/AlibabaPuHuiTi/AlibabaPuHuiTi-2/AlibabaPuHuiTi-2-115/AlibabaPuHuiTi-2-115.woff2') format('woff2');
+            font-weight: 500;
+        }
+        @font-face {
+            font-family: 'Alibaba PuHuiTi';
+            src: url('https://fonts.alicdn.com/AlibabaPuHuiTi/AlibabaPuHuiTi-2/AlibabaPuHuiTi-2-125/AlibabaPuHuiTi-2-125.woff2') format('woff2');
+            font-weight: 600;
+        }
+    </style>
+    <!-- 思源黑体 + 霞鹜文楷 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" rel="stylesheet">
+    <style>
+        /* ===== 字体层级体系 ===== */
+        /* 主标题: 20px | 分区标题: 15px | 主要内容: 14px | 次要内容: 13px | 小文本: 12px | 细节: 11px */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; padding: 20px; }
+        .page-wrapper { max-width: 1400px; margin: 0 auto; }
+
+        /* 上部展示区 */
+        .gantt-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: none;
+            border: 1px solid #E2E8F0;
+            margin-top: 24px;
+        }
+        .gantt-title { font-size: 15px; font-weight: 600; color: #1E293B; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #2563EB; }
+        .header { background: #2563EB; color: white; padding: 14px; text-align: center; border-radius: 4px; margin-bottom: 10px; }
+        .header h1 { font-size: 20px; }
+        .info-bar { display: flex; justify-content: space-between; padding: 8px 14px; background: #F8FAFC; border-radius: 4px; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .info-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .info-label { font-weight: 600; color: #1E293B; }
+        .info-value { color: #1E293B; font-weight: 500; }
+        .gantt-container { overflow-x: auto; }
+        .gantt-wrapper { position: relative; }
+
+        /* 每行统一结构，左侧sticky冻结 */
+        .gantt-row { display: flex; align-items: stretch; }
+        .task-col { position: sticky; left: 0; z-index: 10; background: #F8FAFC; padding: 0 12px; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; }
+        .weeks-col { display: flex; gap: 0; padding: 0; flex: 1; min-width: max-content; position: relative; }
+        .week-item { min-width: 80px; flex: 1; display: flex; align-items: center; justify-content: center; }
+
+        /* 表头行 */
+        .gantt-row-header { background: #64748B; position: relative; }
+        .gantt-row-header .task-col { background: #fff3; color: white; font-weight: 600; }
+        .gantt-row-header .weeks-col { background: transparent; }
+        .gantt-row-header .week-item { color: white; font-size: 13px; text-align: center; flex-direction: column; padding: 8px 4px; border-right: 1px solid rgba(255,255,255,0.3); }
+        .gantt-row-header .week-item:last-child { border-right: none; }
+        .gantt-row-header .week-item small { font-weight: 400; opacity: 0.9; font-size: 11px; }
+
+        /* 阶段行 */
+        .gantt-row-phase { margin-top: 8px; background: transparent; }
+        .gantt-row-phase .task-col { background: transparent; padding: 0; }
+        .gantt-row-phase .weeks-col { background: transparent; }
+        .phase-label { padding: 8px 12px; background: #F1F5F9; border-left: 3px solid var(--header-bg-color, #2563EB); font-weight: 600; color: #1E293B; font-size: 15px; white-space: nowrap; width: 100%; }
+
+        /* 任务行 */
+        .gantt-row-task { background: #FAFBFC; height: 36px; }
+        .gantt-row-task .weeks-col { background: #FAFBFC; height: 36px; }
+        .gantt-row-task .task-col { height: 36px; }
+
+        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #F97316; z-index: 100; pointer-events: none; cursor: pointer; }
+        .today-line-pass { position: absolute; width: 2px; background: transparent; z-index: 101; cursor: pointer; }
+        .today-badge { position: fixed; background: #F97316; color: white; font-size: 12px; padding: 2px 6px; border-radius: 2px; white-space: nowrap; z-index: 1000; opacity: 0; transition: opacity 0.2s; }
+        .today-badge.visible { opacity: 1; }
+        .status-badge { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 500; margin-left: 6px; color: white; }
+        .task-bar { position: absolute; top: 6px; height: 24px; border-radius: 2px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; cursor: pointer; z-index: 1; white-space: nowrap; overflow: hidden; }
+        .task-bar:hover { transform: translateY(-1px); }
+        .bar-completed { background: #10B981; }
+        .bar-in-progress { background: #2563EB; }
+        .bar-not-started { background: #94A3B8; }
+        .legend { display: flex; gap: 16px; padding: 8px 14px; background: #F8FAFC; border-radius: 4px; margin-top: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .legend-color { width: 14px; height: 14px; border-radius: 2px; cursor: pointer; transition: transform 0.2s; }
+        .legend-color:hover { transform: scale(1.2); }
+
+        /* 颜色选择器 */
+        .color-picker { position: fixed; background: white; padding: 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 2000; display: none; border: 1px solid #E2E8F0; }
+        .color-picker-title { font-size: 13px; color: #1E293B; margin-bottom: 10px; font-weight: 600; }
+        .color-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .color-option { width: 28px; height: 28px; border-radius: 2px; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.selected { border-color: #1E293B; }
+
+        /* 下部编辑区 */
+        .editor-section {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+        .project-settings { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: #F8FAFC; border-radius: 4px; min-width: max-content; }
+
+        /* 响应式设计：在小屏幕上更好地布局项目设置 */
+        @media (max-width: 768px) {
+            .project-settings {
+                min-width: auto;
+                gap: 8px;
+            }
+            .setting-item {
+                gap: 4px;
+            }
+            .setting-item label {
+                font-size: 13px;
+            }
+            .setting-item input[type="text"] {
+                width: 150px;
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            .setting-item input[type="date"] {
+                width: 120px;
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+        }
+        .project-settings-scroll { overflow-x: auto; margin-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        .setting-item { display: flex; align-items: center; gap: 8px; }
+        .setting-item label { font-weight: 500; color: #475569; font-size: 14px; }
+        .setting-item input { padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 2px; font-size: 13px; }
+        .setting-item input[type="text"] { width: 200px; }
+        .setting-item input[type="date"] { width: 140px; }
+
+        .tasks-table { width: 100%; min-width: 680px; border-collapse: collapse; }
+        .tasks-table th { background: #64748B; color: white; padding: 10px 8px; text-align: left; font-size: 13px; white-space: nowrap; }
+        .tasks-table td { padding: 8px; border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+        .tasks-table tr:hover { background: #F8FAFC; }
+        .tasks-table input, .tasks-table select { width: 100%; padding: 4px 6px; border: 1px solid #CBD5E1; border-radius: 2px; font-size: 13px; box-sizing: border-box; }
+        .tasks-table .delete-btn { background: #EF4444; color: white; padding: 4px 8px; border: none; border-radius: 2px; cursor: pointer; font-size: 12px; }
+        .tasks-table .phase-inputs { display: flex; gap: 4px; align-items: center; }
+        .tasks-table .phase-order { width: 45px; text-align: center; flex-shrink: 0; }
+        .tasks-table .phase-name { flex: 1; min-width: 60px; }
+
+        .table-scroll-container { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+
+        .editor-actions { display: flex; gap: 12px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 2px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-add { background: #2563EB; color: white; }
+        .btn-reset { background: #64748B; color: white; }
+
+        .tooltip { position: fixed; background: white; padding: 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 280px; z-index: 1000; display: none; font-size: 13px; border: 1px solid #E2E8F0; }
+        .tooltip h4 { color: #2563EB; margin-bottom: 6px; font-size: 14px; }
+        .tooltip p { color: #666; margin-bottom: 4px; }
+
+        /* emoji选择器 */
+        .emoji-picker { position: fixed; background: white; padding: 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 2000; display: none; border: 1px solid #E2E8F0; }
+        .emoji-picker-title { font-size: 13px; color: #1E293B; margin-bottom: 10px; font-weight: 600; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+        .emoji-option { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 2px; font-size: 18px; transition: background 0.2s; }
+        .emoji-option:hover { background: #F1F5F9; }
+        .emoji-option.selected { background: #2563EB; color: white; }
+        .emoji-option.empty { font-size: 12px; color: #94A3B8; }
+        .emoji-option.empty.selected { color: white; }
+        /* emoji按钮样式 */
+        .phase-emoji { cursor: pointer; padding: 2px; border-radius: 2px; transition: background 0.2s; }
+        .phase-emoji:hover { background: rgba(37,99,235,0.1); }
+        .project-emoji { cursor: pointer; padding: 2px; border-radius: 4px; transition: background 0.2s; }
+        .project-emoji:hover { background: rgba(255,255,255,0.2); }
+        .info-emoji { cursor: pointer; padding: 2px; border-radius: 4px; transition: background 0.2s; }
+        .info-emoji:hover { background: rgba(37,99,235,0.1); }
+
+        /* 字体选择器 */
+        .font-picker { position: fixed; background: white; padding: 12px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 2000; display: none; border: 1px solid #E2E8F0; max-height: 300px; overflow-y: auto; }
+        .font-picker-title { font-size: 13px; color: #1E293B; margin-bottom: 10px; font-weight: 600; }
+        .font-picker-category { font-size: 12px; color: #64748B; margin-bottom: 6px; margin-top: 8px; }
+        .font-option { padding: 8px 12px; cursor: pointer; border-radius: 2px; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .font-option:hover { background: #F1F5F9; }
+        .font-option.selected { background: #2563EB; color: white; }
+        .font-preview { font-size: 13px; }
+        .font-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 2px; transition: background 0.2s; background: #F1F5F9; font-size: 13px; }
+        .font-btn:hover { background: #E2E8F0; }
+        .font-btn-icon { font-size: 16px; }
+
+        /* 使用说明 */
+        .help-section { background: white; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .help-header { display: flex; align-items: center; cursor: pointer; }
+        .help-title { font-size: 15px; font-weight: 600; color: #1E293B; }
+        .help-toggle { font-size: 12px; color: #64748B; margin-left: 8px; padding: 2px 8px; background: #F1F5F9; border-radius: 2px; }
+        .help-content { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E2E8F0; }
+        .help-section.collapsed .help-content { display: none; }
+        .help-item { font-size: 13px; color: #475569; line-height: 1.5; }
+        .help-item strong { color: #2563EB; }
+
+        /* 编辑区折叠 */
+        .editor-header { display: flex; align-items: center; cursor: pointer; }
+        .editor-title { font-size: 15px; font-weight: 600; color: #1E293B; }
+        .editor-toggle { font-size: 12px; color: #64748B; margin-left: 8px; padding: 2px 8px; background: #F1F5F9; border-radius: 2px; }
+        .editor-content { margin-top: 16px; }
+        .editor-section.collapsed .editor-content { display: none; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+    <!-- 使用说明 -->
+    <div class="help-section collapsed" id="helpSection">
+        <div class="help-header" onclick="toggleHelp()">
+            <div class="help-title">📖 使用说明</div>
+            <div class="help-toggle" id="helpToggle">展开</div>
+        </div>
+        <div class="help-content" id="helpContent">
+            <div class="help-item"><strong>图标编辑：</strong>彩蛋：点击效果演示栏图标（项目标题、信息栏、阶段标签）可选择或清除图标</div>
+            <div class="help-item"><strong>阶段管理：</strong>阶段序号决定排序顺序，相同序号的任务归为同一阶段</div>
+            <div class="help-item"><strong>任务编辑：</strong>在编辑数据表格中直接编辑任务名称、阶段、状态、日期</div>
+            <div class="help-item"><strong>时间范围：</strong>项目周期自动根据任务开始/结束时间动态调整</div>
+            <div class="help-item"><strong>数据保存：</strong>所有修改自动保存到浏览器本地，刷新不丢失</div>
+            <div class="help-item"><strong>重置数据：</strong>点击"重置数据"按钮恢复初始示例数据</div>
+        </div>
+    </div>
+
+    <!-- 上部：编辑数据区 -->
+    <div class="editor-section collapsed" id="editorSection">
+        <div class="editor-header" onclick="toggleEditor()">
+            <div class="editor-title">📝 编辑数据</div>
+            <div class="editor-toggle" id="editorToggle">展开</div>
+        </div>
+        <div class="editor-content" id="editorContent">
+            <div class="project-settings">
+                <div class="setting-item">
+                    <label>项目名称:</label>
+                    <input type="text" id="projectName" placeholder="项目名称">
+                </div>
+                <div class="setting-item">
+                    <label>开始日期:</label>
+                    <input type="date" id="projectStart">
+                </div>
+                <div class="setting-item">
+                    <label>结束日期:</label>
+                    <input type="date" id="projectEnd">
+                </div>
+            </div>
+            <div class="table-scroll-container">
+            <table class="tasks-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>任务名称</th>
+                        <th>阶段</th>
+                        <th>状态</th>
+                        <th>开始</th>
+                        <th>结束</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tasksBody"></tbody>
+            </table>
+        </div>
+        <div class="editor-actions">
+                <button class="btn btn-add" onclick="addTask()">+ 添加任务</button>
+                <button class="btn btn-reset" onclick="resetData()">重置数据</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 下部：甘特图展示区 -->
+    <div class="gantt-section">
+        <div class="header">
+            <h1 id="projectTitle">🎯 新人陪练智能体</h1>
+        </div>
+        <div class="info-bar" id="infoBar"></div>
+        <div class="gantt-container">
+            <div class="gantt-wrapper" id="ganttWrapper"></div>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" id="legendCompleted" onclick="showColorPicker(event, 'completed')"></div><span>已完成</span></div>
+            <div class="legend-item"><div class="legend-color" id="legendInProgress" onclick="showColorPicker(event, 'inProgress')"></div><span>进行中</span></div>
+            <div class="legend-item"><div class="legend-color" id="legendNotStarted" onclick="showColorPicker(event, 'notStarted')"></div><span>未开始</span></div>
+            <div class="legend-item"><div class="legend-color" id="legendHeaderBg" onclick="showColorPicker(event, 'headerBg')"></div><span>标题背景</span></div>
+            <div class="legend-item"><div class="font-btn" onclick="showFontPicker(event)"><span class="font-btn-icon">𝐀</span><span>字体</span></div></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- emoji选择器 -->
+    <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-picker-title">选择图标</div>
+        <div class="emoji-grid" id="emojiGrid"></div>
+    </div>
+
+    <!-- 字体选择器 -->
+    <div class="font-picker" id="fontPicker">
+        <div class="font-picker-title">选择字体</div>
+        <div class="font-picker-category">系统字体</div>
+        <div class="font-list" id="fontListSystem"></div>
+        <div class="font-picker-category">在线字体</div>
+        <div class="font-list" id="fontListWeb"></div>
+    </div>
+
+    <!-- 颜色选择器 -->
+    <div class="color-picker" id="colorPicker">
+        <div class="color-picker-title">选择颜色</div>
+        <div class="color-grid" id="colorGrid"></div>
+    </div>
+
+    <script>
+        // 计算合理的项目开始和结束日期（基于当前时间）
+        function getDefaultDates() {
+            const now = new Date();
+            // 从今天开始，持续3个月
+            const startDate = new Date(now);
+            const endDate = new Date(now);
+            endDate.setMonth(endDate.getMonth() + 3); // 3个月后结束
+
+            // 格式化为yyyy-mm-dd
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            return {
+                start: formatDate(startDate),
+                end: formatDate(endDate)
+            };
+        }
+
+        // 初始数据
+        const DEFAULT_DATA = (() => {
+            const dates = getDefaultDates();
+            return {
+                project: "PMO工具研发",
+                projectEmoji: "🔥",
+                infoBarEmojis: { date: "📅", task: "🎯", progress: "📊" },
+                start: dates.start,
+                end: dates.end,
+                phaseEmojis: { "1": "📍", "2": "🛠️", "3": "🧪", "4": "🚀" },
+                statusColors: {
+                    completed: { bg: "#10B981", gradient: "#10B981" },
+                    inProgress: { bg: "#2563EB", gradient: "#2563EB" },
+                    notStarted: { bg: "#94A3B8", gradient: "#94A3B8" }
+                },
+                headerBg: "#2563EB",
+                infoBarBg: "#F8FAFC",
+                taskColBg: "#F8FAFC",
+                weeksColBg: "#FAFBFC",
+                fontFamily: '"LXGW WenKai Mono", monospace',
+                tasks: [
+                    { name: "项目规划", phaseOrder: 1, phaseName: "前期准备", status: "进行中", start: dates.start, end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 14)).toISOString().slice(0,10) },
+                    { name: "需求分析", phaseOrder: 1, phaseName: "前期准备", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 7)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 21)).toISOString().slice(0,10) },
+                    { name: "系统设计", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 14)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 35)).toISOString().slice(0,10) },
+                    { name: "功能开发", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 28)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 70)).toISOString().slice(0,10) },
+                    { name: "系统测试", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 56)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 84)).toISOString().slice(0,10) },
+                    { name: "上线部署", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 77)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 91)).toISOString().slice(0,10) },
+                    { name: "项目验收", phaseOrder: 4, phaseName: "收尾阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 84)).toISOString().slice(0,10), end: dates.end }
+                ]
+            };
+        })();
+
+        // 可选择的emoji列表（第一个是"无"选项）
+        const EMOJI_OPTIONS = ["", "📍", "🛠️", "🧪", "🚀", "💡", "📊", "🎯", "⚡", "🔥", "⭐", "💎", "🏆", "📋", "🔧", "💪", "🌟", "🎪", "🎨", "📌"];
+
+        // 阶段emoji（备用）
+        const PHASE_EMOJI_MAP = ["📍", "🛠️", "🧪", "🚀", "💡", "📊", "🎯", "⚡"];
+
+        // 可选择的颜色列表 - 专业配色（相近色已分组）
+        const COLOR_OPTIONS = [
+            // 红色系
+            { bg: "#ef4444", gradient: "#ef4444" },
+            // 橙色系
+            { bg: "#f97316", gradient: "#f97316" },
+            { bg: "#ff9800", gradient: "#ff9800" },
+            // 蓝色系
+            { bg: "#2563eb", gradient: "#2563eb" },
+            { bg: "#3f51b5", gradient: "#3f51b5" },
+            { bg: "#03a9f4", gradient: "#03a9f4" },
+            // 绿色系
+            { bg: "#10b981", gradient: "#10b981" },
+            { bg: "#009688", gradient: "#009688" },
+            { bg: "#8bc34a", gradient: "#8bc34a" },
+            // 灰色系
+            { bg: "#1e293b", gradient: "#1e293b" },
+            { bg: "#475569", gradient: "#475569" },
+            { bg: "#64748b", gradient: "#64748b" },
+            { bg: "#94a3b8", gradient: "#94a3b8" },
+            { bg: "#cbd5e1", gradient: "#cbd5e1" },
+            { bg: "#666", gradient: "#666" },
+            // 棕色系
+            { bg: "#795548", gradient: "#795548" }
+        ];
+
+        // 可选择的字体列表
+        const SYSTEM_FONTS = [
+            { name: "系统默认", value: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif', preview: "苹方/微软雅黑" },
+            { name: "苹方", value: '"PingFang SC", -apple-system, sans-serif', preview: "苹方字体" },
+            { name: "微软雅黑", value: '"Microsoft YaHei", sans-serif', preview: "微软雅黑" },
+            { name: "黑体", value: '"SimHei", "Heiti SC", sans-serif', preview: "黑体字体" },
+            { name: "宋体", value: '"SimSun", "Songti SC", serif', preview: "宋体字体" }
+        ];
+
+        const WEB_FONTS = [
+            { name: "阿里巴巴普惠体", value: '"Alibaba PuHuiTi", sans-serif', preview: "阿里普惠体商务版" },
+            { name: "思源黑体", value: '"Noto Sans SC", sans-serif', preview: "思源黑体清晰版" },
+            { name: "霞鹜文楷", value: '"LXGW WenKai", serif', preview: "霞鹜文楷优雅版" },
+            { name: "霞鹜文楷Mono", value: '"LXGW WenKai Mono", monospace', preview: "文楷等宽字体" }
+        ];
+
+        // 根据任务获取阶段列表（按order排序）
+        function getPhasesFromTasks() {
+            const phases = new Map();
+            data.tasks.forEach(t => {
+                if (!phases.has(t.phaseOrder)) {
+                    phases.set(t.phaseOrder, t.phaseName);
+                }
+            });
+            // 按order排序返回
+            return [...phases.entries()].sort((a, b) => a[0] - b[0]);
+        }
+
+        // 数据管理
+        let data = JSON.parse(localStorage.getItem('ganttData')) || JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+        // 确保所有emoji对象存在（使用 undefined 检查，不覆盖空字符串）
+        if (data.phaseEmojis === undefined) data.phaseEmojis = {};
+        if (data.projectEmoji === undefined) data.projectEmoji = "🎯";
+        if (data.infoBarEmojis === undefined) data.infoBarEmojis = { date: "📅", task: "🎯", progress: "📊" };
+        if (data.statusColors === undefined) data.statusColors = {
+            completed: { bg: "#10B981", gradient: "#10B981" },
+            inProgress: { bg: "#2563EB", gradient: "#2563EB" },
+            notStarted: { bg: "#94A3B8", gradient: "#94A3B8" }
+        };
+        if (data.headerBg === undefined) data.headerBg = "#2563EB";
+        if (data.fontFamily === undefined) data.fontFamily = '"LXGW WenKai Mono", monospace';
+
+        function save() {
+            // 根据任务动态更新项目时间范围
+            const weekDates = getWeekDates();
+            if (weekDates.length > 0) {
+                const actualStart = weekDates[0];
+                const actualEnd = new Date(weekDates[weekDates.length - 1]);
+                actualEnd.setDate(actualEnd.getDate() + 6);
+                data.start = actualStart.toISOString().slice(0, 10);
+                data.end = actualEnd.toISOString().slice(0, 10);
+            }
+
+            localStorage.setItem('ganttData', JSON.stringify(data));
+            render();
+        }
+
+        function resetData() {
+            if (confirm('确定要重置为默认数据吗？')) {
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                save();
+            }
+        }
+
+        function addTask() {
+            const phases = getPhasesFromTasks();
+            const defaultOrder = phases.length > 0 ? phases[0][0] : 1;
+            const defaultName = phases.length > 0 ? phases[0][1] : "新阶段";
+            data.tasks.push({
+                name: "新任务",
+                phaseOrder: defaultOrder,
+                phaseName: defaultName,
+                status: "未开始",
+                start: data.start,
+                end: data.start
+            });
+            save();
+        }
+
+        function deleteTask(idx) {
+            if (confirm('确定删除此任务？')) {
+                data.tasks.splice(idx, 1);
+                save();
+            }
+        }
+
+        // 工具函数
+        function parseDate(str) { return new Date(str); }
+        function getDays(start, end) { return Math.ceil((parseDate(end) - parseDate(start)) / 86400000) + 1; }
+        function getWeekDates() {
+            // 取项目开始时间和所有任务开始时间的最小值
+            let start = parseDate(data.start);
+            data.tasks.forEach(t => {
+                const taskStart = parseDate(t.start);
+                if (taskStart < start) start = taskStart;
+            });
+
+            // 取项目结束时间和所有任务结束时间的最大值
+            let end = parseDate(data.end);
+            data.tasks.forEach(t => {
+                const taskEnd = parseDate(t.end);
+                if (taskEnd > end) end = taskEnd;
+            });
+
+            // 对齐到周一
+            const monday = new Date(start);
+            monday.setDate(monday.getDate() - (monday.getDay() === 0 ? 6 : monday.getDay() - 1));
+            const weeks = [];
+            let d = new Date(monday);
+            while (d <= end) {
+                weeks.push(new Date(d));
+                d.setDate(d.getDate() + 7);
+            }
+            return weeks;
+        }
+        function getWeekIndex(date, weekDates) {
+            const d = parseDate(date);
+            if (weekDates.length === 0) return 0;
+
+            // 早于第一个week，返回0
+            if (d < weekDates[0]) return 0;
+
+            for (let i = 0; i < weekDates.length; i++) {
+                const ws = weekDates[i];
+                const we = new Date(ws); we.setDate(we.getDate() + 6);
+                if (d >= ws && d <= we) return i;
+            }
+            // 超出范围，返回最后一个week
+            return weekDates.length - 1;
+        }
+
+        // 渲染甘特图
+        function render() {
+            // 更新编辑区
+            document.getElementById('projectName').value = data.project;
+            document.getElementById('projectStart').value = data.start;
+            document.getElementById('projectEnd').value = data.end;
+
+            // 渲染任务表格
+            const tbody = document.getElementById('tasksBody');
+            tbody.innerHTML = data.tasks.map((t, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><input type="text" value="${t.name}" onchange="updateTask(${i}, 'name', this.value)"></td>
+                    <td class="phase-inputs">
+                        <input type="number" class="phase-order" value="${t.phaseOrder}" min="1" max="99" onchange="updateTask(${i}, 'phaseOrder', parseInt(this.value) || 1)">
+                        <input type="text" class="phase-name" value="${t.phaseName}" onchange="updateTask(${i}, 'phaseName', this.value)">
+                    </td>
+                    <td><select onchange="updateTask(${i}, 'status', this.value)"><option value="已完成" ${t.status === '已完成' ? 'selected' : ''}>已完成</option><option value="进行中" ${t.status === '进行中' ? 'selected' : ''}>进行中</option><option value="未开始" ${t.status === '未开始' ? 'selected' : ''}>未开始</option></select></td>
+                    <td><input type="date" value="${t.start}" onchange="updateTask(${i}, 'start', this.value)"></td>
+                    <td><input type="date" value="${t.end}" onchange="updateTask(${i}, 'end', this.value)"></td>
+                    <td><button class="delete-btn" onclick="deleteTask(${i})">删除</button></td>
+                </tr>
+            `).join('');
+
+            // 更新标题 - emoji可点击（空emoji只占位不显示）
+            const projectEmoji = data.projectEmoji ?? '';
+            const projectEmojiDisplay = projectEmoji !== ''
+                ? `<span class="project-emoji" onclick="showEmojiPicker(event, 'project')">${projectEmoji}</span>`
+                : `<span class="project-emoji" onclick="showEmojiPicker(event, 'project')">&nbsp;</span>`;
+            document.getElementById('projectTitle').innerHTML = `${projectEmojiDisplay} ${data.project}`;
+
+            // 更新标题背景色
+            const headerEl = document.querySelector('.header');
+            if (headerEl) {
+                headerEl.style.background = data.headerBg;
+            }
+
+            // 更新CSS变量以同步phase-label的border-left颜色
+            document.documentElement.style.setProperty('--header-bg-color', data.headerBg);
+
+            // 计算周数和统计
+            const weekDates = getWeekDates();
+            const weekCount = weekDates.length;
+
+            // 计算实际时间范围
+            const actualStart = weekDates.length > 0 ? weekDates[0] : parseDate(data.start);
+            const actualEnd = weekDates.length > 0 ? new Date(weekDates[weekDates.length - 1]) : parseDate(data.end);
+            actualEnd.setDate(actualEnd.getDate() + 6); // 最后一周的周日
+
+            const completed = data.tasks.filter(t => t.status === '已完成').length;
+            const inProgress = data.tasks.filter(t => t.status === '进行中').length;
+            const notStarted = data.tasks.filter(t => t.status === '未开始').length;
+
+            // 信息栏 - 显示实际项目周期，emoji可点击（空emoji只占位不显示）
+            const emojis = data.infoBarEmojis || {};
+            const renderEmoji = (key, defaultEmoji) => {
+                const emoji = emojis[key] ?? defaultEmoji;
+                return emoji !== ''
+                    ? `<span class="info-emoji" onclick="showEmojiPicker(event, '${key}')">${emoji}</span>`
+                    : `<span class="info-emoji" onclick="showEmojiPicker(event, '${key}')">&nbsp;</span>`;
+            };
+            document.getElementById('infoBar').innerHTML = `
+                <div class="info-item"><span class="info-label">${renderEmoji('date', '📅')} 项目周期:</span><span class="info-value">${weekCount} 周（${actualStart.toISOString().slice(0,10)} 至 ${actualEnd.toISOString().slice(0,10)}）</span></div>
+                <div class="info-item"><span class="info-label">${renderEmoji('task', '🎯')} 任务数:</span><span class="info-value">${data.tasks.length} 个核心任务</span></div>
+                <div class="info-item"><span class="info-label">${renderEmoji('progress', '📊')} 当前进度:</span><span class="info-value">${completed} 已完成 · ${inProgress} 进行中 · ${notStarted} 未开始</span></div>
+            `;
+
+            // 渲染甘特图 - 统一行结构
+            const wrapper = document.getElementById('ganttWrapper');
+            const gapWidth = 0;
+
+            let html = '';
+
+            // 表头行
+            html += `<div class="gantt-row gantt-row-header"><div class="task-col">任务名称</div><div class="weeks-col" style="background:#ffffff4d;">`;
+            weekDates.forEach((w, i) => {
+                const fri = new Date(w); fri.setDate(fri.getDate() + 4);
+                html += `<div class="week-item">W${i+1}<small>${w.getMonth()+1}.${w.getDate()}-${fri.getMonth()+1}.${fri.getDate()}</small></div>`;
+            });
+            html += `</div></div>`;
+
+            // 按阶段分组渲染（按phaseOrder排序）
+            const phases = getPhasesFromTasks();
+            phases.forEach(([phaseOrder, phaseName], idx) => {
+                const phaseTasks = data.tasks.filter(t => t.phaseOrder === phaseOrder);
+                if (phaseTasks.length === 0) return;
+
+                // 从存储的emoji映射获取，如果没有存储则使用默认
+                const storedEmoji = data.phaseEmojis && data.phaseEmojis[String(phaseOrder)];
+                const emoji = storedEmoji ?? PHASE_EMOJI_MAP[idx % PHASE_EMOJI_MAP.length] ?? '📌';
+                const emojiDisplay = emoji !== ''
+                    ? `<span class="phase-emoji" data-phase-order="${phaseOrder}" onclick="showEmojiPicker(event, ${phaseOrder})">${emoji}</span>`
+                    : `<span class="phase-emoji" data-phase-order="${phaseOrder}" onclick="showEmojiPicker(event, ${phaseOrder})">&nbsp;</span>`;
+
+                // 阶段行 - emoji可点击，只显示emoji和阶段名称
+                html += `<div class="gantt-row gantt-row-phase"><div class="task-col"><div class="phase-label">${emojiDisplay} ${phaseName}</div></div><div class="weeks-col" style="background:transparent;">`;
+                // 渲染week占位元素撑开宽度
+                for (let i = 0; i < weekCount; i++) {
+                    html += `<div class="week-item"></div>`;
+                }
+                html += `</div></div>`;
+
+                phaseTasks.forEach(task => {
+                    const statusClass = task.status === '已完成' ? 'completed' : task.status === '进行中' ? 'inProgress' : 'notStarted';
+                    const barClass = 'bar-' + (task.status === '已完成' ? 'completed' : task.status === '进行中' ? 'in-progress' : 'not-started');
+
+                    // 任务行
+                    html += `<div class="gantt-row gantt-row-task"><div class="task-col">${task.name}<span class="status-badge" style="background:${data.statusColors[statusClass].gradient};">${task.status}</span></div><div class="weeks-col" style="background:#f8f9fa;" data-task-start="${task.start}" data-task-end="${task.end}" data-task-name="${task.name}" data-task-phase="${phaseName}" data-task-status="${task.status}">`;
+
+                    // 渲染week占位元素撑开宽度
+                    for (let i = 0; i < weekCount; i++) {
+                        html += `<div class="week-item"></div>`;
+                    }
+
+                    html += `</div></div>`;
+                });
+            });
+
+            wrapper.innerHTML = html;
+
+            // 统一任务列宽度（取最大宽度）
+            const taskCols = wrapper.querySelectorAll('.task-col');
+            let maxWidth = 0;
+            taskCols.forEach(col => {
+                maxWidth = Math.max(maxWidth, col.scrollWidth);
+            });
+            taskCols.forEach(col => {
+                col.style.width = maxWidth + 'px';
+                col.style.minWidth = maxWidth + 'px';
+            });
+
+            // 渲染任务条（在DOM渲染后计算实际位置）
+            renderTaskBars(weekDates);
+
+            // 更新图例颜色
+            updateLegendColors();
+
+            // 今天标记
+            renderTodayLine(weekDates);
+
+            // 绑定tooltip
+            bindTooltip();
+        }
+
+        function updateLegendColors() {
+            const colors = data.statusColors;
+            document.getElementById('legendCompleted').style.background = colors.completed.gradient;
+            document.getElementById('legendInProgress').style.background = colors.inProgress.gradient;
+            document.getElementById('legendNotStarted').style.background = colors.notStarted.gradient;
+            document.getElementById('legendHeaderBg').style.background = data.headerBg;
+        }
+
+        function renderTaskBars(weekDates) {
+            const weekCount = weekDates.length;
+            const weeksCols = document.querySelectorAll('.gantt-row-task .weeks-col');
+
+            weeksCols.forEach(weeksCol => {
+                const taskStart = weeksCol.dataset.taskStart;
+                const taskEnd = weeksCol.dataset.taskEnd;
+                const taskName = weeksCol.dataset.taskName;
+                const taskPhase = weeksCol.dataset.taskPhase;
+                const taskStatus = weeksCol.dataset.taskStatus;
+
+                if (!taskStart || !taskEnd) return;
+
+                const statusClass = taskStatus === '已完成' ? 'completed' : taskStatus === '进行中' ? 'inProgress' : 'notStarted';
+                const barClass = 'bar-' + (taskStatus === '已完成' ? 'completed' : taskStatus === '进行中' ? 'in-progress' : 'not-started');
+
+                const startIdx = getWeekIndex(taskStart, weekDates);
+                const endIdx = getWeekIndex(taskEnd, weekDates);
+                const days = getDays(taskStart, taskEnd);
+
+                // 获取week-item的实际宽度
+                const weekItems = weeksCol.querySelectorAll('.week-item');
+                if (weekItems.length === 0) return;
+
+                const weekItemWidth = weekItems[0].offsetWidth;
+                const gapWidth = 0;
+                const paddingLeft = 4; // weeks-col的padding-left
+
+                // 计算任务开始日期在周内的偏移（0-6，周一=0）
+                const taskStartDate = parseDate(taskStart);
+                const weekStartDate = weekDates[startIdx];
+                const startOffset = Math.floor((taskStartDate - weekStartDate) / 86400000); // 天数偏移
+                const startPercent = startOffset / 7; // 在周内的位置比例
+
+                // 计算任务结束日期在周内的偏移
+                const taskEndDate = parseDate(taskEnd);
+                const weekEndDate = weekDates[endIdx];
+                const endOffset = Math.floor((taskEndDate - weekEndDate) / 86400000); // 天数偏移
+                const endPercent = (endOffset + 1) / 7; // 结束位置比例（+1是因为要包含结束当天）
+
+                // 计算任务条位置（精确到日）
+                const weekWidthWithGap = weekItemWidth + gapWidth;
+                const barLeft = paddingLeft + startIdx * weekWidthWithGap + startPercent * weekItemWidth;
+                const barRight = paddingLeft + (endIdx + 1) * weekWidthWithGap - gapWidth - (1 - endPercent) * weekItemWidth;
+                const barWidth = barRight - barLeft - 4; // 减去一些边距
+
+                // 计算剩余天数
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const taskEndDateObj = parseDate(taskEnd);
+                const taskStartDateObj = parseDate(taskStart);
+
+                let remainingDays = 0;
+                if (taskStatus === '已完成') {
+                    remainingDays = 0;
+                } else if (today > taskEndDateObj) {
+                    remainingDays = 0;  // 已过期
+                } else if (today < taskStartDateObj) {
+                    remainingDays = days;  // 未开始，剩余全部天数
+                } else {
+                    remainingDays = Math.ceil((taskEndDateObj - today) / 86400000) + 1;  // 包含今天和结束日
+                }
+
+                // 创建任务条
+                const bar = document.createElement('div');
+                bar.className = `task-bar ${barClass}`;
+                bar.style.left = barLeft + 'px';
+                bar.style.width = Math.max(barWidth, 30) + 'px';
+                bar.style.background = data.statusColors[statusClass].gradient;  // 使用自定义颜色
+                bar.dataset.task = taskName;
+                bar.dataset.start = taskStart;
+                bar.dataset.end = taskEnd;
+                bar.dataset.phase = taskPhase;
+                bar.dataset.status = taskStatus;
+
+                // 根据宽度决定显示内容
+                if (barWidth >= 60) {
+                    bar.textContent = `共${days}天/余${remainingDays}天`;
+                } else if (barWidth >= 40) {
+                    bar.textContent = `${days}天/余${remainingDays}天`;
+                } else {
+                    bar.textContent = `余${remainingDays}天`;
+                }
+
+                weeksCol.appendChild(bar);
+            });
+        }
+
+        function renderTodayLine(weekDates) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const wrapper = document.getElementById('ganttWrapper');
+            const container = document.querySelector('.gantt-container');
+            const ganttSection = document.querySelector('.gantt-section');
+            const headerRow = document.querySelector('.gantt-row-header');
+            const taskCol = document.querySelector('.gantt-row-header .task-col');
+            if (!wrapper || !container || !ganttSection || !headerRow || !taskCol) return;
+
+            // 移除旧的today-line和badge
+            const oldLine = wrapper.querySelector('.today-line');
+            if (oldLine) oldLine.remove();
+            const oldPass = wrapper.querySelector('.today-line-pass');
+            if (oldPass) oldPass.remove();
+            const oldBadge = document.getElementById('todayBadge');
+            if (oldBadge) oldBadge.remove();
+
+            const gapWidth = 0;
+
+            // 获取week-item的实际宽度
+            const weeksCol = document.querySelector('.gantt-row-header .weeks-col');
+            const weekItem = weeksCol ? weeksCol.querySelector('.week-item') : null;
+            const weekWidth = weekItem ? weekItem.offsetWidth : 80;
+            const taskColWidth = taskCol.offsetWidth;
+
+            // 找到今天所在的week
+            for (let i = 0; i < weekDates.length; i++) {
+                const ws = new Date(weekDates[i]);
+                ws.setHours(0, 0, 0, 0);
+                const we = new Date(ws);
+                we.setDate(we.getDate() + 6);
+                we.setHours(23, 59, 59, 999);
+
+                if (today >= ws && today <= we) {
+                    const daysIntoWeek = Math.floor((today - ws) / 86400000);
+
+                    // 计算line在wrapper内的绝对位置
+                    const lineLeftPx = taskColWidth + i * (weekWidth + gapWidth) + (daysIntoWeek / 7) * weekWidth;
+
+                    // 经线从header下方开始，到wrapper底部
+                    const headerHeight = headerRow.offsetHeight;
+                    const line = document.createElement('div');
+                    line.className = 'today-line';
+                    line.style.left = lineLeftPx + 'px';
+                    line.style.top = headerHeight + 'px';
+                    line.style.height = (wrapper.scrollHeight - headerHeight) + 'px';
+                    line.id = 'todayLine';
+                    wrapper.appendChild(line);
+
+                    // 透明感应区域（更大范围便于悬停）
+                    const pass = document.createElement('div');
+                    pass.className = 'today-line-pass';
+                    pass.style.left = (lineLeftPx - 10) + 'px';
+                    pass.style.top = headerHeight + 'px';
+                    pass.style.height = (wrapper.scrollHeight - headerHeight) + 'px';
+                    pass.style.width = '22px';
+                    pass.id = 'todayLinePass';
+                    wrapper.appendChild(pass);
+
+                    // 添加今天标签
+                    const badge = document.createElement('div');
+                    badge.className = 'today-badge';
+                    badge.textContent = `今天${today.getDate()}日`;
+                    badge.id = 'todayBadge';
+                    ganttSection.appendChild(badge);
+
+                    // 鼠标悬停显示/隐藏badge
+                    pass.addEventListener('mouseenter', () => {
+                        badge.classList.add('visible');
+                    });
+                    pass.addEventListener('mouseleave', () => {
+                        badge.classList.remove('visible');
+                    });
+
+                    // 更新位置（考虑滚动）
+                    function updatePosition() {
+                        const scrollLeft = container.scrollLeft;
+                        const lineVisualLeft = lineLeftPx - scrollLeft;
+
+                        // 获取container的viewport位置
+                        const containerRect = container.getBoundingClientRect();
+
+                        // 当被taskCol遮挡时隐藏
+                        if (lineVisualLeft < taskColWidth) {
+                            line.style.opacity = '0';
+                            pass.style.display = 'none';
+                            badge.classList.remove('visible');
+                        } else {
+                            line.style.opacity = '1';
+                            pass.style.display = 'block';
+                            pass.style.left = (lineVisualLeft - 10) + 'px';
+                            // badge贴在container上方，水平对齐line
+                            badge.style.left = (containerRect.left + lineVisualLeft - badge.offsetWidth / 2) + 'px';
+                            badge.style.top = (containerRect.top - 22) + 'px';
+                        }
+                    }
+
+                    // 绑定事件
+                    container.onscroll = updatePosition;
+                    window.addEventListener('scroll', updatePosition);
+                    window.addEventListener('resize', updatePosition);
+
+                    // 初始更新
+                    requestAnimationFrame(updatePosition);
+                    break;
+                }
+            }
+        }
+
+        function bindTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            document.querySelectorAll('.task-bar').forEach(bar => {
+                bar.addEventListener('mouseenter', e => {
+                    const task = bar.dataset.task;
+                    const days = getDays(bar.dataset.start, bar.dataset.end);
+                    tooltip.innerHTML = `<h4>${task}</h4><p><strong>阶段:</strong> ${bar.dataset.phase}</p><p><strong>开始:</strong> ${bar.dataset.start}</p><p><strong>结束:</strong> ${bar.dataset.end}</p><p><strong>持续:</strong> ${days} 天</p>`;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                });
+                bar.addEventListener('mousemove', e => {
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY + 15) + 'px';
+                });
+                bar.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+            });
+        }
+
+        // 更新数据
+        function updateProject(key, value) {
+            data[key] = value;
+            save();
+        }
+
+        function updateTask(idx, key, value) {
+            data.tasks[idx][key] = value;
+            save();
+        }
+
+        // emoji选择器
+        let currentEmojiTarget = null;  // 记录当前选择的目标
+
+        function showEmojiPicker(event, target) {
+            event.stopPropagation();
+            currentEmojiTarget = target;
+            const picker = document.getElementById('emojiPicker');
+            const grid = document.getElementById('emojiGrid');
+
+            // 获取当前emoji
+            let currentEmoji = '';
+            if (target === 'project') {
+                currentEmoji = data.projectEmoji ?? '🎯';
+            } else if (target === 'date' || target === 'task' || target === 'progress') {
+                currentEmoji = (data.infoBarEmojis && data.infoBarEmojis[target]) ?? '📅';
+            } else {
+                // 阶段emoji（phaseOrder是数字）
+                currentEmoji = (data.phaseEmojis && data.phaseEmojis[String(target)]) ?? '📌';
+            }
+
+            // 渲染emoji选项（第一个是"无"）
+            grid.innerHTML = EMOJI_OPTIONS.map((emoji, idx) => {
+                const display = idx === 0 ? '无' : emoji;
+                const isSelected = emoji === currentEmoji;
+                const isEmptyClass = idx === 0 ? 'empty' : '';
+                return `<div class="emoji-option ${isEmptyClass} ${isSelected ? 'selected' : ''}" onclick="selectEmoji('${emoji}')">${display}</div>`;
+            }).join('');
+
+            // 定位选择器
+            const rect = event.target.getBoundingClientRect();
+            picker.style.left = rect.left + 'px';
+            picker.style.top = (rect.bottom + 8) + 'px';
+            picker.style.display = 'block';
+        }
+
+        function selectEmoji(emoji) {
+            if (currentEmojiTarget === 'project') {
+                data.projectEmoji = emoji;
+            } else if (currentEmojiTarget === 'date' || currentEmojiTarget === 'task' || currentEmojiTarget === 'progress') {
+                if (!data.infoBarEmojis) data.infoBarEmojis = {};
+                data.infoBarEmojis[currentEmojiTarget] = emoji;
+            } else {
+                // 阶段emoji
+                if (!data.phaseEmojis) data.phaseEmojis = {};
+                data.phaseEmojis[String(currentEmojiTarget)] = emoji;
+            }
+            localStorage.setItem('ganttData', JSON.stringify(data));
+
+            // 隐藏选择器并重新渲染
+            document.getElementById('emojiPicker').style.display = 'none';
+            render();
+        }
+
+        // 点击其他区域关闭选择器
+        document.addEventListener('click', (e) => {
+            const emojiPicker = document.getElementById('emojiPicker');
+            const colorPicker = document.getElementById('colorPicker');
+            const fontPicker = document.getElementById('fontPicker');
+            const isEmoji = e.target.classList.contains('phase-emoji') ||
+                           e.target.classList.contains('project-emoji') ||
+                           e.target.classList.contains('info-emoji');
+            const isColor = e.target.classList.contains('legend-color') ||
+                           e.target.classList.contains('color-option');
+            const isFont = e.target.classList.contains('font-btn') ||
+                           e.target.classList.contains('font-option');
+
+            if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && !isEmoji) {
+                emojiPicker.style.display = 'none';
+            }
+            if (colorPicker.style.display === 'block' && !colorPicker.contains(e.target) && !isColor) {
+                colorPicker.style.display = 'none';
+            }
+            if (fontPicker.style.display === 'block' && !fontPicker.contains(e.target) && !isFont) {
+                fontPicker.style.display = 'none';
+            }
+        });
+
+        // 颜色选择器
+        let currentColorTarget = null;
+
+        function showColorPicker(event, target) {
+            event.stopPropagation();
+            currentColorTarget = target;
+            const picker = document.getElementById('colorPicker');
+            const grid = document.getElementById('colorGrid');
+
+            // 获取当前颜色，区分headerBg和statusColors
+            const currentColor = target === 'headerBg' ? data.headerBg : data.statusColors[target].gradient;
+
+            grid.innerHTML = COLOR_OPTIONS.map((color, idx) => {
+                const isSelected = color.gradient === currentColor;
+                return `<div class="color-option ${isSelected ? 'selected' : ''}" style="background:${color.gradient};" onclick="selectColor(${idx})"></div>`;
+            }).join('');
+
+            // 显示弹窗以获取高度
+            picker.style.display = 'block';
+            picker.style.left = '-9999px';
+            picker.style.top = '-9999px';
+
+            const rect = event.target.getBoundingClientRect();
+            const pickerHeight = picker.offsetHeight;
+            const windowHeight = window.innerHeight;
+
+            // 判断是否在底部，如果是则向上弹出
+            if (rect.bottom + pickerHeight + 20 > windowHeight) {
+                picker.style.left = rect.left + 'px';
+                picker.style.top = (rect.top - pickerHeight - 8) + 'px';
+            } else {
+                picker.style.left = rect.left + 'px';
+                picker.style.top = (rect.bottom + 8) + 'px';
+            }
+        }
+
+        function selectColor(idx) {
+            const color = COLOR_OPTIONS[idx];
+            if (currentColorTarget === 'headerBg') {
+                data.headerBg = color.gradient;
+            } else {
+                data.statusColors[currentColorTarget] = { bg: color.bg, gradient: color.gradient };
+            }
+            localStorage.setItem('ganttData', JSON.stringify(data));
+            document.getElementById('colorPicker').style.display = 'none';
+            render();
+        }
+
+        // 字体选择器
+        function showFontPicker(event) {
+            event.stopPropagation();
+            const picker = document.getElementById('fontPicker');
+            const systemList = document.getElementById('fontListSystem');
+            const webList = document.getElementById('fontListWeb');
+
+            // 渲染系统字体
+            systemList.innerHTML = SYSTEM_FONTS.map((font, idx) => {
+                const isSelected = font.value === data.fontFamily;
+                return `<div class="font-option ${isSelected ? 'selected' : ''}" data-font-idx="${idx}" data-font-type="system">
+                    <span>${font.name}</span>
+                    <span class="font-preview" style="font-family:${font.value};">${font.preview}</span>
+                </div>`;
+            }).join('');
+
+            // 渲染在线字体
+            webList.innerHTML = WEB_FONTS.map((font, idx) => {
+                const isSelected = font.value === data.fontFamily;
+                return `<div class="font-option ${isSelected ? 'selected' : ''}" data-font-idx="${idx}" data-font-type="web">
+                    <span>${font.name}</span>
+                    <span class="font-preview" style="font-family:${font.value};">${font.preview}</span>
+                </div>`;
+            }).join('');
+
+            // 显示弹窗
+            picker.style.display = 'block';
+            picker.style.left = '-9999px';
+            picker.style.top = '-9999px';
+
+            const rect = event.target.getBoundingClientRect();
+            const pickerWidth = picker.offsetWidth;
+            const pickerHeight = picker.offsetHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            // 计算位置，确保不超出屏幕
+            let left = rect.left;
+            if (left + pickerWidth > windowWidth - 20) {
+                left = windowWidth - pickerWidth - 20;
+            }
+
+            let top = rect.bottom + 8;
+            if (top + pickerHeight > windowHeight - 20) {
+                top = rect.top - pickerHeight - 8;
+            }
+
+            picker.style.left = left + 'px';
+            picker.style.top = top + 'px';
+
+            // 添加点击事件监听
+            picker.querySelectorAll('.font-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const idx = parseInt(option.dataset.fontIdx);
+                    const type = option.dataset.fontType;
+                    const font = type === 'system' ? SYSTEM_FONTS[idx] : WEB_FONTS[idx];
+                    data.fontFamily = font.value;
+                    localStorage.setItem('ganttData', JSON.stringify(data));
+                    picker.style.display = 'none';
+                    applyFont();
+                });
+            });
+        }
+
+        function applyFont() {
+            const pageWrapper = document.querySelector('.page-wrapper');
+            if (pageWrapper) {
+                pageWrapper.style.fontFamily = data.fontFamily;
+            }
+            // 直接设置所有主要区域的字体
+            document.querySelectorAll('.help-section, .editor-section, .gantt-section').forEach(el => {
+                el.style.fontFamily = data.fontFamily;
+            });
+        }
+
+        // 监听项目设置变化
+        document.getElementById('projectName').addEventListener('change', e => updateProject('project', e.target.value));
+        document.getElementById('projectStart').addEventListener('change', e => updateProject('start', e.target.value));
+        document.getElementById('projectEnd').addEventListener('change', e => updateProject('end', e.target.value));
+
+        // 使用说明展开/折叠
+        function toggleHelp() {
+            const section = document.getElementById('helpSection');
+            const toggle = document.getElementById('helpToggle');
+            const content = document.getElementById('helpContent');
+            if (section.classList.contains('collapsed')) {
+                section.classList.remove('collapsed');
+                content.style.display = 'flex';
+                toggle.textContent = '折叠';
+            } else {
+                section.classList.add('collapsed');
+                content.style.display = 'none';
+                toggle.textContent = '展开';
+            }
+        }
+
+        // 编辑区展开/折叠
+        function toggleEditor() {
+            const section = document.getElementById('editorSection');
+            const toggle = document.getElementById('editorToggle');
+            const content = document.getElementById('editorContent');
+            if (section.classList.contains('collapsed')) {
+                section.classList.remove('collapsed');
+                content.style.display = 'block';
+                toggle.textContent = '折叠';
+            } else {
+                section.classList.add('collapsed');
+                content.style.display = 'none';
+                toggle.textContent = '展开';
+            }
+        }
+
+        // 初始化
+        render();
+        applyFont();
+    </script>
+    </div>
+</body>
+</html>
