@@ -1,0 +1,2467 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>花名册生成员工数据看板</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- 新增html2canvas库用于网页截图 -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C',
+                        light: '#F2F3F5',
+                        dark: '#1D2129'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            }
+            .gradient-bg {
+                background: linear-gradient(135deg, #165DFF 0%, #0E42D2 100%);
+            }
+            .upload-active {
+                border-color: #165DFF;
+                background-color: rgba(22, 93, 255, 0.05);
+            }
+            .btn-disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            .stat-card {
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .stat-card:hover {
+                transform: translateY(-6px);
+            }
+            .stat-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 0;
+                border-radius: 0 4px 4px 0;
+                transition: height 0.4s ease;
+            }
+            .stat-card:hover::before {
+                height: 100%;
+            }
+            .pulse-animation {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(22, 93, 255, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(22, 93, 255, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(22, 93, 255, 0);
+                }
+            }
+            /* 截图加载中遮罩 - 修改为body外部容器 */
+            .screenshot-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.7);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+                color: white;
+            }
+            /* 呼吸效果动画 */
+            @keyframes breathing {
+                0% { opacity: 0.6; transform: scale(1); }
+                50% { opacity: 1; transform: scale(1.05); }
+                100% { opacity: 0.6; transform: scale(1); }
+            }
+            .editing-breathing-bg {
+                animation: breathing 2s ease-in-out infinite;
+            }
+            /* 字段映射样式 */
+            .mapping-container {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .mapping-item {
+                transition: all 0.2s ease;
+            }
+            .mapping-item:hover {
+                background-color: rgba(22, 93, 255, 0.03);
+            }
+            .field-match {
+                background-color: rgba(0, 180, 42, 0.1);
+                border-left: 3px solid #00B42A;
+            }
+            .field-warning {
+                background-color: rgba(255, 125, 0, 0.1);
+                border-left: 3px solid #FF7D00;
+            }
+            .date-example {
+                font-family: monospace;
+                background-color: rgba(0, 0, 0, 0.05);
+                padding: 0 3px;
+                border-radius: 2px;
+                font-size: 12px;
+            }
+            /* 上传区域反馈样式 */
+            .upload-feedback {
+                margin-top: 1rem;
+                padding: 0.75rem;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                display: none;
+            }
+            .upload-success {
+                background-color: rgba(0, 180, 42, 0.1);
+                color: #00B42A;
+                display: block;
+            }
+            .upload-error {
+                background-color: rgba(245, 63, 63, 0.1);
+                color: #F53F3F;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-users text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-dark">员工数据看板</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- 新增：刷新网页按钮 -->
+                <button id="resetPageBtn" class="text-gray-500 hover:text-primary transition-colors flex items-center hidden">
+                    <i class="fa fa-refresh mr-1"></i>
+                    <span>返回</span>
+                </button>
+                <button id="refreshBtn" class="text-gray-500 hover:text-primary transition-colors hidden flex items-center">
+                          <!-- <i class="fa fa-refresh mr-1"></i>
+                        <span>重新生成</span>-->
+                </button>
+                <button id="exportBtn" class="text-gray-500 hover:text-primary transition-colors hidden flex items-center">
+                    <i class="fa fa-download mr-1"></i>
+                    <span>下载为图片</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-6 flex-1">
+        <!-- 上传区域 -->
+        <section id="uploadSection" class="py-12">
+            <div class="max-w-3xl mx-auto text-center mb-8">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-3">打开花名册生成员工数据看板</h2>
+                <p class="text-info">支持Excel、CSV格式文件，数据不会上传，本地生成图表</p>
+                 <p class="text-info">没有花名册文件？可以下载<a href="https://gh-proxy.com/https://github.com/Harteyang/hrtools/raw/refs/heads/main/%E8%8A%B1%E5%90%8D%E5%86%8C%E6%A8%A1%E7%89%88.xlsx" class="text-primary hover:underline">模板文件</a>填写示例数据</p>
+            </div>
+            
+            <!-- 拖放上传区域 -->
+            <div id="dropArea" class="max-w-3xl mx-auto border-2 border-dashed border-gray-300 rounded-xl p-10 transition-all duration-300 hover:border-primary/50 cursor-pointer">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-cloud-upload text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">拖放花名册文件到此处</h3>
+                    <p class="text-info text-sm mb-6">或点击选择文件</p>
+                    
+                    <label class="inline-block bg-primary text-white px-6 py-3 rounded-lg font-medium cursor-pointer hover:bg-primary/90 transition-colors pulse-animation" onclick="event.stopPropagation()">
+                        <i class="fa fa-file-excel-o mr-2"></i>选择花名册文件
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
+                    </label>
+                    
+                    <p class="text-xs text-info mt-6">
+                        <i class="fa fa-info-circle mr-1"></i> 支持格式: .xlsx, .xls, .csv | 最大文件大小: 10MB
+                        <br><i class="fa fa-info-circle mr-1"></i> 支持多种表头名称和日期格式（如：<span class="date-example">2023/12/31</span>、<span class="date-example">31-12-2023</span>、<span class="date-example">2023年12月31日</span>）
+                    </p>
+                    
+                    <!-- 上传反馈信息 -->
+                    <div id="uploadFeedback" class="upload-feedback"></div>
+                </div>
+            </div>
+            
+            <!-- 上传示例和表头说明已移除 -->
+            <div class="max-w-3xl mx-auto mt-8 text-center">
+                <p class="text-sm text-info mb-3">使用问题请联系作者：<a href="https://gh-proxy.com/https://raw.githubusercontent.com/Harteyang/hrtools/refs/heads/main/mmqrcode1756259553723_edit_1506609644841054-min-min.jpg" target="_blank" class="text-primary hover:underline cursor-pointer">微信二维码</a></p>
+            </div>
+        </section>
+        
+        <!-- 字段映射区域 -->
+        <section id="mappingSection" class="py-12 hidden">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold text-dark mb-6 text-center">字段映射</h2>
+                <p class="text-info text-center mb-8">系统已自动匹配字段，如有需要请调整</p>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow mapping-container">
+                    <div id="mappingItems">
+                        <!-- 动态生成字段映射项 -->
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button id="cancelMappingBtn" class="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        取消
+                    </button>
+                    <button id="confirmMappingBtn" class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                        确认并生成看板
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 加载中状态 -->
+        <section id="loadingSection" class="py-20 hidden">
+            <div class="text-center max-w-md mx-auto">
+                <div class="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-6"></div>
+                <h3 class="text-lg font-medium mb-2">正在处理您的花名册数据</h3>
+                <p class="text-info text-sm" id="loadingMessage">正在解析文件内容...</p>
+            </div>
+        </section>
+        
+        <!-- 错误提示区域 -->
+        <section id="errorSection" class="py-16 hidden">
+            <div class="max-w-md mx-auto bg-danger/10 border border-danger/20 rounded-xl p-6 text-center">
+                <div class="w-12 h-12 bg-danger/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa fa-exclamation-triangle text-danger text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-danger mb-2" id="errorTitle">数据格式不正确</h3>
+                <p class="text-info text-sm mb-4" id="errorMessage">发现以下数据问题，请检查并修正后重试</p>
+                
+                <div id="errorDetails" class="text-left bg-white p-4 rounded-lg text-sm mb-6 hidden">
+                    <h4 class="font-medium text-danger mb-2">问题详情：</h4>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1" id="errorDetailsList">
+                        <!-- 动态填充错误详情 -->
+                    </ul>
+                </div>
+                
+                <button id="retryBtn" class="bg-white border border-primary text-primary px-5 py-2 rounded-lg font-medium hover:bg-primary/5 transition-colors">
+                    重新打开
+                </button>
+            </div>
+        </section>
+        
+        <!-- 仪表板区域 -->
+        <section id="dashboardSection" class="hidden">
+            <!-- 重要声明 -->
+            <div class="bg-warning/10 border-l-4 border-warning p-4 mb-6 rounded-r flex items-start animate-fade-in" id="importantNote">
+                <i class="fa fa-exclamation-triangle text-warning mt-1 mr-3"></i>
+                <p class="text-sm text-gray-700">
+                    <strong>重要说明：</strong>员工数据看板基于您选择的花名册本地生成，不会上传任何服务器。
+                </p>
+                <button id="hideNoteBtn" class="ml-auto text-warning hover:text-warning/80 transition-colors">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <!-- 关键指标卡片 -->
+            <section id="kpiCardsSection" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+                <!-- 在职员工人数 -->
+                <div class="bg-white rounded-xl p-5 card-shadow stat-card relative overflow-hidden" id="totalEmployeesCard">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="text-info text-sm">总在职员工人数</p>
+                            <h3 class="text-3xl font-bold text-primary mt-1" id="totalEmployees">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <i class="fa fa-user-circle"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-info flex items-center">
+                        <i class="fa fa-calendar-o mr-1"></i> 数据更新于 <span id="dataUpdateTime">--</span>
+                    </p>
+                    <button class="hide-item-btn text-xs text-gray-400 hover:text-gray-600 transition-colors absolute bottom-3 right-3 opacity-70 hover:opacity-100" data-target="totalEmployeesCard">
+                        <i class="fa fa-times"></i> 
+                    </button>
+                    <style>
+                        #totalEmployeesCard::before {
+                            background-color: #165DFF;
+                        }
+                    </style>
+                </div>
+
+                <!-- 最近7天入职 -->
+                <div class="bg-white rounded-xl p-5 card-shadow stat-card relative overflow-hidden" id="newHiresCard">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="text-info text-sm">最近7天入职</p>
+                            <h3 class="text-3xl font-bold text-success mt-1" id="newHiresThisWeek">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success">
+                            <i class="fa fa-plus-circle"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-success flex items-center mt-2" id="newHiresTrend">
+                        <i class="fa fa-arrow-up mr-1"></i> 较上期变化 --
+                    </p>
+                    <button class="hide-item-btn text-xs text-gray-400 hover:text-gray-600 transition-colors absolute bottom-3 right-3 opacity-70 hover:opacity-100" data-target="newHiresCard">
+                        <i class="fa fa-times"></i> 
+                    </button>
+                    <style>
+                        #newHiresCard::before {
+                            background-color: #00B42A;
+                        }
+                    </style>
+                </div>
+
+                <!-- 最近7天离职 -->
+                <div class="bg-white rounded-xl p-5 card-shadow stat-card relative overflow-hidden" id="resignationsCard">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="text-info text-sm">最近7天离职</p>
+                            <h3 class="text-3xl font-bold text-danger mt-1" id="resignationsThisWeek">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center text-danger">
+                            <i class="fa fa-minus-circle"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-danger flex items-center mt-2" id="resignationsTrend">
+                        <i class="fa fa-arrow-down mr-1"></i> 较上期变化 --
+                    </p>
+                    <button class="hide-item-btn text-xs text-gray-400 hover:text-gray-600 transition-colors absolute bottom-3 right-3 opacity-70 hover:opacity-100" data-target="resignationsCard">
+                        <i class="fa fa-times"></i> 
+                    </button>
+                    <style>
+                        #resignationsCard::before {
+                            background-color: #F53F3F;
+                        }
+                    </style>
+                </div>
+
+                <!-- 试用期人数 -->
+                <div class="bg-white rounded-xl p-5 card-shadow stat-card relative overflow-hidden" id="probationCard">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="text-info text-sm">试用期人数</p>
+                            <h3 class="text-3xl font-bold text-warning mt-1" id="probationEmployees">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+                            <i class="fa fa-clock-o"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-info flex items-center mt-2" id="probationPercentage">
+                        <i class="fa fa-percent mr-1"></i> 占总人数0.00%
+                    </p>
+                    <button class="hide-item-btn text-xs text-gray-400 hover:text-gray-600 transition-colors absolute bottom-3 right-3 opacity-70 hover:opacity-100" data-target="probationCard">
+                        <i class="fa fa-times"></i> 
+                    </button>
+                    <style>
+                        #probationCard::before {
+                            background-color: #FF7D00;
+                        }
+                    </style>
+                </div>
+
+                <!-- 实习生人数 -->
+                <div class="bg-white rounded-xl p-5 card-shadow stat-card relative overflow-hidden" id="internCard">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <p class="text-info text-sm">实习生人数</p>
+                            <h3 class="text-3xl font-bold text-secondary mt-1" id="internEmployees">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                            <i class="fa fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-info flex items-center mt-2" id="internPercentage">
+                        <i class="fa fa-percent mr-1"></i> 占总人数0.00%
+                    </p>
+                    <button class="hide-item-btn text-xs text-gray-400 hover:text-gray-600 transition-colors absolute bottom-3 right-3 opacity-70 hover:opacity-100" data-target="internCard">
+                        <i class="fa fa-times"></i> 
+                    </button>
+                    <style>
+                        #internCard::before {
+                            background-color: #722ED1;
+                        }
+                    </style>
+                </div>
+            </section>
+
+            <!-- 部门员工人数 -->
+            <section id="departmentSection" class="bg-white rounded-xl p-5 mb-8 card-shadow transition-all duration-700 opacity-0 translate-y-4 opacity-100 translate-y-0">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold">部门员工人数分布</h2>
+                    <div class="flex space-x-2">
+                        <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fa fa-times mr-1"></i> 
+                        </button>
+                    </div>
+                </div>
+                <div class="h-80">
+                    <div id="departmentChart" class="w-full h-full"></div>
+                </div>
+            </section>
+
+            <!-- 中间图表区域 -->
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- 不同类型的员工数量 -->
+                <div id="employeeTypeSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">员工类型分布</h2>
+                        <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="employeeTypeSection">
+                            <i class="fa fa-times mr-1"></i> 
+                        </button>
+                    </div>
+                    <div class="h-64">
+                        <div id="employeeTypeChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+
+                <!-- 员工工作城市情况 -->
+                <div id="cityDistributionSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">员工工作城市分布</h2>
+                        <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="cityDistributionSection">
+                            <i class="fa fa-times mr-1"></i> 
+                        </button>
+                    </div>
+                    <div class="h-64 flex items-center justify-center">
+                        <div id="cityDistributionChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+
+                <!-- 各岗位类别员工人数 -->
+                <div id="positionSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4 opacity-100 translate-y-0">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">岗位类别分布</h2>
+                        <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="positionSection">
+                            <i class="fa fa-times mr-1"></i> 
+                        </button>
+                    </div>
+                    <div class="h-64">
+                        <div id="positionChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 管理者和司龄分布 -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 管理者下辖人数TOP10 -->
+                <div id="managerListSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">管理者下辖人数TOP10</h2>
+                        <div class="flex space-x-2">
+                            <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="managerListSection">
+                                <i class="fa fa-times mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div id="managerList" class="space-y-4">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+
+                <!-- 司龄分布情况 -->
+                <div id="tenureSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">司龄分布情况</h2>
+                        <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="tenureSection">
+                            <i class="fa fa-times mr-1"></i> 
+                        </button>
+                    </div>
+                    <div class="h-64 flex items-center justify-center">
+                        <div id="tenureChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 入职和离职趋势 -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 每月入职人数趋势 - 同时显示正式员工和实习生 -->
+                <div id="hireTrendSection" class="bg-white rounded-xl p-5 card-shadow shadow transition-all duration-700 opacity-0 translate-y-4 opacity-100 translate-y-0">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">每月入职人数趋势</h2>
+                        <div class="flex space-x-2">
+                            <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="hireTrendSection">
+                                <i class="fa fa-times mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <div id="hireTrendChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+
+                <!-- 每月离职趋势 -->
+                <div id="resignTrendSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">每月离职趋势</h2>
+                        <div class="flex space-x-2">
+                            <button class="text-xs text-info hover:underline"></button>
+                            <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="resignTrendSection">
+                                <i class="fa fa-times mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <div id="resignTrendChart" class="w-full h-full"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 离职数据统计 -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 离职岗位TOP10 -->
+                <div id="departurePositionsSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">离职岗位TOP10</h2>
+                        <div class="flex space-x-2">
+                            <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="departurePositionsSection">
+                                <i class="fa fa-times mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div id="departurePositions" class="space-y-4">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+
+                <!-- 离职实习生人数最多管理者TOP10 -->
+                <div id="internDepartureManagersSection" class="bg-white rounded-xl p-5 card-shadow transition-all duration-700 opacity-0 translate-y-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-bold">离职实习生人数最多管理者TOP10</h2>
+                        <div class="flex space-x-2">
+                            <button class="hide-section-btn text-xs text-gray-400 hover:text-gray-600 transition-colors" data-target="internDepartureManagersSection">
+                                <i class="fa fa-times mr-1"></i> 
+                            </button>
+                        </div>
+                    </div>
+                    <div id="internDepartureManagers" class="space-y-4">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center text-sm text-info">
+            <p>© 2025 员工信息管理系统 版权所有</p>
+            <p class="mt-1">本系统仅用于内部管理，数据安全由用户负责</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量存储员工数据和字段映射
+        let employeeData = [];
+        let charts = {}; // 存储所有ECharts实例
+        let fieldMapping = {}; // 存储字段映射关系
+        let rawHeaders = []; // 存储原始表头
+        
+        // DOM元素
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const mappingSection = document.getElementById('mappingSection');
+        const loadingSection = document.getElementById('loadingSection');
+        const errorSection = document.getElementById('errorSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorDetails = document.getElementById('errorDetails');
+        const errorDetailsList = document.getElementById('errorDetailsList');
+        const retryBtn = document.getElementById('retryBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const resetPageBtn = document.getElementById('resetPageBtn');
+        const importantNote = document.getElementById('importantNote');
+        const hideNoteBtn = document.getElementById('hideNoteBtn');
+        const mappingItems = document.getElementById('mappingItems');
+        const confirmMappingBtn = document.getElementById('confirmMappingBtn');
+        const cancelMappingBtn = document.getElementById('cancelMappingBtn');
+        const uploadFeedback = document.getElementById('uploadFeedback'); // 上传反馈元素
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 重要说明隐藏按钮事件
+            hideNoteBtn.addEventListener('click', function() {
+                importantNote.classList.add('hidden');
+            });
+            
+            // 文件拖放事件
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('upload-active');
+                showUploadFeedback('请释放文件以上传', false);
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('upload-active');
+                // 只有在不是drop事件时才清除反馈
+                if (event.type !== 'drop') {
+                    clearUploadFeedback();
+                }
+            }
+            
+            // 处理文件拖放
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            // 处理文件选择
+            fileInput.addEventListener('change', handleFiles, false);
+            
+            // 点击上传区域也触发文件选择 - 修改此处避免重复触发
+            dropArea.addEventListener('click', function(e) {
+                // 检查点击目标是否是label或其内部元素
+                const label = e.target.closest('label[for="fileInput"]');
+                if (!label) {
+                    // 只有点击非label区域才触发文件选择
+                    fileInput.click();
+                }
+            });
+            
+            // 重试按钮
+            retryBtn.addEventListener('click', showUploadSection);
+            
+            // 取消映射按钮
+            cancelMappingBtn.addEventListener('click', showUploadSection);
+            
+            // 确认映射按钮
+            confirmMappingBtn.addEventListener('click', processMappedData);
+            
+            // 刷新按钮（重新生成）
+            refreshBtn.addEventListener('click', () => {
+                showLoadingSection('正在重新生成仪表板...');
+                setTimeout(() => {
+                    generateDashboard();
+                    showDashboardSection();
+                }, 800);
+            });
+            
+            // 刷新页面按钮事件 - 回到上传表格页面
+            resetPageBtn.addEventListener('click', () => {
+                // 显示确认对话框
+                if (confirm('确定要刷新页面并返回吗？当前数据将被清除。')) {
+                    // 重置应用状态
+                    employeeData = [];
+                    // 清除现有图表
+                    Object.values(charts).forEach(chart => {
+                        echarts.dispose(chart);
+                    });
+                    charts = {};
+                    // 重置文件输入
+                    fileInput.value = '';
+                    // 显示上传区域
+                    showUploadSection();
+                    // 重新生成和导出按钮
+                    refreshBtn.classList.add('hidden');
+                    exportBtn.classList.add('hidden');
+                    resetPageBtn.classList.add('hidden');
+                }
+            });
+            
+            // 导出按钮 - 下载整个页面为PNG图片
+            exportBtn.addEventListener('click', downloadPageAsImage);
+            
+            // 为所有按钮添加事件监听
+            document.querySelectorAll('.hide-section-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 获取目标区域ID，如果按钮有data-target属性则使用，否则使用父级section
+                    const targetId = this.getAttribute('data-target') || this.closest('section').id;
+                    const targetSection = document.getElementById(targetId);
+                    
+                    if (targetSection) {
+                        toggleSection(targetSection, this);
+                    }
+                });
+            });
+            
+            // 为关键指标项的按钮添加事件监听
+            document.querySelectorAll('.hide-item-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetItem = document.getElementById(targetId);
+                    
+                    if (targetItem) {
+                        toggleItem(targetItem, this);
+                        // 添加/显示动画
+                        if (targetItem.classList.contains('hidden')) {
+                            targetItem.style.height = '0';
+                            targetItem.style.margin = '0';
+                            targetItem.style.padding = '0';
+                            targetItem.style.overflow = 'hidden';
+                        } else {
+                            targetItem.style.height = '';
+                            targetItem.style.margin = '';
+                            targetItem.style.padding = '';
+                            targetItem.style.overflow = '';
+                        }
+                    }
+                });
+            });
+            
+            // 窗口大小变化时重绘图表
+            window.addEventListener('resize', () => {
+                Object.values(charts).forEach(chart => {
+                    chart.resize();
+                });
+            });
+        }
+        
+        // 上传反馈函数
+        function showUploadFeedback(message, isError = false) {
+            uploadFeedback.textContent = message;
+            if (isError) {
+                uploadFeedback.classList.remove('upload-success');
+                uploadFeedback.classList.add('upload-error');
+            } else {
+                uploadFeedback.classList.remove('upload-error');
+                uploadFeedback.classList.add('upload-success');
+            }
+        }
+        
+        // 清除上传反馈
+        function clearUploadFeedback() {
+            uploadFeedback.textContent = '';
+            uploadFeedback.classList.remove('upload-success', 'upload-error');
+        }
+        
+        // 下载整个页面为PNG图片
+        function downloadPageAsImage() {
+            // 创建一个独立于body的容器来放置加载提示
+            const overlayContainer = document.createElement('div');
+            document.documentElement.appendChild(overlayContainer); // 添加到html根元素
+            
+            // 创建加载中遮罩
+            const overlay = document.createElement('div');
+            overlay.className = 'screenshot-overlay';
+            overlay.innerHTML = `
+                <div class="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mb-6 editing-breathing-bg"></div>
+                <h3 class="text-lg font-medium mb-2">正在生成页面截图...</h3>
+                <p class="text-sm text-gray-300">请稍候，这可能需要几秒钟时间</p>
+            `;
+            overlayContainer.appendChild(overlay);
+            
+            // 滚动到页面顶部以确保完整截图
+            window.scrollTo(0, 0);
+            
+            // 使用html2canvas捕获整个页面，但排除overlayContainer
+            html2canvas(document.body, {
+                scale: 2, // 增加缩放比例以提高图片质量
+                useCORS: true, // 允许跨域图片
+                logging: false,
+                letterRendering: true,
+                scrollX: 0,
+                scrollY: 0,
+                ignoreElements: (element) => {
+                    // 排除我们的加载提示容器
+                    return element === overlayContainer;
+                }
+            }).then(canvas => {
+                // 移除加载遮罩及其容器
+                document.documentElement.removeChild(overlayContainer);
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `员工信息仪表板_${new Date().toLocaleDateString().replace(/\//g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(error => {
+                // 移除加载遮罩及其容器
+                document.documentElement.removeChild(overlayContainer);
+                
+                // 显示错误信息
+                alert('截图生成失败: ' + error.message);
+                console.error('截图错误:', error);
+            });
+        }
+        
+        // 切换区域显示/状态
+        function toggleSection(section, button) {
+            if (section.classList.contains('hidden')) {
+                // 显示区域
+                section.classList.remove('hidden');
+                // 添加淡入动画
+                section.classList.add('animate-fade-in');
+                setTimeout(() => {
+                    section.classList.remove('animate-fade-in');
+                    // 重绘图表以适应新尺寸
+                    const chartId = section.querySelector('[id$="Chart"]')?.id;
+                    if (chartId && charts[chartId]) {
+                        charts[chartId].resize();
+                    }
+                }, 500);
+                // 更新按钮图标和文本
+                if (button) {
+                    button.innerHTML = '<i class="fa fa-times mr-1"></i> ';
+                }
+            } else {
+                // 区域
+                section.classList.add('hidden');
+                // 更新按钮图标和文本
+                if (button) {
+                    button.innerHTML = '<i class="fa fa-plus mr-1"></i> 显示';
+                }
+            }
+        }
+        
+        // 切换项目显示/状态（用于关键指标项）
+        function toggleItem(item, button) {
+            if (item.classList.contains('hidden')) {
+                // 显示项目
+                item.classList.remove('hidden');
+                // 添加淡入动画
+                item.classList.add('animate-fade-in');
+                setTimeout(() => {
+                    item.classList.remove('animate-fade-in');
+                }, 500);
+                // 更新按钮图标
+                if (button) {
+                    button.innerHTML = '<i class="fa fa-times"></i> ';
+                }
+            } else {
+                // 项目
+                item.classList.add('hidden');
+                // 更新按钮图标
+                if (button) {
+                    button.innerHTML = '<i class="fa fa-plus"></i> 显示';
+                }
+            }
+        }
+        
+        // 处理拖放的文件
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleSelectedFiles(files);
+        }
+        
+        // 处理选择的文件
+        function handleFiles() {
+            handleSelectedFiles(this.files);
+        }
+        
+        // 处理选中的文件
+        function handleSelectedFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (isValidFile(file)) {
+                    showUploadFeedback(`正在处理文件: ${file.name}`, false);
+                    setTimeout(() => {
+                        showLoadingSection('正在解析文件内容...');
+                        readFile(file);
+                    }, 500);
+                } else {
+                    showUploadFeedback('请选择.xlsx, .xls或.csv格式的文件，且文件大小不超过10MB', true);
+                }
+            }
+        }
+        
+        // 验证文件格式
+        function isValidFile(file) {
+            const validExtensions = ['xlsx', 'xls', 'csv'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            return validExtensions.includes(fileExtension) && file.size <= 10 * 1024 * 1024; // 10MB
+        }
+        
+        // 读取文件内容
+        function readFile(file) {
+            const reader = new FileReader();
+            
+            reader.onloadstart = function() {
+                loadingMessage.textContent = `正在读取 ${file.name}...`;
+            };
+            
+            reader.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    loadingMessage.textContent = `正在读取 ${file.name}... ${percent}%`;
+                }
+            };
+            
+            reader.onload = function(e) {
+                try {
+                    loadingMessage.textContent = '正在处理数据...';
+                    
+                    let workbook;
+                    if (file.name.endsWith('.csv')) {
+                        // 处理CSV文件
+                        const text = e.target.result;
+                        workbook = XLSX.read(text, { type: 'string' });
+                    } else {
+                        // 处理Excel文件
+                        const data = new Uint8Array(e.target.result);
+                        workbook = XLSX.read(data, { type: 'array' });
+                    }
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 获取原始表头
+                    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
+                    rawHeaders = [];
+                    for (let c = range.s.c; c <= range.e.c; c++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: c });
+                        if (worksheet[cellAddress]) {
+                            rawHeaders.push(worksheet[cellAddress].v.toString().trim());
+                        }
+                    }
+                    
+                    // 转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (jsonData.length === 0) {
+                        showErrorSection('文件内容为空', '选择的文件不包含任何数据，请检查文件');
+                        return;
+                    }
+                    
+                    // 尝试自动映射字段
+                    createFieldMapping(rawHeaders);
+                    
+                    // 显示字段映射界面
+                    showMappingSection();
+                    
+                } catch (error) {
+                    console.error('文件解析错误:', error);
+                    showErrorSection('文件解析失败', '无法解析文件内容，请检查文件是否损坏或格式正确');
+                }
+            };
+            
+            reader.onerror = function() {
+                showErrorSection('文件读取错误', '无法读取文件内容，请重试');
+            };
+            
+            reader.onabort = function() {
+                showErrorSection('操作已中止', '文件读取已被中止');
+            };
+            
+            if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+        
+        // 创建字段映射
+        function createFieldMapping(headers) {
+            // 扩展可能的表头名称变体，增加匹配灵活性
+            const fieldVariants = {
+                '姓名': ['姓名', '员工姓名', '名称', 'name', 'employee name', '人员姓名'],
+                '部门': ['部门', '所属部门', '部门名称', 'dept', 'department', '部门编号'],
+                '岗位': ['岗位', '职位', '职务', 'position', 'job', '岗位名称', '职位名称'],
+                '入职日期': ['入职日期', '聘用日期', '入职时间', 'hire date', 'hiredate', '加入日期'],
+                '转正日期': ['转正日期', '正式日期', '转正时间', 'regular date', 'confirmation date'],
+                '员工类型': ['员工类型', '人员类型', '类型', 'employee type', '人员性质', '用工类型'],
+                '工作城市': ['工作城市', '所在城市', '城市', 'city', '工作地点城市'],
+                '直接上级': ['直接上级', '上级', '主管', '经理', 'manager', 'supervisor', '直属领导'],
+                '离职日期': ['离职日期', '离开日期', '辞职日期', 'resign date', 'departure date']
+            };
+            
+            // 初始化字段映射
+            fieldMapping = {};
+            Object.keys(fieldVariants).forEach(targetField => {
+                fieldMapping[targetField] = null;
+                
+                // 尝试找到最佳匹配
+                headers.forEach(header => {
+                    const headerLower = header.toLowerCase();
+                    // 检查是否有变体匹配
+                    const matchedVariant = fieldVariants[targetField].find(variant => 
+                        headerLower.includes(variant.toLowerCase())
+                    );
+                    
+                    if (matchedVariant && !fieldMapping[targetField]) {
+                        fieldMapping[targetField] = header;
+                    }
+                });
+            });
+        }
+        
+        // 显示字段映射区域
+        function showMappingSection() {
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            dashboardSection.classList.add('hidden');
+            mappingSection.classList.remove('hidden');
+            
+            // 生成映射项HTML
+            mappingItems.innerHTML = '';
+            
+            Object.keys(fieldMapping).forEach(targetField => {
+                const mappingItem = document.createElement('div');
+                mappingItem.className = `mapping-item p-3 border-b border-gray-100 ${
+                    fieldMapping[targetField] ? 'field-match' : 'field-warning'
+                }`;
+                
+                // 创建下拉菜单选项
+                let selectOptions = '<option value="">-- 请选择 --</option>';
+                rawHeaders.forEach(header => {
+                    selectOptions += `<option value="${header}" ${
+                        fieldMapping[targetField] === header ? 'selected' : ''
+                    }>${header}</option>`;
+                });
+                
+                mappingItem.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">${targetField}</label>
+                            <select class="field-select w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" data-target="${targetField}">
+                                ${selectOptions}
+                            </select>
+                        </div>
+                    </div>
+                `;
+                
+                mappingItems.appendChild(mappingItem);
+            });
+            
+            // 添加选择事件监听
+            document.querySelectorAll('.field-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const targetField = this.getAttribute('data-target');
+                    const selectedValue = this.value;
+                    
+                    // 更新字段映射
+                    fieldMapping[targetField] = selectedValue || null;
+                    
+                    // 更新样式
+                    const mappingItem = this.closest('.mapping-item');
+                    if (selectedValue) {
+                        mappingItem.classList.remove('field-warning');
+                        mappingItem.classList.add('field-match');
+                    } else {
+                        mappingItem.classList.remove('field-match');
+                        mappingItem.classList.add('field-warning');
+                    }
+                });
+            });
+        }
+        
+        // 处理映射后的数据
+        function processMappedData() {
+            showLoadingSection('正在处理数据...');
+            
+            // 重新读取文件并应用映射
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    let workbook;
+                    if (file.name.endsWith('.csv')) {
+                        const text = e.target.result;
+                        workbook = XLSX.read(text, { type: 'string' });
+                    } else {
+                        const data = new Uint8Array(e.target.result);
+                        workbook = XLSX.read(data, { type: 'array' });
+                    }
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rawData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // 应用字段映射处理数据
+                    employeeData = processMappedEmployeeData(rawData);
+                    
+                    // 只验证日期格式错误，不验证必填字段
+                    const validationErrors = validateProcessedData(employeeData);
+                    if (validationErrors.length > 0) {
+                        // 显示警告但仍然继续处理
+                        console.log('发现数据格式问题，但继续处理:', validationErrors);
+                    }
+                    
+                    loadingMessage.textContent = '正在生成仪表板...';
+                    setTimeout(() => {
+                        generateDashboard();
+                        showDashboardSection();
+                    }, 800);
+                    
+                } catch (error) {
+                    console.error('数据处理错误:', error);
+                    showErrorSection('数据处理失败', '处理数据时发生错误，请重试');
+                }
+            };
+            
+            if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+        
+        // 处理映射后的员工数据
+        function processMappedEmployeeData(rawData) {
+            return rawData.map((item, rowIndex) => {
+                const normalizedItem = {};
+                let hasValidData = false;
+                
+                // 应用字段映射
+                Object.keys(fieldMapping).forEach(targetField => {
+                    const sourceField = fieldMapping[targetField];
+                    if (sourceField && item[sourceField] !== undefined && item[sourceField] !== null) {
+                        normalizedItem[targetField] = item[sourceField];
+                        hasValidData = true;
+                    } else {
+                        normalizedItem[targetField] = null; // 空单元格按null处理
+                    }
+                });
+                
+                // 特殊处理日期字段，支持多种格式
+                ['入职日期', '离职日期', '转正日期'].forEach(dateField => {
+                    if (normalizedItem[dateField]) {
+                        normalizedItem[dateField] = parseDate(normalizedItem[dateField]);
+                    }
+                });
+                
+                // 添加行号用于错误提示
+                normalizedItem._rowNumber = rowIndex + 2; // +2 是因为Excel行号从1开始，表头占1行
+                
+                return hasValidData ? normalizedItem : null;
+            }).filter(item => item !== null); // 过滤空行
+        }
+        
+        // 增强的日期解析函数，支持多种格式
+        function parseDate(dateValue) {
+            // 如果是数字，尝试作为Excel日期处理
+            if (!isNaN(dateValue) && dateValue > 25569) {
+                // Excel日期起点是1900年1月1日，JavaScript是1970年1月1日，相差25569天
+                const date = new Date((dateValue - 25569) * 86400000);
+                return date.toISOString().split('T')[0];
+            }
+            
+            // 如果是字符串，尝试多种格式解析
+            if (typeof dateValue === 'string') {
+                // 清理日期字符串
+                const cleaned = dateValue.trim()
+                    .replace(/[年月日]/g, '/')
+                    .replace(/[点分秒]/g, ':')
+                    .replace(/-/g, '/');
+                
+                // 尝试直接解析
+                const parsed = new Date(cleaned);
+                if (!isNaN(parsed.getTime())) {
+                    return parsed.toISOString().split('T')[0];
+                }
+                
+                // 尝试其他格式组合
+                const dateFormats = [
+                    /^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})$/, // yyyy/mm/dd 或 yyyy-mm-dd
+                    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/, // dd/mm/yyyy 或 dd-mm-yyyy
+                    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2})$/, // dd/mm/yy 或 dd-mm-yy
+                    /^(\d{2})[\/-](\d{1,2})[\/-](\d{1,2})$/, // yy/mm/dd 或 yy-mm-dd
+                ];
+                
+                for (const format of dateFormats) {
+                    const match = cleaned.match(format);
+                    if (match) {
+                        let year, month, day;
+                        
+                        if (format === dateFormats[0]) {
+                            [, year, month, day] = match;
+                        } else if (format === dateFormats[1]) {
+                            [, day, month, year] = match;
+                        } else if (format === dateFormats[2]) {
+                            [, day, month, year] = match;
+                            year = parseInt(year) < 50 ? `20${year}` : `19${year}`;
+                        } else if (format === dateFormats[3]) {
+                            [, year, month, day] = match;
+                            year = parseInt(year) < 50 ? `20${year}` : `19${year}`;
+                        }
+                        
+                        const date = new Date(`${year}-${month}-${day}`);
+                        if (!isNaN(date.getTime())) {
+                            return date.toISOString().split('T')[0];
+                        }
+                    }
+                }
+            }
+            
+            // 如果所有解析尝试都失败，返回原始值（后续验证会捕获）
+            return dateValue;
+        }
+        
+        // 验证处理后的数据 - 只验证日期格式，不验证必填字段
+        function validateProcessedData(data) {
+            const errors = [];
+            
+            data.forEach(item => {
+                // 只验证日期格式
+                ['入职日期', '离职日期', '转正日期'].forEach(dateField => {
+                    if (item[dateField] && typeof item[dateField] === 'string' && !/^\d{4}-\d{2}-\d{2}$/.test(item[dateField])) {
+                        errors.push(`第 ${item._rowNumber} 行的 "${dateField}" 格式无法识别（值：${item[dateField]}）`);
+                    }
+                });
+            });
+            
+            return errors;
+        }
+        
+        // 显示带详细信息的错误
+        function showErrorWithDetails(title, message, details) {
+            errorTitle.textContent = title;
+            errorMessage.innerHTML = message;
+            
+            // 显示错误详情
+            errorDetailsList.innerHTML = '';
+            details.slice(0, 10).forEach(error => { // 只显示前10个错误
+                const li = document.createElement('li');
+                li.textContent = error;
+                errorDetailsList.appendChild(li);
+            });
+            
+            // 如果有更多错误，显示提示
+            if (details.length > 10) {
+                const li = document.createElement('li');
+                li.textContent = `... 还有 ${details.length - 10} 个错误`;
+                li.className = 'text-gray-500';
+                errorDetailsList.appendChild(li);
+            }
+            
+            errorDetails.classList.remove('hidden');
+            
+            // 显示错误区域
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            errorSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            mappingSection.classList.add('hidden');
+        }
+        
+        // 生成仪表板
+        function generateDashboard() {
+            // 清除现有图表
+            Object.values(charts).forEach(chart => {
+                echarts.dispose(chart);
+            });
+            charts = {};
+            
+            // 更新关键指标
+            updateKeyMetrics();
+            
+            // 生成部门分布图表
+            generateDepartmentChart();
+            
+            // 生成员工类型图表
+            generateEmployeeTypeChart();
+            
+            // 生成城市分布图表
+            generateCityDistributionChart();
+            
+            // 生成岗位分布图表
+            generatePositionChart();
+            
+            // 生成管理者列表
+            generateManagerList();
+            
+            // 生成司龄分布图表
+            generateTenureChart();
+            
+            // 生成入职趋势图表
+            generateHireTrendChart();
+            
+            // 生成离职趋势图表（基于当前月份倒推12个月数据）
+            generateResignTrendChart();
+            
+            // 生成离职岗位列表
+            generateDeparturePositions();
+            
+            // 生成离职实习生管理者列表
+            generateInternDepartureManagers();
+            
+            // 更新数据时间
+            document.getElementById('dataUpdateTime').textContent = new Date().toLocaleString();
+            
+            // 显示导出和刷新按钮
+            refreshBtn.classList.remove('hidden');
+            exportBtn.classList.remove('hidden');
+            resetPageBtn.classList.remove('hidden');
+        }
+        
+        // 更新关键指标
+        function updateKeyMetrics() {
+            // 计算在职员工（排除已离职的）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const totalEmployees = activeEmployees.length;
+            document.getElementById('totalEmployees').textContent = totalEmployees;
+            
+            // 1. 计算最近7天入职人数
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 7);
+            sevenDaysAgo.setHours(0, 0, 0, 0);
+            
+            const newHiresThisPeriod = activeEmployees.filter(emp => {
+                if (!emp['入职日期']) return false;
+                const hireDate = new Date(emp['入职日期']);
+                return hireDate >= sevenDaysAgo && hireDate <= today;
+            }).length;
+            document.getElementById('newHiresThisWeek').textContent = newHiresThisPeriod;
+            
+            // 计算上一个7天周期的入职人数
+            const previousPeriodStart = new Date(sevenDaysAgo);
+            previousPeriodStart.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const previousPeriodHires = activeEmployees.filter(emp => {
+                if (!emp['入职日期']) return false;
+                const hireDate = new Date(emp['入职日期']);
+                return hireDate >= previousPeriodStart && hireDate < sevenDaysAgo;
+            }).length;
+            
+            // 计算入职趋势
+            const hireChange = newHiresThisPeriod - previousPeriodHires;
+            document.getElementById('newHiresTrend').innerHTML = `${hireChange > 0 ? '<i class="fa fa-arrow-up mr-1"></i>' : 
+                                                                 hireChange < 0 ? '<i class="fa fa-arrow-down mr-1"></i>' : 
+                                                                 '<i class="fa fa-minus mr-1"></i>'} 较上期${hireChange > 0 ? '增加' : hireChange < 0 ? '减少' : '持平'}${Math.abs(hireChange)}人`;
+            
+            // 2. 计算最近7天离职人数
+            const resignationsThisPeriod = employeeData.filter(emp => {
+                if (!emp['离职日期']) return false;
+                const resignDate = new Date(emp['离职日期']);
+                return resignDate >= sevenDaysAgo && resignDate <= today;
+            }).length;
+            document.getElementById('resignationsThisWeek').textContent = resignationsThisPeriod;
+            
+            // 计算上一个7天周期的离职人数
+            const previousPeriodResigns = employeeData.filter(emp => {
+                if (!emp['离职日期']) return false;
+                const resignDate = new Date(emp['离职日期']);
+                return resignDate >= previousPeriodStart && resignDate < sevenDaysAgo;
+            }).length;
+            
+            // 计算离职趋势
+            const resignChange = resignationsThisPeriod - previousPeriodResigns;
+            document.getElementById('resignationsTrend').innerHTML = `${resignChange > 0 ? '<i class="fa fa-arrow-up mr-1"></i>' : 
+                                                                    resignChange < 0 ? '<i class="fa fa-arrow-down mr-1"></i>' : 
+                                                                    '<i class="fa fa-minus mr-1"></i>'} 较上期${resignChange > 0 ? '增加' : resignChange < 0 ? '减少' : '持平'}${Math.abs(resignChange)}人`;
+            
+            // 3. 试用期人数取大于转正日期的人数
+            const probationEmployees = activeEmployees.filter(emp => {
+                if (!emp['转正日期']) return false;
+                const regularDate = new Date(emp['转正日期']);
+                return regularDate > today; // 转正日期在今天之后，视为试用期
+            }).length;
+            document.getElementById('probationEmployees').textContent = probationEmployees;
+            document.getElementById('probationPercentage').innerHTML = `<i class="fa fa-percent mr-1"></i> 占总人数${totalEmployees > 0 ? ((probationEmployees / totalEmployees) * 100).toFixed(2) : '0.00'}%`;
+            
+            // 计算实习生人数（基于实际数据）
+            const internEmployees = activeEmployees.filter(emp => 
+                emp['员工类型'] && emp['员工类型'].includes('实习')
+            ).length;
+            document.getElementById('internEmployees').textContent = internEmployees;
+            document.getElementById('internPercentage').innerHTML = `<i class="fa fa-percent mr-1"></i> 占总人数${totalEmployees > 0 ? ((internEmployees / totalEmployees) * 100).toFixed(2) : '0.00'}%`;
+        }
+        
+        // 生成部门分布图表 - 调整为部门在X轴，人数在Y轴，并按人数从多到少排列
+        function generateDepartmentChart() {
+            // 统计部门人数（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const departmentCounts = {};
+            activeEmployees.forEach(emp => {
+                const dept = emp['部门'] || '未知部门';
+                departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+            });
+            
+            // 按人数从多到少排序
+            const entries = Object.entries(departmentCounts)
+                .sort((a, b) => b[1] - a[1]); // 降序排列
+            
+            const labels = entries.map(item => item[0]);
+            const data = entries.map(item => item[1]);
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('departmentChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表 - 部门在X轴，人数在Y轴
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: labels,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        alignWithLabel: true
+                    },
+                    axisLabel: {
+                        // 优化X轴日期显示
+                        rotate: 0,  // 增加旋转角度
+                        interval: 0,
+                        color: '#333',
+                        fontSize: 12,
+                        // 处理长名称自动省略
+                        formatter: function(value) {
+                            // 计算当前容器宽度
+                            const containerWidth = chartDom.clientWidth;
+                            // 计算每个标签的最大允许宽度
+                            const maxWidth = containerWidth / labels.length * 0.8;
+                            
+                            // 如果标签过长，自动省略
+                            if (value.length > 6 && maxWidth < 80) {
+                                return value.substring(0, 6) + '...';
+                            }
+                            return value;
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    boundaryGap: [0, 0.01],
+                    // Y轴数据和横线
+                    show: false,
+                    splitLine: {
+                        show: false
+                    },
+                    min: 0,
+                    interval: 1
+                },
+                series: [
+                    {
+                        name: '员工人数',
+                        type: 'bar',
+                        data: data,
+                        itemStyle: {
+                            color: '#165DFF',
+                            borderRadius: [4, 4, 0, 0]
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c}',
+                            fontSize: 12
+                        },
+                        barWidth: '60%',
+                        // 添加间距配置，优化柱形显示
+                        barCategoryGap: '20%'
+                    }
+                ],
+                animation: true,
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.departmentChart = chart;
+        }
+        
+        // 生成员工类型图表
+        function generateEmployeeTypeChart() {
+            // 统计员工类型（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const typeCounts = {};
+            activeEmployees.forEach(emp => {
+                const type = emp['员工类型'] || '未知类型';
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+            
+            // 转换为图表数据
+            const entries = Object.entries(typeCounts);
+            const labels = entries.map(item => item[0]);
+            const data = entries.map(item => item[1]);
+            
+            // 定义颜色
+            const colors = ['#722ED1', '#165DFF', '#00B42A', '#FF7D00', '#F53F3F'];
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('employeeTypeChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4,
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 10,
+                    textStyle: {
+                        fontSize: 12
+                    }
+                },
+                series: [
+                    {
+                        name: '员工类型',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 6,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: entries.map((item, index) => ({
+                            name: item[0],
+                            value: item[1],
+                            itemStyle: {
+                                color: colors[index % colors.length]
+                            },
+                            label: {
+                                show: true,
+                                position: 'outside',
+                                formatter: '{b}: {c}',
+                                fontSize: 12
+                            }
+                        }))
+                    }
+                ],
+                animation: true,
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.employeeTypeChart = chart;
+        }
+        
+        // 生成城市分布图表
+        function generateCityDistributionChart() {
+            // 统计城市分布（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const cityCounts = {};
+            activeEmployees.forEach(emp => {
+                const city = emp['工作城市'] || '未知城市';
+                cityCounts[city] = (cityCounts[city] || 0) + 1;
+            });
+            
+            // 转换为图表数据
+            const entries = Object.entries(cityCounts);
+            const labels = entries.map(item => item[0]);
+            const data = entries.map(item => item[1]);
+            
+            // 定义颜色
+            const colors = ['#165DFF', '#722ED1', '#0FC6C2', '#7BC616', '#FF7D00', '#F53F3F'];
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('cityDistributionChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4,
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    bottom: 10,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                    formatter: function(name) {
+                        // 找到对应的数据值
+                        const value = entries.find(item => item[0] === name)?.[1] || 0;
+                        return `${name} (${value})`;
+                    }
+                },
+                series: [
+                    {
+                        name: '城市分布',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '40%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 6,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: entries.map((item, index) => ({
+                            name: item[0],
+                            value: item[1],
+                            itemStyle: {
+                                color: colors[index % colors.length]
+                            }
+                        }))
+                    }
+                ],
+                animation: true,
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.cityDistributionChart = chart;
+        }
+        
+        // 生成岗位分布图表 - 调整为按人数从多到少从上到下排列，并加深字体颜色
+        function generatePositionChart() {
+            // 统计岗位分布（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const positionCounts = {};
+            activeEmployees.forEach(emp => {
+                const position = emp['岗位'] || '未知岗位';
+                positionCounts[position] = (positionCounts[position] || 0) + 1;
+            });
+            
+            // 按人数排序并取前10（降序排列，人数多的在前面）
+            const sortedPositions = Object.entries(positionCounts)
+                .sort((a, b) => b[1] - a[1])  // 降序排列
+                .slice(0, 10);
+            
+            // 转换为图表数据
+            const labels = sortedPositions.map(item => item[0]);
+            const data = sortedPositions.map(item => item[1]);
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('positionChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    boundaryGap: [0, 0.01],
+                    // X轴数据和横线
+                    show: false,
+                    splitLine: {
+                        show: false
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: labels,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisLabel: {
+                        fontSize: 11,
+                        color: '#333'  // 加深岗位名称的字体颜色，提高可读性
+                    }
+                },
+                series: [
+                    {
+                        name: '岗位人数',
+                        type: 'bar',
+                        data: data,
+                        itemStyle: {
+                            color: '#165DFF',
+                            borderRadius: [0, 4, 4, 0]
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{c}',
+                            fontSize: 12
+                        }
+                    }
+                ],
+                animation: true,
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.positionChart = chart;
+        }
+        
+        // 生成管理者列表
+        function generateManagerList() {
+            // 统计管理者下属人数（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const managerCounts = {};
+            activeEmployees.forEach(emp => {
+                const manager = emp['直接上级'] || '无上级';
+                if (manager && manager !== '无') {
+                    managerCounts[manager] = (managerCounts[manager] || 0) + 1;
+                }
+            });
+            
+            // 按下属人数排序
+            const sortedManagers = Object.entries(managerCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+            
+            // 生成HTML
+            const managerListEl = document.getElementById('managerList');
+            managerListEl.innerHTML = '';
+            
+            sortedManagers.forEach(([manager, count], index) => {
+                const isTop3 = index < 3;
+                const maxCount = sortedManagers.length > 0 ? sortedManagers[0][1] : 1;
+                const percentage = (count / maxCount) * 100;
+                
+                const managerEl = document.createElement('div');
+                managerEl.className = 'flex items-center';
+                managerEl.innerHTML = `
+                    <div class="w-6 h-6 rounded-full ${isTop3 ? 'bg-primary/20 text-primary' : 'bg-gray-200 text-gray-600'} flex items-center justify-center text-xs font-medium mr-3">${index + 1}</div>
+                    <span class="flex-1">${manager}</span>
+                    <span class="font-medium">${count}</span>
+                    <div class="w-24 h-2 bg-gray-100 rounded-full overflow-hidden ml-3">
+                        <div class="h-full ${isTop3 ? 'bg-primary' : 'bg-gray-400'} rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                
+                managerListEl.appendChild(managerEl);
+            });
+        }
+        
+        // 生成司龄分布图表
+        function generateTenureChart() {
+            // 计算司龄分布（基于实际数据，仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            const tenureRanges = ['0-1年', '1-3年', '3-5年', '5年以上'];
+            const tenureData = [0, 0, 0, 0];
+            
+            const today = new Date();
+            
+            activeEmployees.forEach(emp => {
+                if (!emp['入职日期']) return;
+                
+                const hireDate = new Date(emp['入职日期']);
+                const years = (today - hireDate) / (1000 * 60 * 60 * 24 * 365.25);
+                
+                if (years < 1) {
+                    tenureData[0]++;
+                } else if (years < 3) {
+                    tenureData[1]++;
+                } else if (years < 5) {
+                    tenureData[2]++;
+                } else {
+                    tenureData[3]++;
+                }
+            });
+            
+            // 定义颜色
+            const colors = ['#165DFF', '#722ED1', '#0FC6C2', '#7BC616'];
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('tenureChart');
+            const chart = echarts.init(chartDom);
+            
+            // 计算总人数
+            const total = tenureData.reduce((a, b) => a + b, 0);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4,
+                    formatter: function(params) {
+                        const percentage = total > 0 ? Math.round((params.value / total) * 100) : 0;
+                        return `${params.name}: ${params.value}人 (${percentage}%)`;
+                    }
+                },
+                legend: {
+                    bottom: 10,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                    formatter: function(name) {
+                        const index = tenureRanges.indexOf(name);
+                        const value = tenureData[index] || 0;
+                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                        return `${name} (${value}人, ${percentage}%)`;
+                    }
+                },
+                series: [
+                    {
+                        name: '司龄分布',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '40%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 6,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: tenureRanges.map((range, index) => ({
+                            name: range,
+                            value: tenureData[index],
+                            itemStyle: {
+                                color: colors[index]
+                            }
+                        }))
+                    }
+                ],
+                animation: true,
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.tenureChart = chart;
+        }
+        
+        // 生成入职趋势图表 - 同时显示正式员工和实习生
+        function generateHireTrendChart() {
+            // 获取当前日期
+            const today = new Date();
+            const months = [];
+            const monthData = {
+                fullTime: {},
+                intern: {}
+            };
+            
+            // 生成从当前月份倒推12个月的数据
+            for (let i = 11; i >= 0; i--) {
+                const currentDate = new Date(today);
+                currentDate.setMonth(today.getMonth() - i);
+                const monthKey = `${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月`;
+                months.push(monthKey);
+                monthData.fullTime[monthKey] = 0;
+                monthData.intern[monthKey] = 0;
+            }
+            
+            // 统计每月入职人数（仅在职员工）
+            const activeEmployees = employeeData.filter(emp => !emp['离职日期']);
+            activeEmployees.forEach(emp => {
+                if (!emp['入职日期']) return;
+                
+                const hireDate = new Date(emp['入职日期']);
+                const hireMonthKey = `${hireDate.getFullYear()}年${hireDate.getMonth() + 1}月`;
+                
+                // 只统计在12个月范围内的数据
+                if (months.includes(hireMonthKey)) {
+                    // 根据员工类型分类统计
+                    if (emp['员工类型'] && emp['员工类型'].includes('实习')) {
+                        monthData.intern[hireMonthKey]++;
+                    } else {
+                        // 正式员工（包括试用期）
+                        monthData.fullTime[hireMonthKey]++;
+                    }
+                }
+            });
+            
+            // 准备数据集 - 显示总入职人数
+            const totalData = months.map(month => monthData.fullTime[month] + monthData.intern[month]);
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('hireTrendChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4,
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.2)'
+                        }
+                    },
+                    formatter: function(params) {
+                        const month = params[0].name;
+                        return `${month}<br/>
+                                总入职: ${totalData[months.indexOf(month)]}<br/>
+                                正式员工: ${monthData.fullTime[month]}<br/>
+                                实习生: ${monthData.intern[month]}`;
+                    }
+                },
+                legend: {
+                    top: 0,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                    data: ['总入职人数', '正式员工', '实习生']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',  // 增加底部边距，为X轴标签留出更多空间
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: months,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisLabel: {
+                        rotate: 60,  // 增加旋转角度，使日期更清晰
+                        interval: 0,
+                        fontSize: 11,  // 适当调整字体大小
+                        color: '#333'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    // Y轴数据和横线
+                    show: false,
+                    splitLine: {
+                        show: false
+                    },
+                    min: 0,
+                    interval: 1
+                },
+                series: [
+                    {
+                        name: '总入职人数',
+                        type: 'line',
+                        data: totalData,
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        lineStyle: {
+                            width: 3,
+                            color: '#165DFF'
+                        },
+                        itemStyle: {
+                            color: '#165DFF'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: '#165DFF',
+                                borderColor: '#fff',
+                                borderWidth: 2,
+                                shadowBlur: 10,
+                                shadowColor: 'rgba(22, 93, 255, 0.5)'
+                            },
+                            symbolSize: 10
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c}',
+                            fontSize: 12
+                        },
+                        smooth: true
+                    },
+                    {
+                        name: '正式员工',
+                        type: 'line',
+                        data: months.map(month => monthData.fullTime[month]),
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            width: 2,
+                            color: '#722ED1',
+                            type: 'dashed'
+                        },
+                        itemStyle: {
+                            color: '#722ED1'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: '#722ED1',
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }
+                        },
+                        smooth: true,
+                        showSymbol: false
+                    },
+                    {
+                        name: '实习生',
+                        type: 'line',
+                        data: months.map(month => monthData.intern[month]),
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            width: 2,
+                            color: '#FF7D00',
+                            type: 'dashed'
+                        },
+                        itemStyle: {
+                            color: '#FF7D00'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: '#FF7D00',
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }
+                        },
+                        smooth: true,
+                        showSymbol: false
+                    }
+                ],
+                animation: true,
+                animationDuration: 2000,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.hireTrendChart = chart;
+        }
+        
+        // 生成离职趋势图表 - 显示从当前月份倒推12个月数据
+        function generateResignTrendChart() {
+            // 获取当前日期
+            const today = new Date();
+            const months = [];
+            const monthData = {};
+            
+            // 生成从当前月份倒推12个月的数据
+            for (let i = 11; i >= 0; i--) {
+                const currentDate = new Date(today);
+                currentDate.setMonth(today.getMonth() - i);
+                const monthKey = `${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月`;
+                months.push(monthKey);
+                monthData[monthKey] = 0;
+            }
+            
+            // 统计每月离职人数（基于离职日期）
+            employeeData.forEach(emp => {
+                if (!emp['离职日期']) return;
+                
+                const resignDate = new Date(emp['离职日期']);
+                const resignMonthKey = `${resignDate.getFullYear()}年${resignDate.getMonth() + 1}月`;
+                
+                // 只统计在12个月范围内的数据
+                if (months.includes(resignMonthKey)) {
+                    monthData[resignMonthKey]++;
+                }
+            });
+            
+            // 转换为图表数据
+            const resignData = months.map(month => monthData[month]);
+            
+            // 初始化ECharts实例
+            const chartDom = document.getElementById('resignTrendChart');
+            const chart = echarts.init(chartDom);
+            
+            // 配置图表
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    padding: 10,
+                    borderRadius: 4,
+                    formatter: '离职人数: {c}',
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.2)'
+                        }
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',  // 增加底部边距，为X轴标签留出更多空间
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: months,
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    splitLine: {
+                        show: false
+                    },
+                    axisLabel: {
+                        rotate: 60,  // 增加旋转角度，使日期更清晰
+                        interval: 0,
+                        fontSize: 11,  // 适当调整字体大小
+                        color: '#333'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    // Y轴数据和横线
+                    show: false,
+                    splitLine: {
+                        show: false
+                    },
+                    min: 0,
+                    interval: 1
+                },
+                series: [
+                    {
+                        name: '离职人数',
+                        type: 'line',
+                        data: resignData,
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        lineStyle: {
+                            width: 3,
+                            color: '#FF7D00'
+                        },
+                        itemStyle: {
+                            color: '#FF7D00'
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: '#FF7D00',
+                                borderColor: '#fff',
+                                borderWidth: 2,
+                                shadowBlur: 10,
+                                shadowColor: 'rgba(255, 125, 0, 0.5)'
+                            },
+                            symbolSize: 10
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(255, 125, 0, 0.3)' },
+                                { offset: 1, color: 'rgba(255, 125, 0, 0)' }
+                            ])
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c}',
+                            fontSize: 12
+                        },
+                        smooth: true
+                    }
+                ],
+                animation: true,
+                animationDuration: 2000,
+                animationEasing: 'cubicOut'
+            };
+            
+            // 设置配置项
+            chart.setOption(option);
+            
+            // 存储图表实例
+            charts.resignTrendChart = chart;
+        }
+        
+        // 生成离职岗位列表
+        function generateDeparturePositions() {
+            // 统计离职岗位数据（基于实际数据）
+            const resignedEmployees = employeeData.filter(emp => emp['离职日期']);
+            
+            const positionCounts = {};
+            resignedEmployees.forEach(emp => {
+                const position = emp['岗位'] || '未知岗位';
+                positionCounts[position] = (positionCounts[position] || 0) + 1;
+            });
+            
+            // 按离职人数排序
+            const departureData = Object.entries(positionCounts)
+                .map(([position, count]) => ({ position, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 6);
+            
+            // 生成HTML
+            const departurePositionsEl = document.getElementById('departurePositions');
+            departurePositionsEl.innerHTML = '';
+            
+            departureData.forEach(({ position, count }, index) => {
+                const isTop3 = index < 3;
+                
+                const positionEl = document.createElement('div');
+                positionEl.className = 'flex items-center';
+                positionEl.innerHTML = `
+                    <div class="w-6 h-6 rounded-full ${isTop3 ? 'bg-danger/20 text-danger' : 'bg-gray-200 text-gray-600'} flex items-center justify-center text-xs font-medium mr-3">${index + 1}</div>
+                    <span class="flex-1">${position}</span>
+                    <span class="font-medium ${isTop3 ? 'text-danger' : ''}">${count}</span>
+                `;
+                
+                departurePositionsEl.appendChild(positionEl);
+            });
+        }
+        
+        // 生成离职实习生管理者列表
+        function generateInternDepartureManagers() {
+            // 统计离职实习生的管理者（基于实际数据）
+            const resignedInterns = employeeData.filter(emp => 
+                emp['离职日期'] && emp['员工类型'] && emp['员工类型'].includes('实习')
+            );
+            
+            const managerCounts = {};
+            resignedInterns.forEach(emp => {
+                const manager = emp['直接上级'] || '未知';
+                managerCounts[manager] = (managerCounts[manager] || 0) + 1;
+            });
+            
+            // 按离职实习生人数排序
+            const internDepartureData = Object.entries(managerCounts)
+                .map(([manager, count]) => ({ manager, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 6);
+            
+            // 生成HTML
+            const internDepartureManagersEl = document.getElementById('internDepartureManagers');
+            internDepartureManagersEl.innerHTML = '';
+            
+            internDepartureData.forEach(({ manager, count }, index) => {
+                const isTop3 = index < 3;
+                
+                const managerEl = document.createElement('div');
+                managerEl.className = 'flex items-center';
+                managerEl.innerHTML = `
+                    <div class="w-6 h-6 rounded-full ${isTop3 ? 'bg-warning/20 text-warning' : 'bg-gray-200 text-gray-600'} flex items-center justify-center text-xs font-medium mr-3">${index + 1}</div>
+                    <span class="flex-1">${manager}</span>
+                    <span class="font-medium ${isTop3 ? 'text-warning' : ''}">${count}</span>
+                `;
+                
+                internDepartureManagersEl.appendChild(managerEl);
+            });
+        }
+        
+        // 显示上传区域
+        function showUploadSection() {
+            uploadSection.classList.remove('hidden');
+            loadingSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            dashboardSection.classList.add('hidden');
+            mappingSection.classList.add('hidden');
+            fileInput.value = ''; // 重置文件输入
+            clearUploadFeedback(); // 清除上传反馈
+            // 刷新页面按钮
+            resetPageBtn.classList.add('hidden');
+        }
+        
+        // 显示加载区域
+        function showLoadingSection(message) {
+            if (message) {
+                loadingMessage.textContent = message;
+            }
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+            errorSection.classList.add('hidden');
+            dashboardSection.classList.add('hidden');
+            mappingSection.classList.add('hidden');
+            // 刷新页面按钮
+            resetPageBtn.classList.add('hidden');
+        }
+        
+        // 显示错误区域
+        function showErrorSection(title, message) {
+            errorTitle.textContent = title;
+            errorMessage.innerHTML = message;
+            errorDetails.classList.add('hidden'); // 隐藏详细信息
+            errorDetailsList.innerHTML = '';
+            
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            errorSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            mappingSection.classList.add('hidden');
+            // 刷新页面按钮
+            resetPageBtn.classList.add('hidden');
+        }
+        
+        // 显示仪表板区域
+        function showDashboardSection() {
+            uploadSection.classList.add('hidden');
+            loadingSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            mappingSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            
+            // 显示刷新页面按钮
+            resetPageBtn.classList.remove('hidden');
+            
+            // 添加动画效果
+            setTimeout(() => {
+                document.querySelectorAll('#dashboardSection .card-shadow').forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('opacity-100', 'translate-y-0');
+                        // 触发图表重绘
+                        const chartId = card.querySelector('[id$="Chart"]')?.id;
+                        if (chartId && charts[chartId]) {
+                            charts[chartId].resize();
+                        }
+                    }, index * 100);
+                });
+            }, 100);
+        }
+        
+        // 初始化页面
+        function init() {
+            initEventListeners();
+            
+            // 设置卡片初始动画状态
+            document.querySelectorAll('#dashboardSection .card-shadow').forEach(card => {
+                card.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-4');
+            });
+            
+            // 添加淡入动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .animate-fade-in {
+                    animation: fadeIn 0.5s ease-in-out;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 滚动效果
+            const header = document.querySelector('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.classList.add('py-2', 'shadow');
+                    header.classList.remove('py-3', 'shadow-sm');
+                } else {
+                    header.classList.add('py-3', 'shadow-sm');
+                    header.classList.remove('py-2', 'shadow');
+                }
+            });
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+
+    </body></html>
