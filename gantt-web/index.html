@@ -57,14 +57,14 @@
 
         /* 每行统一结构，左侧sticky冻结 */
         .gantt-row { display: flex; align-items: stretch; }
-        .task-col { position: sticky; left: 0; z-index: 10; background: #F8FAFC; padding: 0 12px; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; }
+        .task-col { position: sticky; left: 0; z-index: 20; background: #F8FAFC; padding: 0 12px; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; }
         .weeks-col { display: flex; gap: 0; padding: 0; flex: 1; min-width: max-content; position: relative; }
         .week-item { min-width: 80px; flex: 1; display: flex; align-items: center; justify-content: center; }
 
         /* 表头行 */
         .gantt-row-header { background: #64748B; position: relative; }
-        .gantt-row-header .task-col { background: #fff3; color: white; font-weight: 600; }
-        .gantt-row-header .weeks-col { background: transparent; }
+        .gantt-row-header .task-col { background: #475569; color: white; font-weight: 600; }
+        .gantt-row-header .weeks-col { background: #64748B; }
         .gantt-row-header .week-item { color: white; font-size: 13px; text-align: center; flex-direction: column; padding: 8px 4px; border-right: 1px solid rgba(255,255,255,0.3); }
         .gantt-row-header .week-item:last-child { border-right: none; }
         .gantt-row-header .week-item small { font-weight: 400; opacity: 0.9; font-size: 11px; }
@@ -224,7 +224,7 @@
             <div class="help-item"><strong>任务编辑：</strong>在编辑数据表格中直接编辑任务名称、阶段、状态、日期</div>
             <div class="help-item"><strong>时间范围：</strong>项目周期自动根据任务开始/结束时间动态调整</div>
             <div class="help-item"><strong>数据保存：</strong>所有修改自动保存到浏览器本地，刷新不丢失</div>
-            <div class="help-item"><strong>重置数据：</strong>点击"重置数据"按钮恢复初始示例数据和各种颜色</div>
+            <div class="help-item"><strong>重置数据：</strong>点击"重置数据"按钮恢复初始示例数据包括颜色配置</div>
         </div>
     </div>
 
@@ -314,8 +314,8 @@
     </div>
 
     <script>
-        // 计算合理的项目开始和结束日期（基于当前时间）
-        function getDefaultDates() {
+        // 生成默认数据（只在 localStorage 为空时调用）
+        function generateDefaultData() {
             const now = new Date();
             // 从今天开始，持续3个月
             const startDate = new Date(now);
@@ -330,21 +330,15 @@
                 return `${year}-${month}-${day}`;
             };
 
-            return {
-                start: formatDate(startDate),
-                end: formatDate(endDate)
-            };
-        }
+            const start = formatDate(startDate);
+            const end = formatDate(endDate);
 
-        // 初始数据
-        const DEFAULT_DATA = (() => {
-            const dates = getDefaultDates();
             return {
                 project: "PMO工具研发",
                 projectEmoji: "🔥",
                 infoBarEmojis: { date: "📅", task: "🎯", progress: "📊" },
-                start: dates.start,
-                end: dates.end,
+                start: start,
+                end: end,
                 phaseEmojis: { "1": "📍", "2": "🛠️", "3": "🧪", "4": "🚀" },
                 statusColors: {
                     completed: { bg: "#10B981", gradient: "#10B981" },
@@ -357,16 +351,16 @@
                 weeksColBg: "#FAFBFC",
                 fontFamily: '"LXGW WenKai Mono", monospace',
                 tasks: [
-                    { name: "项目规划", phaseOrder: 1, phaseName: "前期准备", status: "进行中", start: dates.start, end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 14)).toISOString().slice(0,10) },
-                    { name: "需求分析", phaseOrder: 1, phaseName: "前期准备", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 7)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 21)).toISOString().slice(0,10) },
-                    { name: "系统设计", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 14)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 35)).toISOString().slice(0,10) },
-                    { name: "功能开发", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 28)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 70)).toISOString().slice(0,10) },
-                    { name: "系统测试", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 56)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 84)).toISOString().slice(0,10) },
-                    { name: "上线部署", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 77)).toISOString().slice(0,10), end: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 91)).toISOString().slice(0,10) },
-                    { name: "项目验收", phaseOrder: 4, phaseName: "收尾阶段", status: "未开始", start: new Date(new Date(dates.start).setDate(new Date(dates.start).getDate() + 84)).toISOString().slice(0,10), end: dates.end }
+                    { name: "项目规划", phaseOrder: 1, phaseName: "前期准备", status: "进行中", start: start, end: new Date(new Date(start).setDate(new Date(start).getDate() + 14)).toISOString().slice(0,10) },
+                    { name: "需求分析", phaseOrder: 1, phaseName: "前期准备", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 7)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 21)).toISOString().slice(0,10) },
+                    { name: "系统设计", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 14)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 35)).toISOString().slice(0,10) },
+                    { name: "功能开发", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 28)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 70)).toISOString().slice(0,10) },
+                    { name: "系统测试", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 56)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 84)).toISOString().slice(0,10) },
+                    { name: "上线部署", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 77)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 91)).toISOString().slice(0,10) },
+                    { name: "项目验收", phaseOrder: 4, phaseName: "收尾阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 84)).toISOString().slice(0,10), end: end }
                 ]
             };
-        })();
+        }
 
         // 可选择的emoji列表（第一个是"无"选项）
         const EMOJI_OPTIONS = ["", "📍", "🛠️", "🧪", "🚀", "💡", "📊", "🎯", "⚡", "🔥", "⭐", "💎", "🏆", "📋", "🔧", "💪", "🌟", "🎪", "🎨", "📌"];
@@ -428,8 +422,11 @@
             return [...phases.entries()].sort((a, b) => a[0] - b[0]);
         }
 
-        // 数据管理
-        let data = JSON.parse(localStorage.getItem('ganttData')) || JSON.parse(JSON.stringify(DEFAULT_DATA));
+        // 数据管理 - localStorage有数据就用，没有才生成新数据
+        let data = JSON.parse(localStorage.getItem('ganttData'));
+        if (!data) {
+            data = generateDefaultData();
+        }
 
         // 确保所有emoji对象存在（使用 undefined 检查，不覆盖空字符串）
         if (data.phaseEmojis === undefined) data.phaseEmojis = {};
@@ -444,23 +441,13 @@
         if (data.fontFamily === undefined) data.fontFamily = '"LXGW WenKai Mono", monospace';
 
         function save() {
-            // 根据任务动态更新项目时间范围
-            const weekDates = getWeekDates();
-            if (weekDates.length > 0) {
-                const actualStart = weekDates[0];
-                const actualEnd = new Date(weekDates[weekDates.length - 1]);
-                actualEnd.setDate(actualEnd.getDate() + 6);
-                data.start = actualStart.toISOString().slice(0, 10);
-                data.end = actualEnd.toISOString().slice(0, 10);
-            }
-
             localStorage.setItem('ganttData', JSON.stringify(data));
             render();
         }
 
         function resetData() {
             if (confirm('确定要重置为默认数据吗？')) {
-                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                data = generateDefaultData();
                 save();
             }
         }
@@ -491,19 +478,9 @@
         function parseDate(str) { return new Date(str); }
         function getDays(start, end) { return Math.ceil((parseDate(end) - parseDate(start)) / 86400000) + 1; }
         function getWeekDates() {
-            // 取项目开始时间和所有任务开始时间的最小值
+            // 项目周期由 data.start 和 data.end 决定
             let start = parseDate(data.start);
-            data.tasks.forEach(t => {
-                const taskStart = parseDate(t.start);
-                if (taskStart < start) start = taskStart;
-            });
-
-            // 取项目结束时间和所有任务结束时间的最大值
             let end = parseDate(data.end);
-            data.tasks.forEach(t => {
-                const taskEnd = parseDate(t.end);
-                if (taskEnd > end) end = taskEnd;
-            });
 
             // 对齐到周一
             const monday = new Date(start);
@@ -606,7 +583,7 @@
             let html = '';
 
             // 表头行
-            html += `<div class="gantt-row gantt-row-header"><div class="task-col">任务名称</div><div class="weeks-col" style="background:#ffffff4d;">`;
+            html += `<div class="gantt-row gantt-row-header"><div class="task-col">任务名称</div><div class="weeks-col">`;
             weekDates.forEach((w, i) => {
                 const fri = new Date(w); fri.setDate(fri.getDate() + 4);
                 html += `<div class="week-item">W${i+1}<small>${w.getMonth()+1}.${w.getDate()}-${fri.getMonth()+1}.${fri.getDate()}</small></div>`;
@@ -639,7 +616,7 @@
                     const barClass = 'bar-' + (task.status === '已完成' ? 'completed' : task.status === '进行中' ? 'in-progress' : 'not-started');
 
                     // 任务行
-                    html += `<div class="gantt-row gantt-row-task"><div class="task-col">${task.name}<span class="status-badge" style="background:${data.statusColors[statusClass].gradient};">${task.status}</span></div><div class="weeks-col" style="background:#f8f9fa;" data-task-start="${task.start}" data-task-end="${task.end}" data-task-name="${task.name}" data-task-phase="${phaseName}" data-task-status="${task.status}">`;
+                    html += `<div class="gantt-row gantt-row-task"><div class="task-col">${task.name}<span class="status-badge" style="background:${data.statusColors[statusClass].gradient};">${task.status}</span></div><div class="weeks-col" data-task-start="${task.start}" data-task-end="${task.end}" data-task-name="${task.name}" data-task-phase="${phaseName}" data-task-status="${task.status}">`;
 
                     // 渲染week占位元素撑开宽度
                     for (let i = 0; i < weekCount; i++) {
@@ -661,6 +638,18 @@
             taskCols.forEach(col => {
                 col.style.width = maxWidth + 'px';
                 col.style.minWidth = maxWidth + 'px';
+            });
+
+            // 更新任务列背景色
+            const taskColElements = document.querySelectorAll('.gantt-row-task .task-col');
+            taskColElements.forEach(taskCol => {
+                taskCol.style.background = data.taskColBg || '#F8FAFC';
+            });
+
+            // 更新周列背景色
+            const weeksColElements = document.querySelectorAll('.gantt-row-task .weeks-col');
+            weeksColElements.forEach(weeksCol => {
+                weeksCol.style.background = data.weeksColBg || '#FAFBFC';
             });
 
             // 渲染任务条（在DOM渲染后计算实际位置）
@@ -688,6 +677,12 @@
             const weekCount = weekDates.length;
             const weeksCols = document.querySelectorAll('.gantt-row-task .weeks-col');
 
+            // 计算项目周期范围
+            if (weekDates.length === 0) return;
+            const projectStart = weekDates[0]; // 第一个周一
+            const projectEnd = new Date(weekDates[weekDates.length - 1]);
+            projectEnd.setDate(projectEnd.getDate() + 6); // 最后一个周日
+
             weeksCols.forEach(weeksCol => {
                 const taskStart = weeksCol.dataset.taskStart;
                 const taskEnd = weeksCol.dataset.taskEnd;
@@ -697,12 +692,16 @@
 
                 if (!taskStart || !taskEnd) return;
 
+                const taskStartDate = parseDate(taskStart);
+                const taskEndDate = parseDate(taskEnd);
+
+                // 检查任务是否在项目范围内，完全超出则隐藏进度条
+                if (taskEndDate < projectStart || taskStartDate > projectEnd) {
+                    return; // 任务完全超出项目范围，不显示进度条
+                }
+
                 const statusClass = taskStatus === '已完成' ? 'completed' : taskStatus === '进行中' ? 'inProgress' : 'notStarted';
                 const barClass = 'bar-' + (taskStatus === '已完成' ? 'completed' : taskStatus === '进行中' ? 'in-progress' : 'not-started');
-
-                const startIdx = getWeekIndex(taskStart, weekDates);
-                const endIdx = getWeekIndex(taskEnd, weekDates);
-                const days = getDays(taskStart, taskEnd);
 
                 // 获取week-item的实际宽度
                 const weekItems = weeksCol.querySelectorAll('.week-item');
@@ -711,40 +710,52 @@
                 const weekItemWidth = weekItems[0].offsetWidth;
                 const gapWidth = 0;
                 const paddingLeft = 4; // weeks-col的padding-left
-
-                // 计算任务开始日期在周内的偏移（0-6，周一=0）
-                const taskStartDate = parseDate(taskStart);
-                const weekStartDate = weekDates[startIdx];
-                const startOffset = Math.floor((taskStartDate - weekStartDate) / 86400000); // 天数偏移
-                const startPercent = startOffset / 7; // 在周内的位置比例
-
-                // 计算任务结束日期在周内的偏移
-                const taskEndDate = parseDate(taskEnd);
-                const weekEndDate = weekDates[endIdx];
-                const endOffset = Math.floor((taskEndDate - weekEndDate) / 86400000); // 天数偏移
-                const endPercent = (endOffset + 1) / 7; // 结束位置比例（+1是因为要包含结束当天）
-
-                // 计算任务条位置（精确到日）
                 const weekWidthWithGap = weekItemWidth + gapWidth;
-                const barLeft = paddingLeft + startIdx * weekWidthWithGap + startPercent * weekItemWidth;
-                const barRight = paddingLeft + (endIdx + 1) * weekWidthWithGap - gapWidth - (1 - endPercent) * weekItemWidth;
+
+                // 计算进度条左边位置（限制在项目范围内）
+                let barLeft;
+                if (taskStartDate <= projectStart) {
+                    // 任务开始早于或等于项目开始，从项目开始位置开始
+                    barLeft = paddingLeft;
+                } else {
+                    // 任务开始在项目范围内，计算实际位置
+                    const startIdx = getWeekIndex(taskStart, weekDates);
+                    const weekStartDate = weekDates[startIdx];
+                    const startOffset = Math.floor((taskStartDate - weekStartDate) / 86400000);
+                    const startPercent = startOffset / 7;
+                    barLeft = paddingLeft + startIdx * weekWidthWithGap + startPercent * weekItemWidth;
+                }
+
+                // 计算进度条右边位置（限制在项目范围内）
+                let barRight;
+                if (taskEndDate >= projectEnd) {
+                    // 任务结束晚于或等于项目结束，截止到项目结束位置
+                    barRight = paddingLeft + weekCount * weekWidthWithGap;
+                } else {
+                    // 任务结束在项目范围内，计算实际位置
+                    const endIdx = getWeekIndex(taskEnd, weekDates);
+                    const weekEndDate = weekDates[endIdx];
+                    const endOffset = Math.floor((taskEndDate - weekEndDate) / 86400000);
+                    const endPercent = (endOffset + 1) / 7;
+                    barRight = paddingLeft + (endIdx + 1) * weekWidthWithGap - gapWidth - (1 - endPercent) * weekItemWidth;
+                }
+
                 const barWidth = barRight - barLeft - 4; // 减去一些边距
+                const days = getDays(taskStart, taskEnd);
 
                 // 计算剩余天数
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const taskEndDateObj = parseDate(taskEnd);
-                const taskStartDateObj = parseDate(taskStart);
 
                 let remainingDays = 0;
                 if (taskStatus === '已完成') {
                     remainingDays = 0;
-                } else if (today > taskEndDateObj) {
+                } else if (today > taskEndDate) {
                     remainingDays = 0;  // 已过期
-                } else if (today < taskStartDateObj) {
+                } else if (today < taskStartDate) {
                     remainingDays = days;  // 未开始，剩余全部天数
                 } else {
-                    remainingDays = Math.ceil((taskEndDateObj - today) / 86400000) + 1;  // 包含今天和结束日
+                    remainingDays = Math.ceil((taskEndDate - today) / 86400000) + 1;  // 包含今天和结束日
                 }
 
                 // 创建任务条
@@ -905,11 +916,53 @@
 
         // 更新数据
         function updateProject(key, value) {
+            // 项目时间范围检查
+            if (key === 'start' || key === 'end') {
+                const otherDate = key === 'start' ? data.end : data.start;
+                if (key === 'start' && value > otherDate) {
+                    alert('项目开始时间不能晚于结束时间！');
+                    return;
+                }
+                if (key === 'end' && value < otherDate) {
+                    alert('项目结束时间不能早于开始时间！');
+                    return;
+                }
+
+                // 检查任务时间是否在项目范围内
+                const taskStarts = data.tasks.map(t => t.start);
+                const taskEnds = data.tasks.map(t => t.end);
+                const minTaskStart = taskStarts.length > 0 ? taskStarts.reduce((a, b) => a < b ? a : b) : value;
+                const maxTaskEnd = taskEnds.length > 0 ? taskEnds.reduce((a, b) => a > b ? a : b) : value;
+
+                if (key === 'start' && value > minTaskStart) {
+                    if (!confirm(`有任务的开始时间(${minTaskStart})早于新设置的项目开始时间(${value})，这些任务的进度条将不显示。确定继续？`)) {
+                        return;
+                    }
+                }
+                if (key === 'end' && value < maxTaskEnd) {
+                    if (!confirm(`有任务的结束时间(${maxTaskEnd})晚于新设置的项目结束时间(${value})，这些任务的进度条将不显示。确定继续？`)) {
+                        return;
+                    }
+                }
+            }
             data[key] = value;
             save();
         }
 
         function updateTask(idx, key, value) {
+            // 任务自身时间检查：开始 <= 结束
+            if (key === 'start' || key === 'end') {
+                const task = data.tasks[idx];
+                const otherDate = key === 'start' ? task.end : task.start;
+                if (key === 'start' && value > otherDate) {
+                    alert('任务开始时间不能晚于结束时间！');
+                    return;
+                }
+                if (key === 'end' && value < otherDate) {
+                    alert('任务结束时间不能早于开始时间！');
+                    return;
+                }
+            }
             data.tasks[idx][key] = value;
             save();
         }
