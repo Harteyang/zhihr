@@ -586,8 +586,7 @@
         });
 
         if (!response.ok) {
-          board.innerHTML = '<div class="text-center py-8"><p class="text-sm text-red-500">加载失败，请刷新重试</p></div>';
-          return;
+          throw new Error(`GitHub API返回${response.status}`);
         }
 
         const allIssues = await response.json();
