@@ -14,6 +14,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <!-- Tailwind 配置 -->
   <script>
     tailwind.config = {
@@ -405,6 +408,16 @@
       accessKey: '$2a$10$WSf1YU/B6AcJaK1CsPYb4.V.mCaHZfPftfgBeYwtwR5dF2AeSP8i.',
       baseUrl: 'https://api.jsonbin.io/v3/b'
     };
+
+    // EmailJS 配置
+    const EMAILJS_CONFIG = {
+      publicKey: 'wSqoO64Pd08fm_YJV',
+      serviceId: 'service_xg8y8h9',
+      templateId: 'template_yoss5zo'
+    };
+
+    // 初始化 EmailJS
+    emailjs.init(EMAILJS_CONFIG.publicKey);
 
     // ==================== 工具数据配置 ====================
     const TOOLS_CONFIG = [
@@ -845,6 +858,18 @@
         });
 
         if (updateResponse.ok) {
+          // 发送邮件通知
+          try {
+            await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
+              name: name || '匿名',
+              content: content,
+              time: new Date().toLocaleString('zh-CN')
+            });
+          } catch (emailError) {
+            console.log('邮件发送失败:', emailError);
+            // 邮件失败不影响提交结果
+          }
+
           alert('需求已提交成功！我们会尽快处理 ❤️');
           // 清空表单
           nameInput.value = '';
