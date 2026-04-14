@@ -1,12 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>招聘漏斗</title>
+    <title>招聘漏斗 - 知HR工具集</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Fira Sans', 'system-ui', 'sans-serif'],
+              mono: ['Fira Code', 'monospace'],
+            },
+          }
+        }
+      }
+    </script>
 
     <style>
         * {
@@ -18,25 +39,10 @@
         body {
             background: var(--bg-gradient);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 0;
+            margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             transition: background 0.3s ease;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .title-section {
-            text-align: left;
         }
 
         h1 {
@@ -473,17 +479,19 @@
             font-size: 0.85rem;
         }
 
-        :root {
-            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #fff;
-            --text-secondary: #a0a0a0;
-            --input-bg: rgba(255, 255, 255, 0.1);
-            --input-border: rgba(255, 255, 255, 0.2);
+        /* 导航栏样式 */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
-        [data-theme="light"] {
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        :root {
             --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #d1d8e0 100%);
             --card-bg: rgba(255, 255, 255, 0.9);
             --card-border: rgba(0, 0, 0, 0.1);
@@ -491,6 +499,16 @@
             --text-secondary: #666;
             --input-bg: #fff;
             --input-border: #ddd;
+        }
+
+        .dark {
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: #a0a0a0;
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-border: rgba(255, 255, 255, 0.2);
         }
 
         .theme-toggle {
@@ -541,18 +559,54 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="title-section">
-                <h1>漏斗生成</h1>
-            </div>
-            <div class="theme-toggle" id="theme-toggle">
-                <span>🌙</span>
-                <div class="theme-switch"></div>
-                <span>☀️</span>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+
+    <!-- ==================== 统一导航栏 ==================== -->
+    <nav class="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        <!-- 左侧：Logo + 工具名称 -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.open('https://www.zhihr.vip', '_blank')">
+            <!-- Logo -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
+                <circle cx="12" cy="5" r="1"/>
+                <path d="m9 20 3-6 3 6"/>
+                <path d="m6 8 6 2 6-2"/>
+                <path d="M12 10v4"/>
+            </svg>
+
+            <!-- 工具名称 -->
+            <div>
+                <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">知HR-漏斗</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Vibe Coding，为HR制作效率工具</p>
             </div>
         </div>
+
+        <!-- 右侧：功能按钮 -->
+        <div class="flex items-center gap-2">
+            <!-- 返回首页 -->
+            <button
+                onclick="window.open('https://www.zhihr.vip', '_blank')"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="返回首页"
+                title="返回首页"
+            >
+                <i data-lucide="home" class="w-5 h-5"></i>
+            </button>
+
+            <!-- 主题切换 -->
+            <button
+                id="themeToggle"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="切换主题"
+                title="切换深色/浅色模式"
+            >
+                <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==================== 主容器 ==================== -->
+    <main class="w-full px-4 sm:px-6 lg:px-[120px] pb-10">
 
         <div class="editor-section">
             <div class="editor-title">
@@ -567,7 +621,7 @@
         </div>
 
         <div class="stats" id="stats"></div>
-    </div>
+    </main>
 
     <!-- 浮动下载按钮 -->
     <div class="download-float" id="download-float">
@@ -769,7 +823,7 @@
 
             const dataWithPercent = data.calcPercentages();
             const maxValue = Math.max(...data.data.map(d => d.value));
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const isLight = !document.documentElement.classList.contains('dark');
             const labelColor = isLight ? '#1a1a2e' : '#fff';
 
             const option = {
@@ -886,19 +940,32 @@
 
           toggleTheme() {
             const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            html.setAttribute('data-theme', currentTheme === 'light' ? 'dark' : 'light');
+            const isDark = html.classList.contains('dark');
 
-            // 返回新的主题
-            return html.getAttribute('data-theme');
+            if (isDark) {
+              html.classList.remove('dark');
+              html.classList.add('light');
+              localStorage.setItem('theme', 'light');
+            } else {
+              html.classList.remove('light');
+              html.classList.add('dark');
+              localStorage.setItem('theme', 'dark');
+            }
+
+            // 重新初始化 Lucide 图标以更新显示
+            lucide.createIcons();
+
+            return this.getCurrentTheme();
           }
 
           getCurrentTheme() {
-            return document.documentElement.getAttribute('data-theme') || 'light';
+            return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
           }
 
           setCurrentTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
+            const html = document.documentElement;
+            html.classList.remove('light', 'dark');
+            html.classList.add(theme);
           }
         }
 
@@ -1370,11 +1437,27 @@
 
         // 初始化应用
         document.addEventListener('DOMContentLoaded', () => {
+          // 初始化 Lucide 图标
+          lucide.createIcons();
+
+          // 从本地存储加载主题设置
+          const savedTheme = localStorage.getItem('theme');
+          const html = document.documentElement;
+          if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.remove('light');
+            html.classList.add('dark');
+          } else {
+            html.classList.remove('dark');
+            html.classList.add('light');
+          }
+          // 重新初始化图标以更新显示
+          lucide.createIcons();
+
           window.app = new App();
           window.app.init();
 
           // 为元素绑定事件
-          document.getElementById('theme-toggle').addEventListener('click', () => window.app.toggleTheme());
+          document.getElementById('themeToggle').addEventListener('click', () => window.app.toggleTheme());
           document.getElementById('download-float').addEventListener('click', () => window.app.showDownloadModal());
           document.getElementById('download-chart-btn').addEventListener('click', () => window.app.downloadImage('chart'));
           document.getElementById('download-full-btn').addEventListener('click', () => window.app.downloadImage('full'));
