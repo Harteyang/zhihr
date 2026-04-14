@@ -1,9 +1,41 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>动态甘特图</title>
+    <title>动态甘特图 - 知HR工具集</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#EFF6FF',
+                            100: '#DBEAFE',
+                            200: '#BFDBFE',
+                            300: '#93C5FD',
+                            400: '#60A5FA',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8',
+                            800: '#1E40AF',
+                            900: '#1E3A8A',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- 国内开源中文字体 -->
     <style>
         /* 阿里巴巴普惠体 - 商务首选 */
@@ -29,12 +61,180 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" rel="stylesheet">
     <style>
+        /* ===== 深色模式适配 ===== */
+        /* 全局背景 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; padding: 0; }
+        .dark body, body.dark-mode { background: #0f172a; }
+
+        /* 页面容器 */
+        .page-wrapper { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* 各区块深色模式 */
+        .dark .gantt-section,
+        .dark .help-section,
+        .dark .editor-section {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .dark .gantt-title,
+        .dark .help-title,
+        .dark .editor-title {
+            color: #f1f5f9;
+        }
+
+        .dark .info-bar {
+            background: #334155;
+        }
+
+        .dark .info-label {
+            color: #f1f5f9;
+        }
+
+        .dark .info-value {
+            color: #e2e8f0;
+        }
+
+        /* 表头行深色模式 */
+        .dark .gantt-row-header {
+            background: #475569;
+        }
+        .dark .gantt-row-header .task-col {
+            background: #334155;
+        }
+        .dark .gantt-row-header .weeks-col {
+            background: #475569;
+        }
+
+        /* 阶段行深色模式 */
+        .dark .gantt-row-phase {
+            background: transparent;
+        }
+        .dark .gantt-row-phase .task-col {
+            background: transparent;
+        }
+        .dark .gantt-row-phase .weeks-col {
+            background: transparent;
+        }
+        .dark .phase-label {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        /* 任务行深色模式 - 增加色彩区分提升观看体验 */
+        .dark .gantt-row-task {
+            background: #1e293b;
+            height: 36px;
+        }
+        .dark .gantt-row-task .weeks-col {
+            background: #0f172a;
+            height: 36px;
+        }
+        .dark .gantt-row-task .task-col {
+            background: #334155;
+            color: #f1f5f9;
+            height: 36px;
+        }
+
+        /* 图例深色模式 */
+        .dark .legend {
+            background: #334155;
+        }
+        .dark .legend-item span {
+            color: #e2e8f0;
+        }
+
+        /* 项目设置深色模式 */
+        .dark .project-settings {
+            background: #334155;
+        }
+        .dark .setting-item label {
+            color: #e2e8f0;
+        }
+        .dark .setting-item input {
+            background: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* 任务表格深色模式 */
+        .dark .tasks-table th {
+            background: #475569;
+        }
+        .dark .tasks-table td {
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        .dark .tasks-table tr:hover {
+            background: #334155;
+        }
+        .dark .tasks-table input,
+        .dark .tasks-table select {
+            background: #1e293b;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* 使用说明深色模式 */
+        .dark .help-item {
+            color: #cbd5e1;
+        }
+        .dark .help-item strong {
+            color: #60a5fa;
+        }
+        .dark .help-toggle,
+        .dark .editor-toggle {
+            background: #475569;
+            color: #94a3b8;
+        }
+
+        /* 选择器深色模式 */
+        .dark .color-picker,
+        .dark .emoji-picker,
+        .dark .font-picker {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .dark .color-picker-title,
+        .dark .emoji-picker-title,
+        .dark .font-picker-title {
+            color: #f1f5f9;
+        }
+        .dark .font-picker-category {
+            color: #94a3b8;
+        }
+        .dark .font-option:hover {
+            background: #334155;
+        }
+        .dark .emoji-option:hover {
+            background: #334155;
+        }
+
+        /* Tooltip深色模式 */
+        .dark .tooltip {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .dark .tooltip h4 {
+            color: #60a5fa;
+        }
+        .dark .tooltip p {
+            color: #94a3b8;
+        }
+
+        /* 字体按钮深色模式 */
+        .dark .font-btn {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .dark .font-btn:hover {
+            background: #475569;
+        }
+
         /* ===== 字体层级体系 ===== */
         /* 主标题: 20px | 分区标题: 15px | 主要内容: 14px | 次要内容: 13px | 小文本: 12px | 细节: 11px */
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; padding: 20px; }
-        .page-wrapper { max-width: 1400px; margin: 0 auto; }
 
         /* 上部展示区 */
         .gantt-section {
@@ -43,7 +243,7 @@
             border-radius: 8px;
             box-shadow: none;
             border: 1px solid #E2E8F0;
-            margin-top: 24px;
+            margin-top: 12px;
         }
         .gantt-title { font-size: 15px; font-weight: 600; color: #1E293B; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #2563EB; }
         .header { background: #2563EB; color: white; padding: 14px; text-align: center; border-radius: 4px; margin-bottom: 10px; }
@@ -109,6 +309,7 @@
             padding: 16px;
             border-radius: 8px;
             border: 1px solid #E2E8F0;
+            margin-bottom: 12px;
         }
         .project-settings { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: #F8FAFC; border-radius: 4px; min-width: max-content; }
 
@@ -193,7 +394,7 @@
         .font-btn-icon { font-size: 16px; }
 
         /* 使用说明 */
-        .help-section { background: white; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .help-section { background: white; padding: 16px; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 12px; }
         .help-header { display: flex; align-items: center; cursor: pointer; }
         .help-title { font-size: 15px; font-weight: 600; color: #1E293B; }
         .help-toggle { font-size: 12px; color: #64748B; margin-left: 8px; padding: 2px 8px; background: #F1F5F9; border-radius: 2px; }
@@ -210,7 +411,54 @@
         .editor-section.collapsed .editor-content { display: none; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+
+    <!-- ==================== 统一导航栏 ==================== -->
+    <nav class="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        <!-- 左侧：Logo + 工具名称 -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.open('https://www.zhihr.vip', '_blank')">
+            <!-- Logo -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
+                <circle cx="12" cy="5" r="1"/>
+                <path d="m9 20 3-6 3 6"/>
+                <path d="m6 8 6 2 6-2"/>
+                <path d="M12 10v4"/>
+            </svg>
+
+            <!-- 工具名称 -->
+            <div>
+                <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">知HR</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Vibe Coding，为HR制作效率工具</p>
+            </div>
+        </div>
+
+        <!-- 右侧：功能按钮 -->
+        <div class="flex items-center gap-2">
+            <!-- 主题切换 -->
+            <button
+                id="themeToggle"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="切换主题"
+                title="切换深色/浅色模式"
+            >
+                <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+            </button>
+
+            <!-- 帮助按钮 -->
+            <button
+                onclick="toggleHelp()"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="帮助"
+                title="使用说明"
+            >
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==================== 主容器 ==================== -->
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-3">
     <div class="page-wrapper">
     <!-- 使用说明 -->
     <div class="help-section collapsed" id="helpSection">
@@ -640,16 +888,25 @@
                 col.style.minWidth = maxWidth + 'px';
             });
 
-            // 更新任务列背景色
+            // 更新任务列背景色（深色模式下让CSS控制）
+            const isDark = document.documentElement.classList.contains('dark');
             const taskColElements = document.querySelectorAll('.gantt-row-task .task-col');
             taskColElements.forEach(taskCol => {
-                taskCol.style.background = data.taskColBg || '#F8FAFC';
+                if (!isDark) {
+                    taskCol.style.background = data.taskColBg || '#F8FAFC';
+                } else {
+                    taskCol.style.background = ''; // 清除inline style，让CSS控制
+                }
             });
 
-            // 更新周列背景色
+            // 更新周列背景色（深色模式下让CSS控制）
             const weeksColElements = document.querySelectorAll('.gantt-row-task .weeks-col');
             weeksColElements.forEach(weeksCol => {
-                weeksCol.style.background = data.weeksColBg || '#FAFBFC';
+                if (!isDark) {
+                    weeksCol.style.background = data.weeksColBg || '#FAFBFC';
+                } else {
+                    weeksCol.style.background = ''; // 清除inline style，让CSS控制
+                }
             });
 
             // 渲染任务条（在DOM渲染后计算实际位置）
@@ -1204,10 +1461,31 @@
             }
         }
 
-        // 初始化
+        // ==================== 主题切换 ====================
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // 检查本地存储的主题偏好
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+
+        // 主题切换功能
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            // 重新渲染以更新深色模式样式
+            render();
+        });
+
+        // ==================== 初始化 ====================
+        lucide.createIcons();
         render();
         applyFont();
     </script>
     </div>
+    </main>
 </body>
 </html>
