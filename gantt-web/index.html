@@ -67,7 +67,7 @@
         .dark body, body.dark-mode { background: #0f172a; }
 
         /* 页面容器 */
-        .page-wrapper { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .page-wrapper { max-width: 1400px; margin: 0 auto; padding: 0 20px 20px; }
 
         /* 各区块深色模式 */
         .dark .gantt-section,
@@ -427,13 +427,23 @@
 
             <!-- 工具名称 -->
             <div>
-                <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">知HR</h1>
+                <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">知HR-甘特图</h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Vibe Coding，为HR制作效率工具</p>
             </div>
         </div>
 
         <!-- 右侧：功能按钮 -->
         <div class="flex items-center gap-2">
+            <!-- 返回首页 -->
+            <button
+                onclick="window.open('https://www.zhihr.vip', '_blank')"
+                class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="返回首页"
+                title="返回首页"
+            >
+                <i data-lucide="home" class="w-5 h-5"></i>
+            </button>
+
             <!-- 主题切换 -->
             <button
                 id="themeToggle"
@@ -458,7 +468,7 @@
     </nav>
 
     <!-- ==================== 主容器 ==================== -->
-    <main class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-3">
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-3">
     <div class="page-wrapper">
     <!-- 使用说明 -->
     <div class="help-section collapsed" id="helpSection">
