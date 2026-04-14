@@ -398,10 +398,12 @@
     // 初始化 Lucide 图标
     lucide.createIcons();
 
-    // ==================== 飞书表单配置 ====================
-// 用户点击提交后跳转到飞书表单填写
-const FEISHU_CONFIG = {
-      formUrl: 'https://my.feishu.cn/share/base/form/shrcnulJr9JStTAgrJf0nCQiUff'
+    // ==================== API 配置 ====================
+    // JSONBin.io API配置
+    const API_CONFIG = {
+      binId: '69dde8c6856a6821893044cc',
+      accessKey: '$2a$10$WSf1YU/B6AcJaK1CsPYb4.V.mCaHZfPftfgBeYwtwR5dF2AeSP8i.',
+      baseUrl: 'https://api.jsonbin.io/v3/b'
     };
 
     // ==================== 工具数据配置 ====================
@@ -570,11 +572,82 @@ const FEISHU_CONFIG = {
       alert('使用说明：\n\n1. 点击彩色拼图块打开对应工具\n2. 点击灰色拼图块提交新工具建议\n3. 使用搜索按钮快速查找工具\n4. 切换深色/浅色模式适应环境');
     });
 
-    // ==================== 反馈看板渲染（使用模拟数据） ====================
-    function renderFeedbackBoard() {
+    // ==================== 反馈看板渲染（从JSONBin.io拉取） ====================
+    async function renderFeedbackBoard() {
       const board = document.getElementById('feedbackBoard');
+      board.innerHTML = '<div class="text-center py-8"><p class="text-sm text-slate-500">正在加载...</p></div>';
+
+      try {
+        const response = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
+          headers: {
+            'X-Access-Key': API_CONFIG.accessKey
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`API返回${response.status}`);
+        }
+
+        const data = await response.json();
+        const feedbacks = data.record?.feedbacks || [];
+
+        if (feedbacks.length === 0) {
+          board.innerHTML = `
+            <div class="text-center py-8">
+              <p class="text-sm text-slate-500 dark:text-slate-400">暂无提交的需求</p>
+              <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">提交后将在此显示</p>
+            </div>
+          `;
+          return;
+        }
+
+        // 按时间倒序排列（最新的在前）
+        feedbacks.sort((a, b) => new Date(b.time) - new Date(a.time));
+        renderFeedbackItems(board, feedbacks);
+      } catch (error) {
+        console.log('API失败，显示模拟数据:', error.message);
+        renderMockFeedbacks(board);
+      }
+    }
+
+    // ==================== 渲染反馈列表项 ====================
+    function renderFeedbackItems(board, feedbacks) {
       board.innerHTML = '';
-      renderMockFeedbacks(board);
+
+      const statusColors = {
+        'pending': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+        'processing': 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+        'completed': 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+      };
+      const statusTexts = {
+        'pending': '待处理',
+        'processing': '处理中',
+        'completed': '已完成'
+      };
+
+      feedbacks.forEach(fb => {
+        const item = document.createElement('div');
+        item.className = 'bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3';
+
+        // 格式化时间
+        const time = new Date(fb.time);
+        const timeStr = `${time.getFullYear()}年${time.getMonth() + 1}月${time.getDate()}日`;
+
+        item.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden">
+            <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+              <span class="text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap">${fb.name}</span>
+              <span class="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">${timeStr}</span>
+              <span class="px-2 py-1 text-xs rounded-full ${statusColors[fb.status]} whitespace-nowrap">${statusTexts[fb.status]}</span>
+            </div>
+            <div class="text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden">
+              <span class="block truncate">${fb.content}</span>
+            </div>
+          </div>
+        `;
+
+        board.appendChild(item);
+      });
     }
 
     // ==================== 模拟数据（API失败时显示） ====================
@@ -704,24 +777,98 @@ const FEISHU_CONFIG = {
     const feedbackForm = document.getElementById('feedbackForm');
     const submitBtn = document.getElementById('submitBtn');
 
-    feedbackForm.addEventListener('submit', (e) => {
+    feedbackForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // 跳转到飞书表单填写需求
-      window.open(FEISHU_CONFIG.formUrl, '_blank');
+      // 验证验证码
+      const captchaInput = document.getElementById('captchaInput');
+      const userAnswer = parseInt(captchaInput.value);
+      if (userAnswer !== captchaAnswer) {
+        document.getElementById('captchaError').classList.remove('hidden');
+        generateCaptcha();
+        return;
+      }
 
-      // 提示用户
-      alert('正在跳转到飞书表单页面，请在表单中填写您的需求 ❤️');
+      const nameInput = document.getElementById('feedbackName');
+      const contentInput = document.getElementById('feedbackContent');
+      const name = nameInput.value.trim();
+      const content = contentInput.value.trim();
 
-      // 清空本地表单
-      document.getElementById('feedbackName').value = '';
-      document.getElementById('feedbackContent').value = '';
-      generateCaptcha();
+      if (!content) {
+        alert('请输入需求内容');
+        return;
+      }
+
+      // 提交到 JSONBin.io API
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>提交中...</span>';
+      lucide.createIcons();
+
+      try {
+        // 先读取现有数据
+        const readResponse = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
+          headers: {
+            'X-Access-Key': API_CONFIG.accessKey
+          }
+        });
+
+        const readData = await readResponse.json();
+        const existingFeedbacks = readData.record?.feedbacks || [];
+
+        // 创建新需求
+        const newFeedback = {
+          id: `req_${Date.now()}`,
+          name: name || '匿名',
+          content: content,
+          time: new Date().toISOString(),
+          status: 'pending'
+        };
+
+        // 添加到列表
+        existingFeedbacks.push(newFeedback);
+
+        // 最多保留100条
+        if (existingFeedbacks.length > 100) {
+          existingFeedbacks.splice(0, existingFeedbacks.length - 100);
+        }
+
+        // 更新bin
+        const updateResponse = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Access-Key': API_CONFIG.accessKey
+          },
+          body: JSON.stringify({
+            feedbacks: existingFeedbacks
+          })
+        });
+
+        if (updateResponse.ok) {
+          alert('需求已提交成功！我们会尽快处理 ❤️');
+          // 清空表单
+          nameInput.value = '';
+          contentInput.value = '';
+          generateCaptcha();
+          // 刷新看板
+          renderFeedbackBoard();
+        } else {
+          const errorData = await updateResponse.json();
+          alert('提交失败，请稍后重试。\n' + (errorData.message || '未知错误'));
+        }
+      } catch (error) {
+        alert('提交失败。\n网络错误：' + error.message);
+      }
+
+      // 恢复按钮状态
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i><span>提交需求</span>';
+      lucide.createIcons();
     });
 
     // ==================== 初始化 ====================
     renderMosaicGrid();
-    renderFeedbackBoard(); // 使用模拟数据展示
+    renderFeedbackBoard(); // 从JSONBin.io拉取数据
   </script>
 
 </body>
