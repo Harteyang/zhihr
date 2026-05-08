@@ -26,6 +26,11 @@
     <style>
         html { scroll-behavior: smooth; }
         body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         
         .modal-overlay {
             display: none;
@@ -95,6 +100,93 @@
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 font-sans">
 
+    <!-- 自定义确认对话框 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-sm mx-4">
+            <div class="text-center">
+                <div id="confirmIcon" class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <i data-lucide="alert-circle" class="w-8 h-8 text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2"></h3>
+                <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6"></p>
+                <div class="flex gap-3">
+                    <button id="confirmBtn" onclick="confirmCallback(true)" class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                        确定
+                    </button>
+                    <button id="cancelBtn" onclick="confirmCallback(false)" class="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册 Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">任务管理</h2>
+                <button onclick="closeLoginModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <!-- 登录表单 -->
+            <div id="loginFormContent">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
+                        <input type="text" id="loginUsername" placeholder="输入账号" 
+                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onkeypress="if(event.key==='Enter'){document.getElementById('loginPassword').focus();}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
+                        <input type="password" id="loginPassword" placeholder="输入密码" 
+                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onkeypress="if(event.key==='Enter'){handleLogin();}">
+                    </div>
+                    <div id="loginError" class="text-sm text-red-500 hidden"></div>
+                    <button id="loginBtn" onclick="handleLogin()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                        登录
+                    </button>
+                    <p class="text-center text-sm text-slate-500 dark:text-slate-400">
+                        没有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">注册新账号</a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div id="registerFormContent" class="hidden">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
+                        <input type="text" id="registerUsername" placeholder="设置账号" minlength="3"
+                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
+                        <input type="password" id="registerPassword" placeholder="设置密码（至少4位）" minlength="4"
+                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">确认密码</label>
+                        <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码"
+                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onkeypress="if(event.key==='Enter'){handleRegister();}">
+                    </div>
+                    <div id="registerError" class="text-sm text-red-500 hidden"></div>
+                    <button id="registerBtn" onclick="handleRegister()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                        注册
+                    </button>
+                    <p class="text-center text-sm text-slate-500 dark:text-slate-400">
+                        已有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">登录</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 统一导航栏 -->
     <nav class="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
         <div class="flex items-center gap-3 cursor-pointer" onclick="window.open('https://www.zhihr.vip', '_blank')">
@@ -129,7 +221,7 @@
         
         <!-- 筛选栏 -->
         <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm p-4 mb-5 no-print">
-            <div class="flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex flex-col md:flex-row md:items-center gap-4 text-sm">
                 <div class="flex flex-wrap items-center gap-3">
                     <button onclick="openAddModal()" class="px-3 py-1.5 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer flex items-center gap-1.5" title="新建任务">
                         <i data-lucide="plus" class="w-4 h-4"></i>
@@ -142,7 +234,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <label class="text-slate-600 dark:text-slate-400">状态:</label>
-                        <select id="filterStatus" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filterStatus" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">全部</option>
                             <option value="待办">待办</option>
                             <option value="进行中">进行中</option>
@@ -150,8 +242,8 @@
                         </select>
                     </div>
                     <div class="flex items-center gap-2">
-                        <label class="text-sm text-slate-600 dark:text-slate-400">优先级:</label>
-                        <select id="filterPriority" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="text-slate-600 dark:text-slate-400">优先级:</label>
+                        <select id="filterPriority" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">全部</option>
                             <option value="高">高</option>
                             <option value="中">中</option>
@@ -159,8 +251,8 @@
                         </select>
                     </div>
                     <div class="flex items-center gap-2">
-                        <label class="text-sm text-slate-600 dark:text-slate-400">分类:</label>
-                        <select id="filterCategory" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="text-slate-600 dark:text-slate-400">分类:</label>
+                        <select id="filterCategory" onchange="renderTasks()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">全部</option>
                         </select>
                         <button onclick="openCategoryModal()" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors cursor-pointer" title="管理分类">
@@ -169,9 +261,39 @@
                     </div>
                 </div>
                 <div class="flex-1">
-                    <div class="relative">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="searchInput" class="w-full md:w-64 pl-9 pr-4 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="搜索任务..." oninput="renderTasks()">
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex-1">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="searchInput" class="w-full md:w-64 pl-9 pr-4 py-1.5 border border-slate-300 dark:border-slate-600 rounded-md text-sm bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="搜索任务..." oninput="renderTasks()">
+                        </div>
+                        <div id="userArea" class="flex items-center gap-2">
+                            <!-- 未登录状态 -->
+                            <button id="btnLogin" onclick="openLoginModal()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                                <i data-lucide="log-in" class="w-4 h-4"></i>
+                                <span class="hidden sm:inline">登录</span>
+                            </button>
+                            <!-- 登录状态 -->
+                            <div id="loggedInArea" class="hidden relative">
+                                <button id="btnUser" onclick="toggleUserMenu()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                    <span id="userDisplay" class="hidden sm:inline">账号</span>
+                                </button>
+                                <!-- 用户下拉菜单 -->
+                                <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+                                    <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                        <span id="menuUserDisplay"></span>
+                                    </div>
+                                    <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
+                                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                                        退出登录
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="syncData()" id="btnSync" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5" title="云端同步">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span id="btnSyncText" class="hidden sm:inline">同步</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -363,6 +485,837 @@
     <input type="file" id="fileInput" accept=".csv,.md,.markdown,.txt" class="hidden" onchange="handleFileImport(event)">
 
     <script>
+        // ========================================
+        // JSONbin.io 配置
+        // ========================================
+        const JSONBIN_BIN_ID = '69fddfcbc0954111d8f505d6';
+        const JSONBIN_SECRET_KEY = '$2a$10$A4WXM7YJlx4zHhPpLl3jD.jYQpFZTLqYtpC6ahlTnlo1mnFRkLXcG';
+        const JSONBIN_API_URL = 'https://api.jsonbin.io/v3';
+
+        let isOnline = navigator.onLine;
+        let currentUserId = null;
+        let isSyncing = false;
+        let offlineQueue = [];
+
+        // ========================================
+        // 离线操作队列管理
+        // ========================================
+        
+        function saveOfflineQueue() {
+            localStorage.setItem('taskManagerOfflineQueue', JSON.stringify(offlineQueue));
+        }
+
+        function loadOfflineQueue() {
+            const saved = localStorage.getItem('taskManagerOfflineQueue');
+            if (saved) {
+                try {
+                    offlineQueue = JSON.parse(saved);
+                } catch (e) {
+                    offlineQueue = [];
+                }
+            }
+        }
+
+        function addToOfflineQueue(operation, data) {
+            offlineQueue.push({
+                operation: operation,
+                data: data,
+                timestamp: new Date().toISOString()
+            });
+            saveOfflineQueue();
+            console.log('已添加离线操作:', operation, data);
+        }
+
+        async function processOfflineQueue() {
+            if (!isOnline || !currentUserId || offlineQueue.length === 0) {
+                return;
+            }
+
+            console.log('开始处理离线队列，共', offlineQueue.length, '个操作');
+
+            const queue = [...offlineQueue];
+            offlineQueue = [];
+            saveOfflineQueue();
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const item of queue) {
+                try {
+                    switch (item.operation) {
+                        case 'save':
+                            await saveToCloud();
+                            successCount++;
+                            break;
+                        case 'merge':
+                            await mergeLocalAndCloudData();
+                            successCount++;
+                            break;
+                        default:
+                            console.warn('未知操作类型:', item.operation);
+                    }
+                } catch (error) {
+                    console.error('处理离线操作失败:', error);
+                    failCount++;
+                    // 将失败的操作重新加入队列
+                    offlineQueue.push(item);
+                }
+            }
+
+            if (offlineQueue.length > 0) {
+                saveOfflineQueue();
+            }
+
+            console.log('离线队列处理完成: 成功', successCount, '个, 失败', failCount, '个');
+            
+            if (successCount > 0) {
+                alert('离线操作已同步到云端');
+            }
+        }
+
+        // 网络状态变化监听
+        window.addEventListener('online', () => {
+            isOnline = true;
+            console.log('网络已恢复');
+            
+            // 自动处理离线队列
+            if (currentUserId && offlineQueue.length > 0) {
+                processOfflineQueue();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            console.log('网络已断开');
+        });
+
+        // ========================================
+        // 用户认证
+        // ========================================
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getUserId() {
+            return localStorage.getItem('taskManagerUserId');
+        }
+
+        function getUsername() {
+            return localStorage.getItem('taskManagerUsername');
+        }
+
+        function setUserId(userId) {
+            localStorage.setItem('taskManagerUserId', userId);
+            currentUserId = userId;
+        }
+
+        function setUsername(username) {
+            localStorage.setItem('taskManagerUsername', username);
+        }
+
+        function clearUserId() {
+            localStorage.removeItem('taskManagerUserId');
+            localStorage.removeItem('taskManagerUsername');
+            currentUserId = null;
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        let confirmResolve = null;
+
+        function showConfirmDialog(title, message, confirmText = '确定', cancelText = '取消') {
+            return new Promise((resolve) => {
+                confirmResolve = resolve;
+                
+                document.getElementById('confirmTitle').textContent = title;
+                document.getElementById('confirmMessage').textContent = message;
+                document.getElementById('confirmBtn').textContent = confirmText;
+                document.getElementById('cancelBtn').textContent = cancelText;
+                
+                document.getElementById('confirmModal').classList.add('active');
+                lucide.createIcons();
+            });
+        }
+
+        function confirmCallback(result) {
+            document.getElementById('confirmModal').classList.remove('active');
+            if (confirmResolve) {
+                confirmResolve(result);
+                confirmResolve = null;
+            }
+        }
+
+        let currentErrorTimeout = null;
+        function showError(errorElement, message, duration = 3000) {
+            if (currentErrorTimeout) {
+                clearTimeout(currentErrorTimeout);
+            }
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            currentErrorTimeout = setTimeout(() => {
+                errorElement.classList.add('hidden');
+            }, duration);
+        }
+
+        function setAuthButtonLoading(buttonId, loading, originalText) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                btn.disabled = loading;
+                btn.textContent = loading ? '请稍候...' : originalText;
+            }
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const loginError = document.getElementById('loginError');
+
+            if (!username || !password) {
+                showError(loginError, '请输入账号和密码');
+                return;
+            }
+
+            setAuthButtonLoading('loginBtn', true, '登录');
+            try {
+                const userId = await hashPassword(username + ':' + password);
+                setUserId(userId);
+                setUsername(username);
+                
+                closeLoginModal();
+                updateUserDisplay();
+
+                const hasLocalData = tasks.length > 0;
+                
+                if (hasLocalData && isOnline) {
+                    const choice = await showConfirmDialog(
+                        '数据同步',
+                        `检测到本地有 ${tasks.length} 个任务，如何处理？`,
+                        '合并',
+                        '清空'
+                    );
+                    
+                    if (choice) {
+                        await mergeLocalAndCloudData();
+                        alert('本地数据已合并到云端');
+                    }
+                }
+
+                await loadFromCloud();
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(loginError, '登录失败，请重试');
+            } finally {
+                setAuthButtonLoading('loginBtn', false, '登录');
+            }
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            const registerError = document.getElementById('registerError');
+
+            if (!username || !password || !passwordConfirm) {
+                showError(registerError, '请填写所有字段');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError(registerError, '账号至少3个字符');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showError(registerError, '两次密码不一致');
+                return;
+            }
+
+            if (password.length < 4) {
+                showError(registerError, '密码至少4位');
+                return;
+            }
+
+            setAuthButtonLoading('registerBtn', true, '注册');
+            try {
+                if (await isUsernameTaken(username)) {
+                    showError(registerError, '该账号已被注册，请使用其他账号');
+                    return;
+                }
+
+                const userId = await hashPassword(username + ':' + password);
+                setUserId(userId);
+                setUsername(username);
+                
+                closeLoginModal();
+                updateUserDisplay();
+                
+                await saveUsernameToCloud(username);
+                await loadFromCloud();
+            } catch (error) {
+                console.error('Register error:', error);
+                showError(registerError, '注册失败，请重试');
+            } finally {
+                setAuthButtonLoading('registerBtn', false, '注册');
+            }
+        }
+
+        function toggleAuthMode() {
+            const loginFormContent = document.getElementById('loginFormContent');
+            const registerFormContent = document.getElementById('registerFormContent');
+            const loginError = document.getElementById('loginError');
+            const registerError = document.getElementById('registerError');
+
+            if (registerFormContent.classList.contains('hidden')) {
+                loginFormContent.classList.add('hidden');
+                registerFormContent.classList.remove('hidden');
+                registerError.classList.add('hidden');
+            } else {
+                loginFormContent.classList.remove('hidden');
+                registerFormContent.classList.add('hidden');
+                loginError.classList.add('hidden');
+            }
+        }
+
+        async function handleLogout() {
+            const confirmExit = await showConfirmDialog(
+                '退出登录',
+                '确定要退出登录吗？',
+                '退出',
+                '取消'
+            );
+            
+            if (!confirmExit) {
+                return;
+            }
+
+            const hasData = tasks.length > 0;
+            
+            if (hasData) {
+                const choice = await showConfirmDialog(
+                    '数据处理',
+                    `检测到当前账号有 ${tasks.length} 个任务，如何处理？`,
+                    '清空',
+                    '保留'
+                );
+                
+                if (!choice) {
+                    // 保留数据到本地
+                    saveToStorage();
+                    clearUserId();
+                    document.getElementById('userMenu').classList.add('hidden');
+                    updateUserDisplay();
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginError').classList.add('hidden');
+                    alert('任务数据已保留到本地');
+                    return;
+                }
+            }
+
+            // 清空数据
+            clearUserId();
+            tasks = [];
+            categories = ['工作', '生活', '学习', '其他'];
+            document.getElementById('userMenu').classList.add('hidden');
+            updateUserDisplay();
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            localStorage.removeItem('tasks');
+            localStorage.removeItem('categories');
+            renderTasks();
+            updateCategoryFilter();
+        }
+
+        function showMainApp() {
+            updateUserDisplay();
+            renderTasks();
+            updateCategoryFilter();
+            lucide.createIcons();
+        }
+
+        function updateUserDisplay() {
+            const username = getUsername();
+            
+            if (currentUserId && username) {
+                // 已登录状态
+                document.getElementById('btnLogin').classList.add('hidden');
+                document.getElementById('loggedInArea').classList.remove('hidden');
+                document.getElementById('userDisplay').textContent = username;
+                document.getElementById('menuUserDisplay').textContent = username;
+            } else {
+                // 未登录状态
+                document.getElementById('btnLogin').classList.remove('hidden');
+                document.getElementById('loggedInArea').classList.add('hidden');
+            }
+        }
+
+        function openLoginModal() {
+            document.getElementById('loginFormContent').classList.remove('hidden');
+            document.getElementById('registerFormContent').classList.add('hidden');
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // 点击其他地方关闭菜单
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('userMenu');
+            const btn = document.getElementById('btnUser');
+            if (menu && btn && !menu.classList.contains('hidden')) {
+                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            }
+        });
+
+        // ========================================
+        // 在线状态
+        // ========================================
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('onlineIndicator');
+            const text = document.getElementById('syncText');
+            
+            if (isOnline) {
+                indicator.classList.remove('bg-red-500');
+                indicator.classList.add('bg-green-500');
+                text.textContent = '在线';
+            } else {
+                indicator.classList.remove('bg-green-500');
+                indicator.classList.add('bg-red-500');
+                text.textContent = '离线';
+            }
+        }
+
+        window.addEventListener('online', () => {
+            isOnline = true;
+            updateOnlineStatus();
+            if (currentUserId) {
+                syncData();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            updateOnlineStatus();
+        });
+
+        // ========================================
+        // 云端同步
+        // ========================================
+        async function loadFromCloud() {
+            if (!isOnline) {
+                console.log('当前离线，使用本地数据');
+                return;
+            }
+
+            if (!currentUserId) {
+                console.log('未登录，使用本地数据');
+                return;
+            }
+
+            try {
+                console.log('开始从云端加载数据...');
+                
+                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    }
+                });
+
+                console.log('获取数据响应状态:', response.status);
+
+                if (response.status === 404) {
+                    // 云端没有数据，保存本地数据到云端
+                    console.log('云端数据不存在，保存本地数据...');
+                    await saveToCloud();
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('加载失败响应:', errorText);
+                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('云端数据:', data);
+
+                const cloudData = data.record;
+
+                if (cloudData && cloudData.users && cloudData.users[currentUserId]) {
+                    const userData = cloudData.users[currentUserId];
+                    tasks = userData.tasks || [];
+                    categories = userData.categories || ['工作', '生活', '学习', '其他'];
+                    
+                    saveToStorage();
+                    renderTasks();
+                    updateCategoryFilter();
+                    console.log('已从云端加载数据:', tasks.length, '个任务');
+                    alert('已从云端加载 ' + tasks.length + ' 个任务');
+                } else {
+                    // 新用户，云端没有该用户数据，保存本地数据
+                    console.log('新用户，保存数据到云端...');
+                    await saveToCloud();
+                }
+            } catch (error) {
+                console.error('加载云端数据失败:', error);
+                alert('加载云端数据失败，请检查网络\n错误: ' + error.message);
+            }
+        }
+
+        // 通用云端数据获取函数
+        async function fetchCloudData() {
+            if (!isOnline) {
+                return null;
+            }
+
+            try {
+                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    }
+                });
+
+                if (response.status === 404) {
+                    return null;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.record || null;
+            } catch (error) {
+                console.error('获取云端数据失败:', error);
+                return null;
+            }
+        }
+
+        // 通用云端数据保存函数
+        async function saveCloudData(cloudData) {
+            if (!isOnline) {
+                throw new Error('当前离线，无法保存');
+            }
+
+            try {
+                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`保存失败: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('保存到云端失败:', error);
+                throw error;
+            }
+        }
+
+        async function isUsernameTaken(username) {
+            if (!isOnline) {
+                return false;
+            }
+
+            const cloudData = await fetchCloudData();
+            if (!cloudData || !cloudData.usernames) {
+                return false;
+            }
+
+            return cloudData.usernames.includes(username);
+        }
+
+        async function saveUsernameToCloud(username) {
+            if (!isOnline) return;
+
+            const cloudData = await fetchCloudData() || { users: {}, usernames: [] };
+            
+            if (!cloudData.usernames) {
+                cloudData.usernames = [];
+            }
+
+            if (!cloudData.usernames.includes(username)) {
+                cloudData.usernames.push(username);
+            }
+
+            await saveCloudData(cloudData);
+            console.log('用户名已保存到云端:', username);
+        }
+
+        async function mergeLocalAndCloudData() {
+            if (!isOnline || !currentUserId) return;
+
+            const cloudData = await fetchCloudData() || { users: {} };
+
+            if (!cloudData.users) {
+                cloudData.users = {};
+            }
+
+            if (!cloudData.users[currentUserId]) {
+                cloudData.users[currentUserId] = {
+                    tasks: [],
+                    categories: ['工作', '生活', '学习', '其他'],
+                    updatedAt: new Date().toISOString(),
+                    lastSyncTime: new Date().toISOString()
+                };
+            }
+
+            const cloudTasks = cloudData.users[currentUserId].tasks || [];
+            const cloudCategories = cloudData.users[currentUserId].categories || ['工作', '生活', '学习', '其他'];
+
+            // 合并任务：保留云端和本地的所有任务，去重（按id）
+            const mergedTasks = [...cloudTasks];
+            
+            tasks.forEach(localTask => {
+                const exists = mergedTasks.find(t => t.id === localTask.id);
+                if (!exists) {
+                    mergedTasks.push(localTask);
+                } else {
+                    // 如果本地任务更新时间更晚，用本地的覆盖
+                    const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
+                    const cloudTime = new Date(exists.updated_at || exists.created_at || '1970-01-01').getTime();
+                    if (localTime > cloudTime) {
+                        const index = mergedTasks.findIndex(t => t.id === localTask.id);
+                        mergedTasks[index] = localTask;
+                    }
+                }
+            });
+
+            // 合并分类：保留所有分类，去重
+            const mergedCategories = [...new Set([...cloudCategories, ...categories])];
+
+            // 更新合并后的数据
+            cloudData.users[currentUserId] = {
+                tasks: mergedTasks,
+                categories: mergedCategories,
+                updatedAt: new Date().toISOString(),
+                lastSyncTime: new Date().toISOString()
+            };
+
+            await saveCloudData(cloudData);
+            console.log('数据合并成功:', mergedTasks.length, '个任务');
+        }
+
+        async function saveToCloud() {
+            if (!currentUserId) {
+                console.log('无法保存到云端: 未登录');
+                return;
+            }
+
+            if (!isOnline) {
+                console.log('当前离线，将操作添加到队列');
+                addToOfflineQueue('save', { tasksCount: tasks.length });
+                return;
+            }
+
+            try {
+                console.log('开始保存到云端...');
+                console.log('API URL:', `${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`);
+                console.log('数据内容:', { tasks: tasks, categories: categories });
+
+                // 先获取现有数据
+                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    }
+                });
+
+                console.log('获取现有数据响应状态:', response.status);
+
+                let cloudData = { users: {} };
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('现有云端数据:', data);
+                    cloudData = data.record || {};
+                } else if (response.status !== 404) {
+                    console.error('获取现有数据失败:', response.status, response.statusText);
+                }
+
+                // 确保 users 对象存在
+                if (!cloudData.users) {
+                    cloudData.users = {};
+                }
+
+                const syncTime = new Date().toISOString();
+                
+                cloudData.users[currentUserId] = {
+                    tasks: tasks,
+                    categories: categories,
+                    updatedAt: syncTime,
+                    lastSyncTime: syncTime
+                };
+
+                console.log('准备上传的数据:', cloudData);
+
+                // 上传数据
+                const putResponse = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+
+                console.log('上传响应状态:', putResponse.status, putResponse.statusText);
+
+                if (!putResponse.ok) {
+                    const errorText = await putResponse.text();
+                    console.error('上传失败响应:', errorText);
+                    throw new Error(`保存失败: ${putResponse.status} ${putResponse.statusText}`);
+                }
+
+                const responseData = await putResponse.json();
+                console.log('上传成功响应:', responseData);
+
+                console.log('数据已保存到云端:', tasks.length, '个任务');
+                alert('同步成功！数据已保存到云端');
+            } catch (error) {
+                console.error('保存到云端失败:', error);
+                alert('保存到云端失败，请检查网络\n错误: ' + error.message);
+            }
+        }
+
+        async function syncData() {
+            if (isSyncing) {
+                return;
+            }
+
+            if (!isOnline) {
+                alert('当前离线，请连接网络后重试');
+                return;
+            }
+
+            if (!currentUserId) {
+                openLoginModal();
+                return;
+            }
+
+            isSyncing = true;
+            updateSyncButton(true);
+
+            try {
+                await smartSync();
+            } finally {
+                isSyncing = false;
+                updateSyncButton(false);
+            }
+        }
+
+        function updateSyncButton(loading) {
+            const btn = document.getElementById('btnSync');
+            const btnText = document.getElementById('btnSyncText');
+            if (btn) {
+                btn.disabled = loading;
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.style.animation = loading ? 'spin 1s linear infinite' : 'none';
+                }
+            }
+            if (btnText) {
+                btnText.textContent = loading ? '同步中...' : '同步';
+            }
+        }
+
+        async function smartSync() {
+            if (!isOnline || !currentUserId) return;
+
+            try {
+                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_SECRET_KEY
+                    }
+                });
+
+                if (response.status === 404) {
+                    await saveToCloud();
+                    alert('同步成功！本地数据已上传到云端');
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('加载失败');
+                }
+
+                const data = await response.json();
+                const cloudData = data.record;
+
+                if (!cloudData || !cloudData.users || !cloudData.users[currentUserId]) {
+                    await saveToCloud();
+                    alert('同步成功！本地数据已上传到云端');
+                    return;
+                }
+
+                const userData = cloudData.users[currentUserId];
+                const cloudUpdatedAt = userData.updatedAt || '1970-01-01T00:00:00Z';
+                const localUpdatedAt = getLocalUpdatedAt();
+
+                console.log('云端更新时间:', cloudUpdatedAt);
+                console.log('本地更新时间:', localUpdatedAt);
+
+                const cloudTime = new Date(cloudUpdatedAt).getTime();
+                const localTime = new Date(localUpdatedAt).getTime();
+
+                if (cloudTime > localTime) {
+                    // 云端数据更新，加载到本地
+                    tasks = userData.tasks || [];
+                    categories = userData.categories || ['工作', '生活', '学习', '其他'];
+                    saveToStorage();
+                    renderTasks();
+                    updateCategoryFilter();
+                    alert('同步成功！已从云端更新数据');
+                } else if (localTime > cloudTime) {
+                    // 本地数据更新，保存到云端
+                    await saveToCloud();
+                    alert('同步成功！本地数据已上传到云端');
+                } else {
+                    alert('数据已是最新，无需同步');
+                }
+            } catch (error) {
+                console.error('同步失败:', error);
+                alert('同步失败，请稍后重试');
+            }
+        }
+
+        function getLocalUpdatedAt() {
+            if (tasks.length === 0) {
+                return '1970-01-01T00:00:00Z';
+            }
+            
+            let latestTime = '1970-01-01T00:00:00Z';
+            tasks.forEach(task => {
+                if (task.updated_at) {
+                    const taskTime = new Date(task.updated_at).getTime();
+                    const latest = new Date(latestTime).getTime();
+                    if (taskTime > latest) {
+                        latestTime = task.updated_at;
+                    }
+                }
+            });
+            
+            return latestTime;
+        }
+
+        // ========================================
+        // 原有功能
+        // ========================================
         lucide.createIcons();
         
         const STATUS = { TODO: '待办', IN_PROGRESS: '进行中', COMPLETED: '已完成' };
@@ -375,7 +1328,37 @@
         let importMode = 'add';
         
         document.addEventListener('DOMContentLoaded', () => {
+            isOnline = navigator.onLine;
+            
+            // 加载离线队列
+            loadOfflineQueue();
+            
+            // 先加载本地数据作为默认值
             loadFromStorage();
+            
+            // 检查是否已登录
+            const savedUserId = getUserId();
+            
+            if (savedUserId) {
+                // 已登录，加载云端数据
+                currentUserId = savedUserId;
+                updateUserDisplay();
+                
+                if (isOnline) {
+                    setTimeout(() => {
+                        loadFromCloud();
+                    }, 500);
+                }
+            }
+            
+            // 如果有离线队列且在线，自动处理
+            if (isOnline && currentUserId && offlineQueue.length > 0) {
+                setTimeout(() => {
+                    processOfflineQueue();
+                }, 2000);
+            }
+            
+            // 初始化任务
             tasks.forEach(task => {
                 if (task.status === STATUS.COMPLETED && !task.completed_at) {
                     task.completed_at = task.updated_at || task.created_at || new Date().toISOString();
