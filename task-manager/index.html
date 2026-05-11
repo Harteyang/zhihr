@@ -1708,7 +1708,7 @@
             document.getElementById('addTaskModal').classList.remove('active');
         }
 
-        function saveNewTask(event) {
+        async function saveNewTask(event) {
             event.preventDefault();
 
             const newTask = {
@@ -1727,6 +1727,10 @@
             saveToStorage();
             renderTasks();
             closeAddModal();
+
+            if (currentUserId) {
+                await saveToCloud();
+            }
         }
 
         function updateNewTaskCategorySelect() {
