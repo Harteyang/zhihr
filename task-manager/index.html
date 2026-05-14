@@ -50,6 +50,8 @@
         }
         
         .dark .task-table tbody tr:hover { background: #334155; }
+.task-table tbody tr .delete-btn { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.task-table tbody tr:hover .delete-btn { opacity: 1; pointer-events: auto; }
         .task-table tbody tr.completed { background: #e8f5e9; }
         .task-table tbody tr.completed td { color: #2e7d32; }
         .dark .task-table tbody tr.completed { background: #1b3d1e; }
@@ -1649,7 +1651,7 @@
                         ${escapeHtml(task.description) || '-'}
                     </td>
                     <td class="px-3 py-3 text-center">
-                        <button onclick="deleteTask(${task.id})" class="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer" title="删除任务">
+                        <button onclick="deleteTask(${task.id})" class="delete-btn p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer" title="删除任务">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
