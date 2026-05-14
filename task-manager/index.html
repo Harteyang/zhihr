@@ -54,6 +54,8 @@
         .task-table tbody tr.completed td { color: #2e7d32; }
         .dark .task-table tbody tr.completed { background: #1b3d1e; }
         .dark .task-table tbody tr.completed td { color: #81c784; }
+        .task-table tbody tr.overdue { background: #ffebee; }
+        .dark .task-table tbody tr.overdue { background: #3b1c1c; }
         .dark .task-table th { background: #1e293b; }
         
         .task-table th { position: relative; }
@@ -1107,7 +1109,7 @@
             console.log('数据合并成功:', mergedTasks.length, '个任务');
         }
 
-        async function saveToCloud() {
+        async function saveToCloud(silent = false) {
             if (!currentUserId) {
                 console.log('无法保存到云端: 未登录');
                 return;
@@ -1181,10 +1183,10 @@
                 console.log('上传成功响应:', responseData);
 
                 console.log('数据已保存到云端:', tasks.length, '个任务');
-                alert('同步成功！数据已保存到云端');
+                if (!silent) alert('同步成功！数据已保存到云端');
             } catch (error) {
                 console.error('保存到云端失败:', error);
-                alert('保存到云端失败，请检查网络\n错误: ' + error.message);
+                if (!silent) alert('保存到云端失败，请检查网络\n错误: ' + error.message);
             }
         }
 
@@ -1613,12 +1615,13 @@
 
         function renderTaskRow(task) {
             const isCompleted = task.status === STATUS.COMPLETED;
+            const isOverdue = (task.status === STATUS.TODO || task.status === STATUS.IN_PROGRESS) && task.due_date && task.due_date < new Date().toLocaleDateString('sv-SE');
             const priorityClass = task.priority === PRIORITY.HIGH ? 'priority-high' :
                                  task.priority === PRIORITY.MEDIUM ? 'priority-medium' : 'priority-low';
             const priorityIcon = task.priority === PRIORITY.HIGH ? '🔴' : task.priority === PRIORITY.MEDIUM ? '🟡' : '🟢';
 
             return `
-                <tr class="task-row ${isCompleted ? 'completed' : ''} hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-id="${task.id}">
+                <tr class="task-row ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" data-id="${task.id}">
                     <td class="px-3 py-3">
                         <input type="checkbox" class="task-checkbox" ${isCompleted ? 'checked' : ''}
                                onchange="toggleComplete(${task.id}, this.checked)">
@@ -1778,6 +1781,7 @@
             }
 
             saveToStorage();
+            if (currentUserId) saveToCloud(true);
         }
 
         function toggleComplete(taskId, isChecked) {
@@ -1792,6 +1796,7 @@
             if (confirm(`确定要删除任务「${task.title}」吗？此操作不可撤销。`)) {
                 tasks = tasks.filter(t => t.id !== taskId);
                 saveToStorage();
+                if (currentUserId) saveToCloud(true);
                 renderTasks();
             }
         }
@@ -2163,6 +2168,7 @@
             if (name && !categories.includes(name)) {
                 categories.push(name);
                 saveToStorage();
+                if (currentUserId) saveToCloud(true);
                 renderCategoryList();
                 updateCategoryFilter();
                 updateNewTaskCategorySelect();
@@ -2181,6 +2187,7 @@
             });
             
             saveToStorage();
+            if (currentUserId) saveToCloud(true);
             updateCategoryFilter();
             updateNewTaskCategorySelect();
             renderTasks();
@@ -2197,6 +2204,7 @@
                 
                 categories.splice(index, 1);
                 saveToStorage();
+                if (currentUserId) saveToCloud(true);
                 renderCategoryList();
                 updateCategoryFilter();
                 updateNewTaskCategorySelect();
