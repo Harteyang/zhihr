@@ -485,14 +485,15 @@
 
     <script>
         // ========================================
-        // JSONbin.io 配置
+        // Cloudflare API 配置
         // ========================================
-        const JSONBIN_BIN_ID = '69fddfcbc0954111d8f505d6';
-        const JSONBIN_SECRET_KEY = '$2a$10$A4WXM7YJlx4zHhPpLl3jD.jYQpFZTLqYtpC6ahlTnlo1mnFRkLXcG';
-        const JSONBIN_API_URL = 'https://api.jsonbin.io/v3';
+        const API_BASE_URL = 'https://zhihr-api.309588543.workers.dev';
+        // 开发环境使用本地地址
+        // const API_BASE_URL = 'http://localhost:8787';
 
         let isOnline = navigator.onLine;
         let currentUserId = null;
+        let currentToken = null;
         let isSyncing = false;
         let offlineQueue = [];
 
@@ -616,10 +617,21 @@
             localStorage.setItem('taskManagerUsername', username);
         }
 
+        function setToken(token) {
+            localStorage.setItem('taskManagerToken', token);
+            currentToken = token;
+        }
+
+        function getToken() {
+            return localStorage.getItem('taskManagerToken');
+        }
+
         function clearUserId() {
             localStorage.removeItem('taskManagerUserId');
             localStorage.removeItem('taskManagerUsername');
+            localStorage.removeItem('taskManagerToken');
             currentUserId = null;
+            currentToken = null;
         }
 
         function closeLoginModal() {
@@ -682,9 +694,25 @@
 
             setAuthButtonLoading('loginBtn', true, '登录');
             try {
-                const userId = await hashPassword(username + ':' + password);
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showError(loginError, result.message);
+                    return;
+                }
+
+                const { userId, token } = result.data;
                 setUserId(userId);
                 setUsername(username);
+                setToken(token);
                 
                 closeLoginModal();
                 updateUserDisplay();
@@ -708,7 +736,7 @@
                 await loadFromCloud();
             } catch (error) {
                 console.error('Login error:', error);
-                showError(loginError, '登录失败，请重试');
+                showError(loginError, '登录失败，请检查网络');
             } finally {
                 setAuthButtonLoading('loginBtn', false, '登录');
             }
@@ -742,23 +770,32 @@
 
             setAuthButtonLoading('registerBtn', true, '注册');
             try {
-                if (await isUsernameTaken(username)) {
-                    showError(registerError, '该账号已被注册，请使用其他账号');
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    showError(registerError, result.message);
                     return;
                 }
 
-                const userId = await hashPassword(username + ':' + password);
+                const { userId, token } = result.data;
                 setUserId(userId);
                 setUsername(username);
+                setToken(token);
                 
                 closeLoginModal();
                 updateUserDisplay();
-                
-                await saveUsernameToCloud(username);
                 await loadFromCloud();
             } catch (error) {
                 console.error('Register error:', error);
-                showError(registerError, '注册失败，请重试');
+                showError(registerError, '注册失败，请检查网络');
             } finally {
                 setAuthButtonLoading('registerBtn', false, '注册');
             }
@@ -908,7 +945,7 @@
         });
 
         // ========================================
-        // 云端同步
+        // Cloudflare API 云端同步
         // ========================================
         async function loadFromCloud() {
             if (!isOnline) {
@@ -916,7 +953,7 @@
                 return;
             }
 
-            if (!currentUserId) {
+            if (!currentToken) {
                 console.log('未登录，使用本地数据');
                 return;
             }
@@ -924,195 +961,119 @@
             try {
                 console.log('开始从云端加载数据...');
                 
-                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                // 加载任务
+                const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks`, {
                     headers: {
-                        'X-Master-Key': JSONBIN_SECRET_KEY
+                        'Authorization': `Bearer ${currentToken}`
                     }
                 });
 
-                console.log('获取数据响应状态:', response.status);
-
-                if (response.status === 404) {
-                    // 云端没有数据，保存本地数据到云端
-                    console.log('云端数据不存在，保存本地数据...');
-                    await saveToCloud();
-                    return;
+                if (!tasksResponse.ok) {
+                    throw new Error(`加载任务失败: ${tasksResponse.status}`);
                 }
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('加载失败响应:', errorText);
-                    throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+                const tasksResult = await tasksResponse.json();
+                tasks = tasksResult.data || [];
+
+                // 加载分类
+                const categoriesResponse = await fetch(`${API_BASE_URL}/api/categories`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                if (!categoriesResponse.ok) {
+                    throw new Error(`加载分类失败: ${categoriesResponse.status}`);
                 }
 
-                const data = await response.json();
-                console.log('云端数据:', data);
-
-                const cloudData = data.record;
-
-                if (cloudData && cloudData.users && cloudData.users[currentUserId]) {
-                    const userData = cloudData.users[currentUserId];
-                    tasks = userData.tasks || [];
-                    categories = userData.categories || ['工作', '生活', '学习', '其他'];
-                    
-                    saveToStorage();
-                    renderTasks();
-                    updateCategoryFilter();
-                    console.log('已从云端加载数据:', tasks.length, '个任务');
-                    alert('已从云端加载 ' + tasks.length + ' 个任务');
-                } else {
-                    // 新用户，云端没有该用户数据，保存本地数据
-                    console.log('新用户，保存数据到云端...');
-                    await saveToCloud();
-                }
+                const categoriesResult = await categoriesResponse.json();
+                const cloudCategories = categoriesResult.data || [];
+                
+                // 如果云端没有分类，使用默认分类
+                categories = cloudCategories.length > 0 ? cloudCategories.map(c => c.name) : ['工作', '生活', '学习', '其他'];
+                
+                saveToStorage();
+                renderTasks();
+                updateCategoryFilter();
+                console.log('已从云端加载数据:', tasks.length, '个任务');
+                alert('已从云端加载 ' + tasks.length + ' 个任务');
             } catch (error) {
                 console.error('加载云端数据失败:', error);
                 alert('加载云端数据失败，请检查网络\n错误: ' + error.message);
             }
         }
 
-        // 通用云端数据获取函数
-        async function fetchCloudData() {
-            if (!isOnline) {
-                return null;
-            }
+        async function mergeLocalAndCloudData() {
+            if (!isOnline || !currentToken) return;
 
             try {
-                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                // 先获取云端数据
+                const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks`, {
                     headers: {
-                        'X-Master-Key': JSONBIN_SECRET_KEY
+                        'Authorization': `Bearer ${currentToken}`
                     }
                 });
 
-                if (response.status === 404) {
-                    return null;
+                if (!tasksResponse.ok) {
+                    throw new Error(`获取云端任务失败: ${tasksResponse.status}`);
                 }
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+                const tasksResult = await tasksResponse.json();
+                const cloudTasks = tasksResult.data || [];
 
-                const data = await response.json();
-                return data.record || null;
-            } catch (error) {
-                console.error('获取云端数据失败:', error);
-                return null;
-            }
-        }
-
-        // 通用云端数据保存函数
-        async function saveCloudData(cloudData) {
-            if (!isOnline) {
-                throw new Error('当前离线，无法保存');
-            }
-
-            try {
-                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_SECRET_KEY
-                    },
-                    body: JSON.stringify(cloudData)
+                // 合并任务：保留云端和本地的所有任务，去重（按id）
+                const mergedTasks = [...cloudTasks];
+                
+                tasks.forEach(localTask => {
+                    const exists = mergedTasks.find(t => t.id === localTask.id);
+                    if (!exists) {
+                        mergedTasks.push(localTask);
+                    } else {
+                        // 如果本地任务更新时间更晚，用本地的覆盖
+                        const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
+                        const cloudTime = new Date(exists.updated_at || exists.created_at || '1970-01-01').getTime();
+                        if (localTime > cloudTime) {
+                            const index = mergedTasks.findIndex(t => t.id === localTask.id);
+                            mergedTasks[index] = localTask;
+                        }
+                    }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`保存失败: ${response.status}`);
+                // 上传合并后的任务
+                for (const task of mergedTasks) {
+                    const existing = cloudTasks.find(t => t.id === task.id);
+                    if (existing) {
+                        // 更新现有任务
+                        await fetch(`${API_BASE_URL}/api/tasks/${task.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify(task)
+                        });
+                    } else {
+                        // 创建新任务
+                        await fetch(`${API_BASE_URL}/api/tasks`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify(task)
+                        });
+                    }
                 }
 
-                return await response.json();
+                console.log('数据合并成功:', mergedTasks.length, '个任务');
             } catch (error) {
-                console.error('保存到云端失败:', error);
+                console.error('合并数据失败:', error);
                 throw error;
             }
         }
 
-        async function isUsernameTaken(username) {
-            if (!isOnline) {
-                return false;
-            }
-
-            const cloudData = await fetchCloudData();
-            if (!cloudData || !cloudData.usernames) {
-                return false;
-            }
-
-            return cloudData.usernames.includes(username);
-        }
-
-        async function saveUsernameToCloud(username) {
-            if (!isOnline) return;
-
-            const cloudData = await fetchCloudData() || { users: {}, usernames: [] };
-            
-            if (!cloudData.usernames) {
-                cloudData.usernames = [];
-            }
-
-            if (!cloudData.usernames.includes(username)) {
-                cloudData.usernames.push(username);
-            }
-
-            await saveCloudData(cloudData);
-            console.log('用户名已保存到云端:', username);
-        }
-
-        async function mergeLocalAndCloudData() {
-            if (!isOnline || !currentUserId) return;
-
-            const cloudData = await fetchCloudData() || { users: {} };
-
-            if (!cloudData.users) {
-                cloudData.users = {};
-            }
-
-            if (!cloudData.users[currentUserId]) {
-                cloudData.users[currentUserId] = {
-                    tasks: [],
-                    categories: ['工作', '生活', '学习', '其他'],
-                    updatedAt: new Date().toISOString(),
-                    lastSyncTime: new Date().toISOString()
-                };
-            }
-
-            const cloudTasks = cloudData.users[currentUserId].tasks || [];
-            const cloudCategories = cloudData.users[currentUserId].categories || ['工作', '生活', '学习', '其他'];
-
-            // 合并任务：保留云端和本地的所有任务，去重（按id）
-            const mergedTasks = [...cloudTasks];
-            
-            tasks.forEach(localTask => {
-                const exists = mergedTasks.find(t => t.id === localTask.id);
-                if (!exists) {
-                    mergedTasks.push(localTask);
-                } else {
-                    // 如果本地任务更新时间更晚，用本地的覆盖
-                    const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
-                    const cloudTime = new Date(exists.updated_at || exists.created_at || '1970-01-01').getTime();
-                    if (localTime > cloudTime) {
-                        const index = mergedTasks.findIndex(t => t.id === localTask.id);
-                        mergedTasks[index] = localTask;
-                    }
-                }
-            });
-
-            // 合并分类：保留所有分类，去重
-            const mergedCategories = [...new Set([...cloudCategories, ...categories])];
-
-            // 更新合并后的数据
-            cloudData.users[currentUserId] = {
-                tasks: mergedTasks,
-                categories: mergedCategories,
-                updatedAt: new Date().toISOString(),
-                lastSyncTime: new Date().toISOString()
-            };
-
-            await saveCloudData(cloudData);
-            console.log('数据合并成功:', mergedTasks.length, '个任务');
-        }
-
         async function saveToCloud(silent = false) {
-            if (!currentUserId) {
+            if (!currentToken) {
                 console.log('无法保存到云端: 未登录');
                 return;
             }
@@ -1125,65 +1086,49 @@
 
             try {
                 console.log('开始保存到云端...');
-                console.log('API URL:', `${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`);
-                console.log('数据内容:', { tasks: tasks, categories: categories });
 
-                // 先获取现有数据
-                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
-                    headers: {
-                        'X-Master-Key': JSONBIN_SECRET_KEY
+                // 保存所有任务
+                for (const task of tasks) {
+                    if (task.id) {
+                        // 更新现有任务
+                        await fetch(`${API_BASE_URL}/api/tasks/${task.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify(task)
+                        });
+                    } else {
+                        // 创建新任务
+                        const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify(task)
+                        });
+                        const result = await response.json();
+                        if (result.data) {
+                            task.id = result.data.id;
+                        }
                     }
-                });
-
-                console.log('获取现有数据响应状态:', response.status);
-
-                let cloudData = { users: {} };
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('现有云端数据:', data);
-                    cloudData = data.record || {};
-                } else if (response.status !== 404) {
-                    console.error('获取现有数据失败:', response.status, response.statusText);
                 }
 
-                // 确保 users 对象存在
-                if (!cloudData.users) {
-                    cloudData.users = {};
+                // 保存分类
+                for (const category of categories) {
+                    await fetch(`${API_BASE_URL}/api/categories`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${currentToken}`
+                        },
+                        body: JSON.stringify({ name: category })
+                    }).catch(() => {}); // 忽略重复错误
                 }
 
-                const syncTime = new Date().toISOString();
-                
-                cloudData.users[currentUserId] = {
-                    tasks: tasks,
-                    categories: categories,
-                    updatedAt: syncTime,
-                    lastSyncTime: syncTime
-                };
-
-                console.log('准备上传的数据:', cloudData);
-
-                // 上传数据
-                const putResponse = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_SECRET_KEY
-                    },
-                    body: JSON.stringify(cloudData)
-                });
-
-                console.log('上传响应状态:', putResponse.status, putResponse.statusText);
-
-                if (!putResponse.ok) {
-                    const errorText = await putResponse.text();
-                    console.error('上传失败响应:', errorText);
-                    throw new Error(`保存失败: ${putResponse.status} ${putResponse.statusText}`);
-                }
-
-                const responseData = await putResponse.json();
-                console.log('上传成功响应:', responseData);
-
+                saveToStorage();
                 console.log('数据已保存到云端:', tasks.length, '个任务');
                 if (!silent) alert('同步成功！数据已保存到云端');
             } catch (error) {
@@ -1202,7 +1147,7 @@
                 return;
             }
 
-            if (!currentUserId) {
+            if (!currentToken) {
                 openLoginModal();
                 return;
             }
@@ -1234,53 +1179,41 @@
         }
 
         async function smartSync() {
-            if (!isOnline || !currentUserId) return;
+            if (!isOnline || !currentToken) return;
 
             try {
-                const response = await fetch(`${JSONBIN_API_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                // 获取云端任务数量
+                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
                     headers: {
-                        'X-Master-Key': JSONBIN_SECRET_KEY
+                        'Authorization': `Bearer ${currentToken}`
                     }
                 });
-
-                if (response.status === 404) {
-                    await saveToCloud();
-                    alert('同步成功！本地数据已上传到云端');
-                    return;
-                }
 
                 if (!response.ok) {
                     throw new Error('加载失败');
                 }
 
-                const data = await response.json();
-                const cloudData = data.record;
-
-                if (!cloudData || !cloudData.users || !cloudData.users[currentUserId]) {
-                    await saveToCloud();
-                    alert('同步成功！本地数据已上传到云端');
-                    return;
-                }
-
-                const userData = cloudData.users[currentUserId];
-                const cloudUpdatedAt = userData.updatedAt || '1970-01-01T00:00:00Z';
+                const result = await response.json();
+                const cloudTasks = result.data || [];
+                const cloudUpdatedAt = cloudTasks.length > 0 
+                    ? Math.max(...cloudTasks.map(t => new Date(t.updated_at || t.created_at || '1970-01-01').getTime()))
+                    : 0;
                 const localUpdatedAt = getLocalUpdatedAt();
+                const localTime = new Date(localUpdatedAt).getTime();
 
+                console.log('云端任务数:', cloudTasks.length);
                 console.log('云端更新时间:', cloudUpdatedAt);
                 console.log('本地更新时间:', localUpdatedAt);
 
-                const cloudTime = new Date(cloudUpdatedAt).getTime();
-                const localTime = new Date(localUpdatedAt).getTime();
-
-                if (cloudTime > localTime) {
+                if (cloudTasks.length === 0 && tasks.length > 0) {
+                    // 云端为空，本地有数据，上传
+                    await saveToCloud();
+                    alert('同步成功！本地数据已上传到云端');
+                } else if (cloudUpdatedAt > localTime) {
                     // 云端数据更新，加载到本地
-                    tasks = userData.tasks || [];
-                    categories = userData.categories || ['工作', '生活', '学习', '其他'];
-                    saveToStorage();
-                    renderTasks();
-                    updateCategoryFilter();
+                    await loadFromCloud();
                     alert('同步成功！已从云端更新数据');
-                } else if (localTime > cloudTime) {
+                } else if (localTime > cloudUpdatedAt) {
                     // 本地数据更新，保存到云端
                     await saveToCloud();
                     alert('同步成功！本地数据已上传到云端');
