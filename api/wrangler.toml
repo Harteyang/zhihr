@@ -1,0 +1,15 @@
+name = "zhihr-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# D1 数据库配置
+# 创建数据库命令: wrangler d1 create zhihr_db
+# 然后将输出的 database_id 填入下方
+[[d1_databases]]
+binding = "DB"
+database_name = "zhihr_db"
+database_id = "cd693196-036e-4fd9-9d0c-e077683ce6f3"
+
+# 环境变量
+[vars]
+JWT_SECRET = "your-256-bit-secret-key-here-change-in-production"
