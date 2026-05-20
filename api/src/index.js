@@ -146,6 +146,16 @@ async function handleRequest(request, env) {
     if (method === 'PUT') return handleUpdateConfig(request, env)
   }
 
+  if (path === '/api/feedbacks') {
+    if (method === 'GET') return handleGetFeedbacks(request, env)
+    if (method === 'POST') return handleCreateFeedback(request, env)
+  }
+
+  if (path.match(/^\/api\/feedbacks\/[a-f0-9\-]+$/)) {
+    const id = path.split('/')[3]
+    if (method === 'PUT') return handleUpdateFeedback(request, id, env)
+  }
+
   return jsonResponse({ success: false, message: 'Not found' }, 404)
 }
 
@@ -618,5 +628,99 @@ async function handleUpdateConfig(request, env) {
     return jsonResponse({ success: true, message: '配置更新成功', data: config })
   } catch (error) {
     return jsonResponse({ success: false, message: '更新配置失败: ' + error.message }, 500)
+  }
+}
+
+async function handleGetFeedbacks(request, env) {
+  try {
+    const db = env.DB
+    const url = new URL(request.url)
+    
+    const limit = parseInt(url.searchParams.get('limit')) || 100
+    const status = url.searchParams.get('status')
+    
+    let query = 'SELECT * FROM feedbacks'
+    const params = []
+    
+    if (status) {
+      query += ' WHERE status = ?'
+      params.push(status)
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT ?'
+    params.push(limit)
+    
+    const feedbacks = await db.prepare(query).bind(...params).all()
+    
+    return jsonResponse({ success: true, data: feedbacks.results })
+  } catch (error) {
+    return jsonResponse({ success: false, message: '获取反馈失败: ' + error.message }, 500)
+  }
+}
+
+async function handleCreateFeedback(request, env) {
+  try {
+    const { name, content, status = 'pending' } = await request.json()
+    
+    if (!content) {
+      return jsonResponse({ success: false, message: '反馈内容不能为空' }, 400)
+    }
+    
+    const db = env.DB
+    const feedbackId = generateId()
+    
+    await db.prepare('INSERT INTO feedbacks (id, name, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
+      .bind(feedbackId, name || '匿名', content, status, new Date().toISOString(), new Date().toISOString()).run()
+    
+    const feedback = await db.prepare('SELECT * FROM feedbacks WHERE id = ?').bind(feedbackId).first()
+    
+    return jsonResponse({ success: true, message: '反馈提交成功', data: feedback })
+  } catch (error) {
+    return jsonResponse({ success: false, message: '提交反馈失败: ' + error.message }, 500)
+  }
+}
+
+async function handleUpdateFeedback(request, id, env) {
+  try {
+    const updates = await request.json()
+    const db = env.DB
+    
+    const existing = await db.prepare('SELECT * FROM feedbacks WHERE id = ?').bind(id).first()
+    
+    if (!existing) {
+      return jsonResponse({ success: false, message: '反馈不存在' }, 404)
+    }
+    
+    const fields = []
+    const params = []
+    
+    if (updates.name !== undefined) {
+      fields.push('name = ?')
+      params.push(updates.name)
+    }
+    if (updates.content !== undefined) {
+      fields.push('content = ?')
+      params.push(updates.content)
+    }
+    if (updates.status !== undefined) {
+      fields.push('status = ?')
+      params.push(updates.status)
+    }
+    
+    if (fields.length === 0) {
+      return jsonResponse({ success: false, message: '没有要更新的字段' }, 400)
+    }
+    
+    fields.push('updated_at = ?')
+    params.push(new Date().toISOString())
+    params.push(id)
+    
+    await db.prepare('UPDATE feedbacks SET ' + fields.join(', ') + ' WHERE id = ?').bind(...params).run()
+    
+    const feedback = await db.prepare('SELECT * FROM feedbacks WHERE id = ?').bind(id).first()
+    
+    return jsonResponse({ success: true, message: '更新成功', data: feedback })
+  } catch (error) {
+    return jsonResponse({ success: false, message: '更新反馈失败: ' + error.message }, 500)
   }
 }

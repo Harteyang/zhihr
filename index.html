@@ -402,14 +402,12 @@
     lucide.createIcons();
 
     // ==================== API 配置 ====================
-    // JSONBin.io API配置
+    // Cloudflare Workers API配置
     const API_CONFIG = {
-      binId: '69dde8c6856a6821893044cc',
-      accessKey: '$2a$10$WSf1YU/B6AcJaK1CsPYb4.V.mCaHZfPftfgBeYwtwR5dF2AeSP8i.',
-      baseUrl: 'https://api.jsonbin.io/v3/b'
+      baseUrl: 'https://zhihr-api.309588543.workers.dev'
     };
 
-    // EmailJS 配置
+    // EmailJS 配置（邮件通知功能保留）
     const EMAILJS_CONFIG = {
       publicKey: 'wSqoO64Pd08fm_YJV',
       serviceId: 'service_xg8y8h9',
@@ -422,8 +420,8 @@
     // ==================== 反馈缓存配置 ====================
     // 缓存键
     const FEEDBACK_CACHE_KEY = 'feedback_cache_v1';
-    // 缓存有效期：7天（毫秒）
-    const CACHE_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000;
+    // 缓存有效期：1小时（毫秒）
+    const CACHE_EXPIRE_TIME = 60 * 60 * 1000;
 
     // 获取本地缓存
     function getFeedbackCache() {
@@ -657,9 +655,9 @@
         const cache = getFeedbackCache();
         if (cache && cache.feedbacks && cache.feedbacks.length > 0) {
           // 按时间倒序排列（最新的在前）
-          cache.feedbacks.sort((a, b) => new Date(b.time) - new Date(a.time));
+          cache.feedbacks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           renderFeedbackItems(board, cache.feedbacks);
-          console.log('使用本地缓存数据（7天内有效）');
+          console.log('使用本地缓存数据（1小时内有效）');
           return;
         }
       }
@@ -668,18 +666,14 @@
       board.innerHTML = '<div class="text-center py-8"><p class="text-sm text-slate-500">正在加载...</p></div>';
 
       try {
-        const response = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
-          headers: {
-            'X-Access-Key': API_CONFIG.accessKey
-          }
-        });
-
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/feedbacks?limit=100`);
+        
         if (!response.ok) {
           throw new Error(`API返回${response.status}`);
         }
 
-        const data = await response.json();
-        const feedbacks = data.record?.feedbacks || [];
+        const result = await response.json();
+        const feedbacks = result.data || [];
 
         if (feedbacks.length === 0) {
           board.innerHTML = `
@@ -696,7 +690,7 @@
         console.log('从云端拉取并缓存数据');
 
         // 按时间倒序排列（最新的在前）
-        feedbacks.sort((a, b) => new Date(b.time) - new Date(a.time));
+        feedbacks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         renderFeedbackItems(board, feedbacks);
       } catch (error) {
         console.log('API失败，显示模拟数据:', error.message);
@@ -724,7 +718,7 @@
         item.className = 'bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3';
 
         // 格式化时间
-        const time = new Date(fb.time);
+        const time = new Date(fb.created_at || fb.time);
         const timeStr = `${time.getFullYear()}年${time.getMonth() + 1}月${time.getDate()}日`;
 
         item.innerHTML = `
@@ -732,7 +726,7 @@
             <div class="flex items-center gap-3 sm:gap-4 shrink-0">
               <span class="text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap">${fb.name}</span>
               <span class="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">${timeStr}</span>
-              <span class="px-2 py-1 text-xs rounded-full ${statusColors[fb.status]} whitespace-nowrap">${statusTexts[fb.status]}</span>
+              <span class="px-2 py-1 text-xs rounded-full ${statusColors[fb.status] || statusColors['pending']} whitespace-nowrap">${statusTexts[fb.status] || statusTexts['pending']}</span>
             </div>
             <div class="text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden">
               <span class="block truncate">${fb.content}</span>
@@ -893,53 +887,29 @@
         return;
       }
 
-      // 提交到 JSONBin.io API
+      // 提交到 Cloudflare API
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>提交中...</span>';
       lucide.createIcons();
 
       try {
-        // 先读取现有数据
-        const readResponse = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
+        // 提交到新的 API
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/feedbacks`, {
+          method: 'POST',
           headers: {
-            'X-Access-Key': API_CONFIG.accessKey
-          }
-        });
-
-        const readData = await readResponse.json();
-        const existingFeedbacks = readData.record?.feedbacks || [];
-
-        // 创建新需求
-        const newFeedback = {
-          id: `req_${Date.now()}`,
-          name: name || '匿名',
-          content: content,
-          time: new Date().toISOString(),
-          status: 'pending'
-        };
-
-        // 添加到列表
-        existingFeedbacks.push(newFeedback);
-
-        // 最多保留100条
-        if (existingFeedbacks.length > 100) {
-          existingFeedbacks.splice(0, existingFeedbacks.length - 100);
-        }
-
-        // 更新bin
-        const updateResponse = await fetch(`${API_CONFIG.baseUrl}/${API_CONFIG.binId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Access-Key': API_CONFIG.accessKey
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            feedbacks: existingFeedbacks
+            name: name || '匿名',
+            content: content,
+            status: 'pending'
           })
         });
 
-        if (updateResponse.ok) {
-          // 发送邮件通知
+        const result = await response.json();
+
+        if (result.success) {
+          // 发送邮件通知（可选功能）
           try {
             await emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, {
               name: name || '匿名',
@@ -948,11 +918,19 @@
             });
           } catch (emailError) {
             console.log('邮件发送失败:', emailError);
-            // 邮件失败不影响提交结果
           }
 
-          // 更新本地缓存（添加新反馈）
-          addToLocalCache(newFeedback);
+          // 更新本地缓存（添加新反馈到缓存开头）
+          const cache = getFeedbackCache();
+          if (cache && cache.feedbacks) {
+            cache.feedbacks.unshift(result.data);
+            if (cache.feedbacks.length > 100) {
+              cache.feedbacks.pop();
+            }
+            saveFeedbackCache(cache.feedbacks);
+          } else {
+            saveFeedbackCache([result.data]);
+          }
 
           alert('需求已提交成功！我们会尽快处理 ❤️');
           // 清空表单
@@ -962,17 +940,15 @@
           // 刷新看板（使用本地缓存）
           renderFeedbackBoard();
         } else {
-          const errorData = await updateResponse.json();
-          alert('提交失败，请稍后重试。\n' + (errorData.message || '未知错误'));
+          alert('提交失败，请稍后重试。\n' + (result.message || '未知错误'));
         }
       } catch (error) {
         alert('提交失败。\n网络错误：' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i><span>提交需求</span>';
+        lucide.createIcons();
       }
-
-      // 恢复按钮状态
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i><span>提交需求</span>';
-      lucide.createIcons();
     });
 
     // ==================== 初始化 ====================
