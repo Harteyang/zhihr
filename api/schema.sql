@@ -54,7 +54,19 @@ CREATE TABLE IF NOT EXISTS user_configs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 反馈需求表（公开反馈，无需用户认证）
+CREATE TABLE IF NOT EXISTS feedbacks (
+    id TEXT PRIMARY KEY,
+    name TEXT DEFAULT '匿名',
+    content TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 创建索引
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON feedbacks(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feedbacks_status ON feedbacks(status);
