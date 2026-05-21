@@ -496,6 +496,7 @@
         let currentToken = null;
         let isSyncing = false;
         let offlineQueue = [];
+        let localUpdatedAt = null;
 
         // ========================================
         // 离线操作队列管理
@@ -549,6 +550,10 @@
                             break;
                         case 'merge':
                             await mergeLocalAndCloudData();
+                            successCount++;
+                            break;
+                        case 'delete':
+                            await deleteFromCloud(item.data.taskId);
                             successCount++;
                             break;
                         default:
@@ -1072,6 +1077,38 @@
             }
         }
 
+        async function deleteFromCloud(taskId) {
+            if (!currentToken) {
+                console.log('无法删除云端任务: 未登录');
+                return;
+            }
+
+            if (!isOnline) {
+                console.log('当前离线，将删除操作添加到队列');
+                addToOfflineQueue('delete', { taskId: taskId });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('删除云端任务失败:', response.status);
+                    throw new Error(`删除失败: ${response.status}`);
+                }
+
+                console.log('云端任务已删除:', taskId);
+            } catch (error) {
+                console.error('删除云端任务失败:', error);
+                throw error;
+            }
+        }
+
         async function saveToCloud(silent = false) {
             if (!currentToken) {
                 console.log('无法保存到云端: 未登录');
@@ -1227,6 +1264,10 @@
         }
 
         function getLocalUpdatedAt() {
+            if (localUpdatedAt) {
+                return localUpdatedAt;
+            }
+            
             if (tasks.length === 0) {
                 return '1970-01-01T00:00:00Z';
             }
@@ -1243,6 +1284,10 @@
             });
             
             return latestTime;
+        }
+
+        function updateLocalUpdatedAt() {
+            localUpdatedAt = new Date().toISOString();
         }
 
         // ========================================
@@ -1725,13 +1770,24 @@
             renderTasks();
         }
 
-        function deleteTask(taskId) {
+        async function deleteTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             if (confirm(`确定要删除任务「${task.title}」吗？此操作不可撤销。`)) {
+                // 更新本地时间戳
+                updateLocalUpdatedAt();
+                // 先从云端删除
+                if (currentUserId) {
+                    try {
+                        await deleteFromCloud(taskId);
+                    } catch (error) {
+                        console.error('删除云端任务失败:', error);
+                        // 如果云端删除失败，仍然删除本地任务，离线队列会处理
+                    }
+                }
+                // 再从本地删除
                 tasks = tasks.filter(t => t.id !== taskId);
                 saveToStorage();
-                if (currentUserId) saveToCloud(true);
                 renderTasks();
             }
         }
