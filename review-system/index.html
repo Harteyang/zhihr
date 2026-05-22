@@ -20,7 +20,921 @@
     <link rel="stylesheet" crossorigin href="assets/index-QXsWTBbi.css">
   </head>
   <body>
+    <style>
+      /* 登录界面样式 - 全新设计 */
+      .zhihr-login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f2744 100%);
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      .zhihr-login-overlay.hidden {
+        display: none;
+      }
+
+      /* 背景几何图案 */
+      .bg-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0.03;
+        background-image: 
+          radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px),
+          radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px);
+        background-size: 60px 60px, 40px 40px;
+        pointer-events: none;
+      }
+
+      /* 浮动光效 */
+      .floating-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.3;
+        animation: float 8s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .orb-1 {
+        width: 400px;
+        height: 400px;
+        background: #3b82f6;
+        top: -100px;
+        right: -100px;
+        animation-delay: 0s;
+      }
+      .orb-2 {
+        width: 300px;
+        height: 300px;
+        background: #8b5cf6;
+        bottom: -50px;
+        left: -50px;
+        animation-delay: -4s;
+      }
+      @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(20px, -20px) scale(1.05); }
+      }
+
+      /* 登录容器入场动画 */
+      .login-container {
+        animation: login-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 1;
+      }
+      @keyframes login-entrance {
+        from { 
+          opacity: 0; 
+          transform: translateY(20px) scale(0.98);
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* 登录卡片 */
+      .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 
+          0 25px 50px -12px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      /* Logo区域 */
+      .brand-section {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+        padding: 32px;
+        text-align: center;
+      }
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: logo-pulse 2s ease-in-out infinite;
+      }
+      @keyframes logo-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+      .brand-logo svg {
+        color: #60a5fa;
+      }
+      .brand-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 4px;
+      }
+      .brand-subtitle {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* 表单区域 */
+      .form-section {
+        padding: 32px;
+      }
+      .form-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 12px;
+      }
+      .form-tab {
+        flex: 1;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .form-tab.active {
+        background: #fff;
+        color: #1e293b;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .form-tab:hover:not(.active) {
+        color: #334155;
+      }
+
+      /* 输入框样式 */
+      .input-group {
+        margin-bottom: 16px;
+      }
+      .input-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 6px;
+      }
+      .input-field {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 15px;
+        color: #1e293b;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        outline: none;
+      }
+      .input-field:focus {
+        background: #fff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      }
+      .input-field::placeholder {
+        color: #94a3b8;
+      }
+      .input-field.error {
+        border-color: #ef4444;
+        background: #fef2f2;
+      }
+
+      /* 密码可见切换 */
+      .password-wrapper {
+        position: relative;
+      }
+      .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+      }
+      .password-toggle:hover {
+        color: #64748b;
+      }
+
+      /* 错误提示 */
+      .error-message {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #dc2626;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        animation: shake 0.4s ease;
+      }
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+      .error-message.hidden {
+        display: none;
+      }
+
+      /* 提交按钮 */
+      .submit-btn {
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .submit-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+      }
+      .submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      .submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      /* 链接文字 */
+      .link-text {
+        text-align: center;
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 16px;
+      }
+      .link-text a {
+        color: #3b82f6;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .link-text a:hover {
+        color: #2563eb;
+        text-decoration: underline;
+      }
+
+      /* 底部信息 */
+      .footer-info {
+        text-align: center;
+        padding: 16px 32px 24px;
+        border-top: 1px solid #f1f5f9;
+      }
+      .footer-info p {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      /* 加载动画 */
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* 响应式适配 */
+      @media (max-width: 480px) {
+        .login-card {
+          border-radius: 20px;
+          margin: 16px;
+        }
+        .brand-section {
+          padding: 24px;
+        }
+        .brand-title {
+          font-size: 20px;
+        }
+        .form-section {
+          padding: 24px;
+        }
+      }
+    </style>
     <div id="root"></div>
+
+    <!-- 强制登录界面 -->
+    <div class="zhihr-login-overlay" id="zhihrLoginOverlay">
+      <!-- 背景装饰 -->
+      <div class="bg-pattern"></div>
+      <div class="floating-orb orb-1"></div>
+      <div class="floating-orb orb-2"></div>
+
+      <div class="login-container">
+        <div class="login-card">
+          <!-- Logo区域 -->
+          <div class="brand-section">
+            <div class="brand-logo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="5" r="1"/>
+                <path d="m9 20 3-6 3 6"/>
+                <path d="m6 8 6 2 6-2"/>
+                <path d="M12 10v4"/>
+              </svg>
+            </div>
+            <h1 class="brand-title">知HR · 复盘系统</h1>
+            <p class="brand-subtitle">Vibe Coding，为HR制作效率工具</p>
+          </div>
+
+          <!-- 表单区域 -->
+          <div class="form-section">
+            <!-- 表单切换标签 -->
+            <div class="form-tabs">
+              <button class="form-tab active" id="tabLogin" onclick="window.__zhihrAuth.switchTab('login')">登录</button>
+              <button class="form-tab" id="tabRegister" onclick="window.__zhihrAuth.switchTab('register')">注册</button>
+            </div>
+
+            <!-- 登录表单 -->
+            <div id="zhihrLoginFormContent">
+              <div class="input-group">
+                <label class="input-label">账号</label>
+                <input type="text" id="zhihrLoginUsername" class="input-field" placeholder="输入账号" autocomplete="username"
+                  onkeypress="if(event.key==='Enter'){document.getElementById('zhihrLoginPassword').focus();}">
+              </div>
+              <div class="input-group">
+                <label class="input-label">密码</label>
+                <div class="password-wrapper">
+                  <input type="password" id="zhihrLoginPassword" class="input-field" placeholder="输入密码" autocomplete="current-password"
+                    onkeypress="if(event.key==='Enter'){window.__zhihrAuth.handleLogin();}">
+                  <button type="button" class="password-toggle" onclick="window.__zhihrAuth.togglePassword('zhihrLoginPassword', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div id="zhihrLoginError" class="error-message hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span></span>
+              </div>
+              <button id="zhihrLoginBtn" class="submit-btn" onclick="window.__zhihrAuth.handleLogin()">
+                <span id="loginBtnText">登录</span>
+              </button>
+              <p class="link-text">
+                没有账号？<a href="#" onclick="window.__zhihrAuth.switchTab('register');return false;">注册新账号</a>
+              </p>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="zhihrRegisterFormContent" class="hidden">
+              <div class="input-group">
+                <label class="input-label">账号</label>
+                <input type="text" id="zhihrRegisterUsername" class="input-field" placeholder="设置账号（至少3个字符）" autocomplete="username" minlength="3">
+              </div>
+              <div class="input-group">
+                <label class="input-label">密码</label>
+                <div class="password-wrapper">
+                  <input type="password" id="zhihrRegisterPassword" class="input-field" placeholder="设置密码（至少4位）" autocomplete="new-password" minlength="4">
+                  <button type="button" class="password-toggle" onclick="window.__zhihrAuth.togglePassword('zhihrRegisterPassword', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="input-group">
+                <label class="input-label">确认密码</label>
+                <div class="password-wrapper">
+                  <input type="password" id="zhihrRegisterPasswordConfirm" class="input-field" placeholder="再次输入密码" autocomplete="new-password"
+                    onkeypress="if(event.key==='Enter'){window.__zhihrAuth.handleRegister();}">
+                  <button type="button" class="password-toggle" onclick="window.__zhihrAuth.togglePassword('zhihrRegisterPasswordConfirm', this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div id="zhihrRegisterError" class="error-message hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span></span>
+              </div>
+              <button id="zhihrRegisterBtn" class="submit-btn" onclick="window.__zhihrAuth.handleRegister()">
+                <span id="registerBtnText">注册</span>
+              </button>
+              <p class="link-text">
+                已有账号？<a href="#" onclick="window.__zhihrAuth.switchTab('login');return false;">登录</a>
+              </p>
+            </div>
+          </div>
+
+          <!-- 底部信息 -->
+          <div class="footer-info">
+            <p>登录即表示同意 <a href="#" style="color: #3b82f6;">服务条款</a> 和 <a href="#" style="color: #3b82f6;">隐私政策</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 登录/注册交互脚本 - 与首页保持一致的认证逻辑
+      (function() {
+        // API配置
+        var AUTH_API_BASE_URL = 'https://api.zhihr.vip';
+
+        // 用户信息键名 - 与首页保持一致
+        var USER_ID_KEY = 'zhihr_user_id';
+        var USERNAME_KEY = 'zhihr_username';
+        var TOKEN_KEY = 'zhihr_token';
+
+        // 获取用户信息
+        function getUserId() {
+          return localStorage.getItem(USER_ID_KEY);
+        }
+
+        function getUsername() {
+          return localStorage.getItem(USERNAME_KEY);
+        }
+
+        function getToken() {
+          return localStorage.getItem(TOKEN_KEY);
+        }
+
+        // 设置用户信息
+        function setUserId(userId) {
+          localStorage.setItem(USER_ID_KEY, userId);
+        }
+
+        function setUsername(username) {
+          localStorage.setItem(USERNAME_KEY, username);
+        }
+
+        function setToken(token) {
+          localStorage.setItem(TOKEN_KEY, token);
+        }
+
+        // 清除用户信息
+        function clearUserId() {
+          localStorage.removeItem(USER_ID_KEY);
+          localStorage.removeItem(USERNAME_KEY);
+          localStorage.removeItem(TOKEN_KEY);
+        }
+
+        // 当前用户状态
+        var currentUserId = getUserId();
+
+        var currentErrorTimeout = null;
+
+        function showError(errorElement, message, duration) {
+          duration = duration || 4000;
+          if (currentErrorTimeout) clearTimeout(currentErrorTimeout);
+          var span = errorElement.querySelector('span');
+          if (span) {
+            span.textContent = message;
+          } else {
+            errorElement.textContent = message;
+          }
+          errorElement.classList.remove('hidden');
+          // 添加抖动动画
+          errorElement.style.animation = 'none';
+          errorElement.offsetHeight; // 触发重排
+          errorElement.style.animation = 'shake 0.4s ease';
+          currentErrorTimeout = setTimeout(function() {
+            errorElement.classList.add('hidden');
+          }, duration);
+        }
+
+        function setAuthButtonLoading(buttonId, loading, originalText) {
+          var btn = document.getElementById(buttonId);
+          if (btn) {
+            btn.disabled = loading;
+            if (loading) {
+              btn.innerHTML = '<div class="spinner"></div><span>请稍候...</span>';
+            } else {
+              btn.innerHTML = '<span>' + originalText + '</span>';
+            }
+          }
+        }
+
+        // 监听 React 组件渲染完成
+        function waitForReactRender(callback) {
+          requestAnimationFrame(function() {
+            setTimeout(function() {
+              callback();
+            }, 50);
+          });
+        }
+
+        // 待提交的表单数据（登录成功后自动提交）
+        var pendingFormData = null;
+
+        // 监听登录成功事件，触发数据提交
+        window.addEventListener('zhihr-login-success', function(e) {
+          console.log('登录成功事件收到:', e.detail);
+          // 如果有待提交的表单数据，自动提交
+          if (pendingFormData) {
+            var data = pendingFormData;
+            pendingFormData = null;
+            // 延迟一点等待 React 状态更新
+            setTimeout(function() {
+              var Kc = window.__KcStore__;
+              if (Kc && typeof Kc.getState === 'function') {
+                Kc.getState().saveRecord(data.date, data.content, data.summary);
+              }
+            }, 100);
+          }
+        });
+
+        // 监听 React Kc store 加载完成，注入登录检查逻辑
+        function patchKcStore() {
+          // 尝试通过多种方式找到 Kc store
+          var kcStore = null;
+
+          // 方法1: 检查 window.__KcStore__
+          if (window.__KcStore__) {
+            kcStore = window.__KcStore__;
+          }
+
+          // 方法2: 查找所有可能是 Zustand store 的对象
+          if (!kcStore) {
+            for (var key in window) {
+              try {
+                var obj = window[key];
+                if (obj && typeof obj === 'function' && obj.getState && obj.subscribe) {
+                  var state = obj.getState();
+                  if (state && Array.isArray(state.reviews) && state.saveRecord) {
+                    kcStore = obj;
+                    break;
+                  }
+                }
+              } catch (e) {
+                // 忽略跨域错误
+              }
+            }
+          }
+
+          if (kcStore) {
+            console.log('找到 Kc Store');
+            window.__KcStore__ = kcStore;
+
+            var originalSaveRecord = kcStore.getState().saveRecord;
+            var originalLoadFromCloud = kcStore.getState().loadFromCloud;
+
+            // Patch saveRecord - 登录检查
+            kcStore.getState().saveRecord = async function(date, content, summary) {
+              var token = getToken();
+              if (!token) {
+                // 未登录，显示登录弹窗，保存待提交数据
+                pendingFormData = { date: date, content: content, summary: summary };
+                window.__zhihrAuth.openLoginModal();
+                return;
+              }
+              // 已登录，执行原逻辑
+              return originalSaveRecord.call(this, date, content, summary);
+            };
+
+            // Patch loadFromCloud - 数据合并
+            kcStore.getState().loadFromCloud = async function() {
+              try {
+                var result = await apiRequest('/api/reviews');
+                if (result && result.success && result.data) {
+                  var cloudData = result.data;
+                  var localData = this.getState().reviews || [];
+
+                  // 按日期合并数据
+                  var mergedMap = new Map();
+
+                  // 先添加本地数据
+                  localData.forEach(function(item) {
+                    if (item.date) {
+                      mergedMap.set(item.date, item);
+                    }
+                  });
+
+                  // 服务器数据覆盖本地数据（以服务器为准）
+                  cloudData.forEach(function(item) {
+                    if (item.date) {
+                      // 如果服务器数据更新或本地没有，则使用服务器数据
+                      var existing = mergedMap.get(item.date);
+                      if (!existing || (item.updatedAt && new Date(item.updatedAt) > new Date(existing.updatedAt || 0))) {
+                        mergedMap.set(item.date, item);
+                      }
+                    }
+                  });
+
+                  // 转换回数组并按日期排序
+                  var merged = Array.from(mergedMap.values()).sort(function(a, b) {
+                    return b.date.localeCompare(a.date);
+                  });
+
+                  this.setState({ reviews: merged, isLoading: false });
+                  gl(ci.REVIEW_DATA, merged);
+                  console.log('数据已合并:', merged.length, '条记录');
+                }
+              } catch (error) {
+                console.warn('云端数据拉取失败，使用本地缓存:', error);
+                this.setState({ isLoading: false });
+              }
+            };
+
+            console.log('Kc Store 已注入登录检查和数据合并逻辑');
+          } else {
+            console.log('Kc Store 未找到，100ms后重试');
+            setTimeout(patchKcStore, 100);
+          }
+        }
+
+        window.__zhihrAuth = {
+          openLoginModal: function() {
+            document.getElementById('zhihrLoginFormContent').classList.remove('hidden');
+            document.getElementById('zhihrRegisterFormContent').classList.add('hidden');
+            document.getElementById('zhihrLoginOverlay').classList.remove('hidden');
+            this.switchTab('login');
+            // 清空表单
+            document.getElementById('zhihrLoginUsername').value = '';
+            document.getElementById('zhihrLoginPassword').value = '';
+            document.getElementById('zhihrLoginError').classList.add('hidden');
+            // 聚焦到账号输入框
+            var self = this;
+            setTimeout(function() {
+              document.getElementById('zhihrLoginUsername').focus();
+            }, 100);
+          },
+
+          hideLoginOverlay: function() {
+            document.getElementById('zhihrLoginOverlay').classList.add('hidden');
+          },
+
+          showLoginOverlay: function() {
+            document.getElementById('zhihrLoginOverlay').classList.remove('hidden');
+            this.openLoginModal();
+          },
+
+          closeLoginModal: function() {
+            // 强制登录模式下不允许关闭
+          },
+
+          // 切换登录/注册标签
+          switchTab: function(tab) {
+            var loginForm = document.getElementById('zhihrLoginFormContent');
+            var registerForm = document.getElementById('zhihrRegisterFormContent');
+            var tabLogin = document.getElementById('tabLogin');
+            var tabRegister = document.getElementById('tabRegister');
+            var loginError = document.getElementById('zhihrLoginError');
+            var registerError = document.getElementById('zhihrRegisterError');
+
+            if (tab === 'login') {
+              loginForm.classList.remove('hidden');
+              registerForm.classList.add('hidden');
+              tabLogin.classList.add('active');
+              tabRegister.classList.remove('active');
+              loginError.classList.add('hidden');
+              setTimeout(function() {
+                document.getElementById('zhihrLoginUsername').focus();
+              }, 100);
+            } else {
+              loginForm.classList.add('hidden');
+              registerForm.classList.remove('hidden');
+              tabLogin.classList.remove('active');
+              tabRegister.classList.add('active');
+              registerError.classList.add('hidden');
+              // 清空注册表单
+              document.getElementById('zhihrRegisterUsername').value = '';
+              document.getElementById('zhihrRegisterPassword').value = '';
+              document.getElementById('zhihrRegisterPasswordConfirm').value = '';
+              setTimeout(function() {
+                document.getElementById('zhihrRegisterUsername').focus();
+              }, 100);
+            }
+          },
+
+          // 切换密码可见性
+          togglePassword: function(inputId, btn) {
+            var input = document.getElementById(inputId);
+            if (input.type === 'password') {
+              input.type = 'text';
+              btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+            } else {
+              input.type = 'password';
+              btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+            }
+          },
+
+          // 登录处理
+          handleLogin: function() {
+            var username = document.getElementById('zhihrLoginUsername').value.trim();
+            var password = document.getElementById('zhihrLoginPassword').value.trim();
+            var loginError = document.getElementById('zhihrLoginError');
+
+            if (!username || !password) {
+              showError(loginError, '请输入账号和密码');
+              return;
+            }
+
+            var self = this;
+            setAuthButtonLoading('zhihrLoginBtn', true, '登录');
+
+            fetch(AUTH_API_BASE_URL + '/api/auth/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username: username, password: password })
+            })
+            .then(function(response) {
+              return response.json();
+            })
+            .then(function(result) {
+              if (!result.success) {
+                showError(loginError, result.message || '登录失败');
+                return;
+              }
+
+              var data = result.data;
+              setUserId(data.userId);
+              setUsername(username);
+              setToken(data.token);
+
+              // 同时更新 React Zustand store（如果存在）
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().setAuth(data.userId, username, data.token);
+                // 触发自定义事件，通知React应用登录成功
+                window.dispatchEvent(new CustomEvent('zhihr-login-success', { detail: { userId: data.userId, username: username, token: data.token } }));
+              }
+
+              self.hideLoginOverlay();
+            })
+            .catch(function(error) {
+              console.error('Login error:', error);
+              showError(loginError, '登录失败，请检查网络');
+            })
+            .finally(function() {
+              setAuthButtonLoading('zhihrLoginBtn', false, '登录');
+            });
+          },
+
+          // 注册处理
+          handleRegister: function() {
+            var username = document.getElementById('zhihrRegisterUsername').value.trim();
+            var password = document.getElementById('zhihrRegisterPassword').value;
+            var passwordConfirm = document.getElementById('zhihrRegisterPasswordConfirm').value;
+            var registerError = document.getElementById('zhihrRegisterError');
+
+            if (!username || !password || !passwordConfirm) {
+              showError(registerError, '请填写所有字段');
+              return;
+            }
+            if (username.length < 3) {
+              showError(registerError, '账号至少3个字符');
+              return;
+            }
+            if (password !== passwordConfirm) {
+              showError(registerError, '两次密码不一致');
+              return;
+            }
+            if (password.length < 4) {
+              showError(registerError, '密码至少4位');
+              return;
+            }
+
+            var self = this;
+            setAuthButtonLoading('zhihrRegisterBtn', true, '注册');
+
+            fetch(AUTH_API_BASE_URL + '/api/auth/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username: username, password: password })
+            })
+            .then(function(response) {
+              return response.json();
+            })
+            .then(function(result) {
+              if (!result.success) {
+                showError(registerError, result.message || '注册失败');
+                return;
+              }
+
+              var data = result.data;
+              setUserId(data.userId);
+              setUsername(username);
+              setToken(data.token);
+
+              // 同时更新 React Zustand store（如果存在）
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().setAuth(data.userId, username, data.token);
+                // 触发自定义事件，通知React应用登录成功
+                window.dispatchEvent(new CustomEvent('zhihr-login-success', { detail: { userId: data.userId, username: username, token: data.token } }));
+              }
+
+              self.hideLoginOverlay();
+            })
+            .catch(function(error) {
+              console.error('Register error:', error);
+              showError(registerError, '注册失败，请检查网络');
+            })
+            .finally(function() {
+              setAuthButtonLoading('zhihrRegisterBtn', false, '注册');
+            });
+          },
+
+          // 检查登录状态，如果未登录则显示登录弹窗
+          checkLoginAndShowModalIfNeeded: function() {
+            var token = getToken();
+            if (!token) {
+              this.openLoginModal();
+              return false;
+            }
+            return true;
+          },
+
+          // 验证是否已登录（同步）
+          isLoggedIn: function() {
+            return !!getToken();
+          },
+
+          // 初始化登录状态检查
+          init: function() {
+            var self = this;
+            // 直接检查 localStorage 中的认证状态
+            var userId = getUserId();
+            var username = getUsername();
+            var token = getToken();
+
+            if (userId && username && token) {
+              // 已登录，隐藏登录界面
+              self.hideLoginOverlay();
+              // 同时更新 React Zustand store（如果存在）
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().loadAuthFromStorage();
+              }
+            } else {
+              // 未登录，不自动显示登录界面，让用户直接进入记录页面
+              // 登录界面会在用户点击提交按钮时根据需要显示
+              console.log('未登录状态，用户将直接进入记录页面');
+            }
+          }
+        };
+
+        // 页面加载完成后初始化登录状态
+        window.addEventListener('load', function() {
+          window.__zhihrAuth.init();
+        });
+
+        // 监听 Zustand store 变化，更新登录界面状态（如果 React 已加载）
+        window.addEventListener('DOMContentLoaded', function() {
+          waitForReactRender(function() {
+            if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+              var auth = window.__ZHIHR_AUTH__;
+              var unsubscribe = auth.store.subscribe(function(state) {
+                if (!state.isAuthenticated) {
+                  // 用户退出登录，显示登录界面
+                  window.__zhihrAuth.showLoginOverlay();
+                }
+              });
+            }
+            // 注入 Kc Store 登录检查和数据合并逻辑
+            patchKcStore();
+          });
+        });
+
+        // 点击其他地方关闭用户下拉菜单
+        document.addEventListener('click', function(e) {
+          if (typeof zhihrUserMenuVisible !== 'undefined') {
+            var menu = document.getElementById('zhihrUserMenu');
+            if (menu && zhihrUserMenuVisible) {
+              var btn = e.target.closest('button');
+              if (!menu.contains(e.target) && !(btn && btn.onclick && btn.onclick.toString().indexOf('zhihrUserMenu') > -1)) {
+                if (typeof hideZhihrUserMenu === 'function') {
+                  hideZhihrUserMenu();
+                }
+              }
+            }
+          }
+        });
+      })();
+    </script>
     <script>
       window.onerror = function(msg, url, line, col, error) {
         var overlay = document.createElement('div');

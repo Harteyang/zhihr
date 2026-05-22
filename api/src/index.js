@@ -274,6 +274,7 @@ async function handleRequest(request, env) {
   if (path === '/api/reviews') {
     if (method === 'GET') return handleGetReviews(request, env, corsHeaders)
     if (method === 'POST') return handleCreateReview(request, env, corsHeaders)
+    if (method === 'PUT') return handleUpdateReviewByDate(request, env, corsHeaders)
   }
 
   if (path.match(/^\/api\/reviews\/[a-f0-9\-]+$/)) {
@@ -743,8 +744,12 @@ async function handleGetReviews(request, env, corsHeaders) {
     return jsonResponse({
       success: true,
       data: reviews.results.map(r => ({
-        ...r,
-        content: r.content ? JSON.parse(r.content) : null
+        id: r.id,
+        date: r.review_date,  // 前端期望 date 字段
+        title: r.title,
+        content: r.content ? JSON.parse(r.content) : null,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
       })),
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     }, 200, corsHeaders)
@@ -761,23 +766,106 @@ async function handleCreateReview(request, env, corsHeaders) {
 
   try {
     const body = await request.json()
-    const title = sanitizeInput(body.title, 200)
+    // 兼容前端字段名: date->review_date, summary->title
+    const title = sanitizeInput(body.title || body.summary, 200)
     const content = body.content
-    const review_date = body.review_date || new Date().toISOString().split('T')[0]
+    const review_date = body.review_date || body.date || new Date().toISOString().split('T')[0]
 
     if (!title) {
       return jsonResponse({ success: false, message: '复盘标题不能为空' }, 400, corsHeaders)
     }
 
     const db = env.DB
-    const reviewId = generateId()
+    // 使用前端提供的id或生成新id
+    const reviewId = body.id || generateId()
 
     await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
       .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(reviewId).first()
 
-    return jsonResponse({ success: true, message: '创建成功', data: { ...review, content: review.content ? JSON.parse(review.content) : null } }, 200, corsHeaders)
+    return jsonResponse({
+      success: true,
+      message: '创建成功',
+      data: {
+        id: review.id,
+        date: review.review_date,
+        title: review.title,
+        content: review.content ? JSON.parse(review.content) : null,
+        createdAt: review.created_at,
+        updatedAt: review.updated_at
+      }
+    }, 200, corsHeaders)
+  } catch (error) {
+    return jsonResponse({ success: false, message: maskError(error) }, 500, corsHeaders)
+  }
+}
+
+// 按日期更新复盘记录 - 前端使用date字段
+async function handleUpdateReviewByDate(request, env, corsHeaders) {
+  const user = await getAuthenticatedUser(request, env)
+  if (!user) {
+    return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
+  }
+
+  try {
+    const body = await request.json()
+    const db = env.DB
+
+    // 前端发送 date 字段
+    const reviewDate = body.date
+    if (!reviewDate) {
+      return jsonResponse({ success: false, message: '日期不能为空' }, 400, corsHeaders)
+    }
+
+    // 查找该日期的记录
+    const existing = await db.prepare('SELECT * FROM reviews WHERE user_id = ? AND review_date = ?').bind(user.userId, reviewDate).first()
+
+    if (!existing) {
+      return jsonResponse({ success: false, message: '复盘不存在' }, 404, corsHeaders)
+    }
+
+    const fields = []
+    const params = []
+
+    // 兼容前端字段名: summary->title
+    if (body.title !== undefined) {
+      fields.push('title = ?')
+      params.push(sanitizeInput(body.title, 200))
+    } else if (body.summary !== undefined) {
+      fields.push('title = ?')
+      params.push(sanitizeInput(body.summary, 200))
+    }
+    if (body.content !== undefined) {
+      fields.push('content = ?')
+      params.push(JSON.stringify(body.content))
+    }
+
+    if (fields.length === 0) {
+      return jsonResponse({ success: false, message: '没有要更新的字段' }, 400, corsHeaders)
+    }
+
+    fields.push('updated_at = ?')
+    params.push(new Date().toISOString())
+    params.push(reviewDate)
+    params.push(user.userId)
+
+    await db.prepare('UPDATE reviews SET ' + fields.join(', ') + ' WHERE review_date = ? AND user_id = ?').bind(...params).run()
+
+    const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(existing.id).first()
+
+    return jsonResponse({
+      success: true,
+      message: '更新成功',
+      data: {
+        id: review.id,
+        date: review.review_date,
+        title: review.title,
+        content: review.content ? JSON.parse(review.content) : null,
+        createdAt: review.created_at,
+        updatedAt: review.updated_at
+      }
+    }, 200, corsHeaders)
   } catch (error) {
     return jsonResponse({ success: false, message: maskError(error) }, 500, corsHeaders)
   }
@@ -802,9 +890,13 @@ async function handleUpdateReview(request, reviewId, env, corsHeaders) {
     const fields = []
     const params = []
 
+    // 兼容前端字段名: summary->title, date->review_date
     if (updates.title !== undefined) {
       fields.push('title = ?')
       params.push(sanitizeInput(updates.title, 200))
+    } else if (updates.summary !== undefined) {
+      fields.push('title = ?')
+      params.push(sanitizeInput(updates.summary, 200))
     }
     if (updates.content !== undefined) {
       fields.push('content = ?')
@@ -813,6 +905,9 @@ async function handleUpdateReview(request, reviewId, env, corsHeaders) {
     if (updates.review_date !== undefined) {
       fields.push('review_date = ?')
       params.push(updates.review_date)
+    } else if (updates.date !== undefined) {
+      fields.push('review_date = ?')
+      params.push(updates.date)
     }
 
     if (fields.length === 0) {
@@ -828,7 +923,18 @@ async function handleUpdateReview(request, reviewId, env, corsHeaders) {
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(reviewId).first()
 
-    return jsonResponse({ success: true, message: '更新成功', data: { ...review, content: review.content ? JSON.parse(review.content) : null } }, 200, corsHeaders)
+    return jsonResponse({
+      success: true,
+      message: '更新成功',
+      data: {
+        id: review.id,
+        date: review.review_date,
+        title: review.title,
+        content: review.content ? JSON.parse(review.content) : null,
+        createdAt: review.created_at,
+        updatedAt: review.updated_at
+      }
+    }, 200, corsHeaders)
   } catch (error) {
     return jsonResponse({ success: false, message: maskError(error) }, 500, corsHeaders)
   }
@@ -905,8 +1011,12 @@ async function handleSyncReviews(request, env, corsHeaders) {
     return jsonResponse({
       success: true,
       data: allReviews.results.map(r => ({
-        ...r,
-        content: r.content ? JSON.parse(r.content) : null
+        id: r.id,
+        date: r.review_date,  // 前端期望 date 字段
+        title: r.title,
+        content: r.content ? JSON.parse(r.content) : null,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
       })),
       synced
     }, 200, corsHeaders)
