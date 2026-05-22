@@ -277,7 +277,7 @@ async function handleRequest(request, env) {
     if (method === 'PUT') return handleUpdateReviewByDate(request, env, corsHeaders)
   }
 
-  if (path.match(/^\/api\/reviews\/[a-f0-9\-]+$/)) {
+  if (path.match(/^\/api\/reviews\/[a-zA-Z0-9\-]+$/)) {
     const id = path.split('/')[3]
     if (method === 'PUT') return handleUpdateReview(request, id, env, corsHeaders)
     if (method === 'DELETE') return handleDeleteReview(request, id, env, corsHeaders)
