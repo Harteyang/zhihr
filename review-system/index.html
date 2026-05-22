@@ -5,11 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>复盘系统 - 知HR工具集</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.loli.net/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      window.__API_BASE_URL__ = window.__API_BASE_URL__ || null;
+      if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        var noop = function() {};
+        console.log = noop;
+        console.info = noop;
+        console.warn = noop;
+        console.debug = noop;
+      }
+    </script>
     <script type="module" crossorigin src="assets/index-BmCB11Ko.js"></script>
     <link rel="stylesheet" crossorigin href="assets/index-QXsWTBbi.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:16px;background:#fee2e2;color:#991b1b;font-family:sans-serif;z-index:99999;border-bottom:2px solid #f87171;';
+        overlay.innerHTML = '<strong>应用出现错误</strong><p style="margin:4px 0 0;font-size:14px;">页面遇到了问题，请刷新重试。如问题持续，请联系管理员。</p><button onclick="this.parentElement.remove()" style="margin-top:8px;padding:4px 12px;cursor:pointer;">关闭</button>';
+        document.body.appendChild(overlay);
+      };
+    </script>
   </body>
 </html>
