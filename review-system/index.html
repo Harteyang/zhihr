@@ -548,22 +548,125 @@
         // 待提交的表单数据（登录成功后自动提交）
         var pendingFormData = null;
 
-        // 监听登录成功事件，触发数据提交
+        // 监听登录成功事件，触发数据提交和云端同步
         window.addEventListener('zhihr-login-success', function(e) {
           console.log('登录成功事件收到:', e.detail);
-          // 如果有待提交的表单数据，自动提交
-          if (pendingFormData) {
-            var data = pendingFormData;
-            pendingFormData = null;
-            // 延迟一点等待 React 状态更新
-            setTimeout(function() {
-              var Kc = window.__KcStore__;
-              if (Kc && typeof Kc.getState === 'function') {
+          var Kc = window.__KcStore__;
+
+          // 先从云端同步数据
+          if (Kc && typeof Kc.getState === 'function') {
+            Kc.getState().loadFromCloud().then(function() {
+              // 云端数据同步完成后，如果有待提交的表单数据，自动提交
+              if (pendingFormData) {
+                var data = pendingFormData;
+                pendingFormData = null;
                 Kc.getState().saveRecord(data.date, data.content, data.summary);
               }
-            }, 100);
+            }).catch(function(err) {
+              console.warn('云端同步失败:', err);
+              // 即使同步失败，也尝试提交待保存数据
+              if (pendingFormData) {
+                var data = pendingFormData;
+                pendingFormData = null;
+                Kc.getState().saveRecord(data.date, data.content, data.summary);
+              }
+            });
           }
         });
+
+        // localStorage 键名（与打包JS中的 ci.REVIEW_DATA 一致）
+        var REVIEW_DATA_KEY = 'reviewData';
+        var CACHE_VERSION_KEY = 'reviewCacheVersion';
+        var CACHE_VERSION = 1;
+        var MAX_STORAGE_SIZE = 4 * 1024 * 1024; // 4MB 安全阈值
+        var MAX_RECORDS = 500; // 最大记录数
+
+        // 检查 localStorage 可用空间
+        function checkStorageQuota(neededBytes) {
+          try {
+            var used = 0;
+            for (var i = 0; i < localStorage.length; i++) {
+              var key = localStorage.key(i);
+              used += (localStorage.getItem(key) || '').length * 2; // UTF-16 编码
+            }
+            return (used + neededBytes) < MAX_STORAGE_SIZE;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        // 数据校验：确保 reviews 数组格式正确
+        function validateReviews(data) {
+          if (!Array.isArray(data)) return [];
+          return data.filter(function(item) {
+            return item && typeof item === 'object' && typeof item.date === 'string' && item.date.length > 0;
+          }).slice(0, MAX_RECORDS);
+        }
+
+        // 清理过期缓存（超过90天的记录）
+        function cleanExpiredCache(data) {
+          if (!Array.isArray(data)) return data;
+          var ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          return data.filter(function(item) {
+            return item.date >= ninetyDaysAgo;
+          });
+        }
+
+        // 保存数据到 localStorage（带配额检查和数据校验）
+        function saveToLocalStorage(data) {
+          try {
+            var validated = validateReviews(data);
+            var cleaned = cleanExpiredCache(validated);
+            var jsonStr = JSON.stringify(cleaned);
+            if (!checkStorageQuota(jsonStr.length * 2)) {
+              // 空间不足时，尝试只保留最近30天的数据
+              var thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+              var recent = cleaned.filter(function(item) { return item.date >= thirtyDaysAgo; });
+              jsonStr = JSON.stringify(recent);
+              if (!checkStorageQuota(jsonStr.length * 2)) {
+                console.error('localStorage空间不足，无法保存');
+                return;
+              }
+            }
+            localStorage.setItem(REVIEW_DATA_KEY, jsonStr);
+            localStorage.setItem(CACHE_VERSION_KEY, String(CACHE_VERSION));
+          } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+              console.error('localStorage配额已满，尝试清理旧数据');
+              try {
+                // 紧急清理：只保留最近7天
+                var sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                var emergency = (Array.isArray(data) ? data : []).filter(function(item) {
+                  return item && item.date >= sevenDaysAgo;
+                });
+                localStorage.setItem(REVIEW_DATA_KEY, JSON.stringify(emergency));
+              } catch (e2) {
+                console.error('紧急清理后仍无法保存:', e2);
+              }
+            } else {
+              console.error('保存到localStorage失败:', e);
+            }
+          }
+        }
+
+        // 从 localStorage 读取数据（带数据校验和版本检查）
+        function loadFromLocalStorage() {
+          try {
+            var data = localStorage.getItem(REVIEW_DATA_KEY);
+            if (!data) return null;
+            var parsed = JSON.parse(data);
+            // 版本检查：如果缓存版本过旧，清除并返回null
+            var version = parseInt(localStorage.getItem(CACHE_VERSION_KEY) || '0', 10);
+            if (version < CACHE_VERSION && version > 0) {
+              console.warn('缓存版本过旧，将重新加载');
+            }
+            return validateReviews(parsed);
+          } catch (e) {
+            console.error('读取localStorage数据损坏，清除缓存:', e);
+            try { localStorage.removeItem(REVIEW_DATA_KEY); } catch (e2) {}
+            return null;
+          }
+        }
 
         // 监听 React Kc store 加载完成，注入登录检查逻辑
         function patchKcStore() {
@@ -600,26 +703,60 @@
             var originalSaveRecord = kcStore.getState().saveRecord;
             var originalLoadFromCloud = kcStore.getState().loadFromCloud;
 
-            // Patch saveRecord - 登录检查
+            // Patch saveRecord - 未登录时也先本地缓存，再提示登录
             kcStore.getState().saveRecord = async function(date, content, summary) {
               var token = getToken();
+
               if (!token) {
-                // 未登录，显示登录弹窗，保存待提交数据
+                // 未登录：先更新本地状态和缓存，再提示登录
+                var reviews = kcStore.getState().reviews || [];
+                var existingIndex = reviews.findIndex(function(r) { return r.date === date; });
+                var now = new Date().toISOString();
+                var updatedReviews;
+
+                if (existingIndex >= 0) {
+                  updatedReviews = reviews.slice();
+                  updatedReviews[existingIndex] = Object.assign({}, updatedReviews[existingIndex], {
+                    content: content, summary: summary, updatedAt: now
+                  });
+                } else {
+                  var newRecord = {
+                    id: 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    date: date, content: content, summary: summary,
+                    createdAt: now, updatedAt: now
+                  };
+                  updatedReviews = [newRecord].concat(reviews);
+                }
+
+                // 更新 Zustand 状态
+                kcStore.setState({ reviews: updatedReviews });
+                // 保存到 localStorage
+                saveToLocalStorage(updatedReviews);
+
+                // 保存待提交数据，然后显示登录弹窗
                 pendingFormData = { date: date, content: content, summary: summary };
                 window.__zhihrAuth.openLoginModal();
                 return;
               }
-              // 已登录，执行原逻辑
+
+              // 已登录，执行原逻辑（内部会更新状态、缓存和提交云端）
               return originalSaveRecord.call(this, date, content, summary);
             };
 
-            // Patch loadFromCloud - 数据合并
+            // Patch loadFromCloud - 数据合并（修复 gl/ci 未定义问题）
             kcStore.getState().loadFromCloud = async function() {
               try {
-                var result = await apiRequest('/api/reviews');
+                var token = getToken();
+                if (!token) {
+                  // 未登录，跳过云端加载
+                  kcStore.setState({ isLoading: false });
+                  return;
+                }
+
+                var result = await window.__ZHIHR_AUTH__.apiRequest('/api/reviews');
                 if (result && result.success && result.data) {
                   var cloudData = result.data;
-                  var localData = this.getState().reviews || [];
+                  var localData = kcStore.getState().reviews || [];
 
                   // 按日期合并数据
                   var mergedMap = new Map();
@@ -634,7 +771,6 @@
                   // 服务器数据覆盖本地数据（以服务器为准）
                   cloudData.forEach(function(item) {
                     if (item.date) {
-                      // 如果服务器数据更新或本地没有，则使用服务器数据
                       var existing = mergedMap.get(item.date);
                       if (!existing || (item.updatedAt && new Date(item.updatedAt) > new Date(existing.updatedAt || 0))) {
                         mergedMap.set(item.date, item);
@@ -647,17 +783,27 @@
                     return b.date.localeCompare(a.date);
                   });
 
-                  this.setState({ reviews: merged, isLoading: false });
-                  gl(ci.REVIEW_DATA, merged);
+                  kcStore.setState({ reviews: merged, isLoading: false });
+                  saveToLocalStorage(merged);
                   console.log('数据已合并:', merged.length, '条记录');
                 }
               } catch (error) {
                 console.warn('云端数据拉取失败，使用本地缓存:', error);
-                this.setState({ isLoading: false });
+                kcStore.setState({ isLoading: false });
               }
             };
 
             console.log('Kc Store 已注入登录检查和数据合并逻辑');
+
+            // 页面加载时：如果已登录，确保 Hd store 已加载认证状态，再从云端同步数据
+            if (getToken()) {
+              console.log('已登录，从云端同步数据...');
+              // 确保 Hd store 已加载认证状态
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().loadAuthFromStorage();
+              }
+              kcStore.getState().loadFromCloud();
+            }
           } else {
             console.log('Kc Store 未找到，100ms后重试');
             setTimeout(patchKcStore, 100);
@@ -890,8 +1036,9 @@
                 window.__ZHIHR_AUTH__.store.getState().loadAuthFromStorage();
               }
             } else {
-              // 未登录，不自动显示登录界面，让用户直接进入记录页面
+              // 未登录，隐藏登录界面，让用户直接进入记录页面
               // 登录界面会在用户点击提交按钮时根据需要显示
+              self.hideLoginOverlay();
               console.log('未登录状态，用户将直接进入记录页面');
             }
           }
@@ -909,8 +1056,12 @@
               var auth = window.__ZHIHR_AUTH__;
               var unsubscribe = auth.store.subscribe(function(state) {
                 if (!state.isAuthenticated) {
-                  // 用户退出登录，显示登录界面
-                  window.__zhihrAuth.showLoginOverlay();
+                  // 同步清除 index.html 的认证信息
+                  localStorage.removeItem('zhihr_token');
+                  localStorage.removeItem('zhihr_user_id');
+                  localStorage.removeItem('zhihr_username');
+                  // 用户退出登录，不强制显示登录覆盖层，允许继续使用
+                  // 登录界面会在用户点击提交按钮时根据需要显示
                 }
               });
             }
