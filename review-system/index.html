@@ -560,7 +560,8 @@
               if (pendingFormData) {
                 var data = pendingFormData;
                 pendingFormData = null;
-                Kc.getState().saveRecord(data.date, data.content, data.summary);
+                var opts = data.mode ? { mode: data.mode } : undefined;
+                Kc.getState().saveRecord(data.date, data.content, data.summary, opts);
               }
             }).catch(function(err) {
               console.warn('云端同步失败:', err);
@@ -568,7 +569,8 @@
               if (pendingFormData) {
                 var data = pendingFormData;
                 pendingFormData = null;
-                Kc.getState().saveRecord(data.date, data.content, data.summary);
+                var opts = data.mode ? { mode: data.mode } : undefined;
+                Kc.getState().saveRecord(data.date, data.content, data.summary, opts);
               }
             });
           }
@@ -704,26 +706,31 @@
             var originalLoadFromCloud = kcStore.getState().loadFromCloud;
 
             // Patch saveRecord - 未登录时也先本地缓存，再提示登录
-            kcStore.getState().saveRecord = async function(date, content, summary) {
+            kcStore.getState().saveRecord = async function(date, content, summary, options) {
+              var mode = (options && options.mode) ? options.mode : 'auto';
               var token = getToken();
 
               if (!token) {
                 // 未登录：先更新本地状态和缓存，再提示登录
                 var reviews = kcStore.getState().reviews || [];
-                var existingIndex = reviews.findIndex(function(r) { return r.date === date; });
+                var existingRecords = reviews.filter(function(r) { return r.date === date; });
                 var now = new Date().toISOString();
                 var updatedReviews;
 
-                if (existingIndex >= 0) {
+                if (existingRecords.length > 0 && mode !== 'new') {
+                  // 覆盖模式：更新第一条同日记录
+                  var existing = existingRecords[0];
+                  var idx = reviews.findIndex(function(r) { return r.id === existing.id; });
                   updatedReviews = reviews.slice();
-                  updatedReviews[existingIndex] = Object.assign({}, updatedReviews[existingIndex], {
-                    content: content, summary: summary, updatedAt: now
+                  updatedReviews[idx] = Object.assign({}, updatedReviews[idx], {
+                    content: content, summary: summary, updatedAt: now, _source: 'local'
                   });
                 } else {
+                  // 新建模式或无记录
                   var newRecord = {
                     id: 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
                     date: date, content: content, summary: summary,
-                    createdAt: now, updatedAt: now
+                    createdAt: now, updatedAt: now, _source: 'local'
                   };
                   updatedReviews = [newRecord].concat(reviews);
                 }
@@ -734,16 +741,16 @@
                 saveToLocalStorage(updatedReviews);
 
                 // 保存待提交数据，然后显示登录弹窗
-                pendingFormData = { date: date, content: content, summary: summary };
+                pendingFormData = { date: date, content: content, summary: summary, mode: mode };
                 window.__zhihrAuth.openLoginModal();
                 return;
               }
 
               // 已登录，执行原逻辑（内部会更新状态、缓存和提交云端）
-              return originalSaveRecord.call(this, date, content, summary);
+              return originalSaveRecord.call(this, date, content, summary, options);
             };
 
-            // Patch loadFromCloud - 数据合并（修复 gl/ci 未定义问题）
+            // Patch loadFromCloud - 数据合并（支持同日多条记录和来源追踪）
             kcStore.getState().loadFromCloud = async function() {
               try {
                 var token = getToken();
@@ -755,32 +762,39 @@
 
                 var result = await window.__ZHIHR_AUTH__.apiRequest('/api/reviews');
                 if (result && result.success && result.data) {
-                  var cloudData = result.data;
+                  var cloudData = result.data.map(function(item) {
+                    return Object.assign({}, item, { _source: 'cloud' });
+                  });
                   var localData = kcStore.getState().reviews || [];
 
-                  // 按日期合并数据
+                  // 按ID合并数据
                   var mergedMap = new Map();
 
                   // 先添加本地数据
                   localData.forEach(function(item) {
-                    if (item.date) {
-                      mergedMap.set(item.date, item);
+                    if (item.id) {
+                      mergedMap.set(item.id, item);
                     }
                   });
 
-                  // 服务器数据覆盖本地数据（以服务器为准）
+                  // 云端数据覆盖本地数据（本地未上传的保留）
                   cloudData.forEach(function(item) {
-                    if (item.date) {
-                      var existing = mergedMap.get(item.date);
-                      if (!existing || (item.updatedAt && new Date(item.updatedAt) > new Date(existing.updatedAt || 0))) {
-                        mergedMap.set(item.date, item);
+                    if (item.id) {
+                      var existing = mergedMap.get(item.id);
+                      // 如果本地记录是local来源且更新时间>=云端，保留本地
+                      if (existing && existing._source === 'local' &&
+                          existing.updatedAt && item.updatedAt &&
+                          new Date(existing.updatedAt) >= new Date(item.updatedAt)) {
+                        return;
                       }
+                      mergedMap.set(item.id, item);
                     }
                   });
 
-                  // 转换回数组并按日期排序
+                  // 转换回数组并按日期排序（同日按更新时间倒序）
                   var merged = Array.from(mergedMap.values()).sort(function(a, b) {
-                    return b.date.localeCompare(a.date);
+                    if (a.date !== b.date) return b.date.localeCompare(a.date);
+                    return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
                   });
 
                   kcStore.setState({ reviews: merged, isLoading: false });
