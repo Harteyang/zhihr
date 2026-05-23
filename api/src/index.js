@@ -780,23 +780,8 @@ async function handleCreateReview(request, env, corsHeaders) {
     // 使用前端提供的id或生成新id
     const reviewId = body.id || generateId()
 
-    try {
-      await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-        .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
-    } catch (insertError) {
-      // INSERT失败，可能是唯一约束冲突（UNIQUE(user_id, review_date)）
-      // 尝试移除唯一约束后重试
-      console.warn('INSERT失败，尝试移除唯一约束:', insertError.message)
-      try {
-        await migrateReviewsRemoveUniqueConstraint(db)
-        // 迁移成功后重试INSERT
-        await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-          .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
-      } catch (retryError) {
-        console.error('迁移后重试INSERT仍失败:', retryError.message)
-        throw insertError
-      }
-    }
+    await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(reviewId).first()
 
@@ -998,6 +983,8 @@ async function handleSyncReviews(request, env, corsHeaders) {
     const serverReviews = await db.prepare('SELECT * FROM reviews WHERE user_id = ?').bind(user.userId).all()
     const serverMap = new Map(serverReviews.results.map(r => [r.id, r]))
 
+    // Collect all operations for batch execution
+    const batchOps = []
     let synced = 0
     for (const review of clientReviews) {
       if (!review.id || !review.date) continue
@@ -1007,19 +994,28 @@ async function handleSyncReviews(request, env, corsHeaders) {
 
       if (!serverReview) {
         const reviewId = review.id || generateId()
-        await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-          .bind(reviewId, user.userId, review.summary || review.date, content, review.date, new Date().toISOString(), new Date().toISOString()).run()
+        batchOps.push(
+          db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            .bind(reviewId, user.userId, review.summary || review.date, content, review.date, new Date().toISOString(), new Date().toISOString())
+        )
         synced++
       } else {
         const clientUpdated = new Date(review.updatedAt || 0).getTime()
         const serverUpdated = new Date(serverReview.updated_at).getTime()
 
         if (clientUpdated > serverUpdated) {
-          await db.prepare('UPDATE reviews SET title = ?, content = ?, review_date = ?, updated_at = ? WHERE id = ? AND user_id = ?')
-            .bind(review.summary || serverReview.title, content, review.date, new Date().toISOString(), review.id, user.userId).run()
+          batchOps.push(
+            db.prepare('UPDATE reviews SET title = ?, content = ?, review_date = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+              .bind(review.summary || serverReview.title, content, review.date, new Date().toISOString(), review.id, user.userId)
+          )
           synced++
         }
       }
+    }
+
+    // Execute all operations in a single batch for atomicity
+    if (batchOps.length > 0) {
+      await db.batch(batchOps)
     }
 
     const allReviews = await db.prepare('SELECT * FROM reviews WHERE user_id = ? ORDER BY review_date DESC').bind(user.userId).all()
@@ -1174,6 +1170,12 @@ async function handleMigrateReviews(request, env, corsHeaders) {
   const user = await getAuthenticatedUser(request, env)
   if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
+  }
+
+  // Admin check: require admin secret in header
+  const adminSecret = request.headers.get('X-Admin-Secret')
+  if (!adminSecret || adminSecret !== env.ADMIN_SECRET) {
+    return jsonResponse({ success: false, message: '需要管理员权限' }, 403, corsHeaders)
   }
 
   try {
