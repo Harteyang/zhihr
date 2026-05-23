@@ -803,18 +803,11 @@
                 if (existingRecords.length > 0 && mode !== 'new') {
                   // 覆盖模式
                   if (targetId.startsWith('local-')) {
-                    try {
-                      await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
-                        method: 'POST',
-                        body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
-                      });
-                    } catch (postErr) {
-                      console.warn('[saveRecord] POST local-失败，尝试PUT:', postErr);
-                      await window.__ZHIHR_AUTH__.apiRequest('/api/reviews/' + targetId, {
-                        method: 'PUT',
-                        body: JSON.stringify({ date: date, content: content, summary: summary })
-                      });
-                    }
+                    // local- 开头的id在云端不存在，用POST创建（后端已支持幂等：存在则更新）
+                    await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
+                      method: 'POST',
+                      body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
+                    });
                   } else {
                     await window.__ZHIHR_AUTH__.apiRequest('/api/reviews/' + targetId, {
                       method: 'PUT',
@@ -822,19 +815,11 @@
                     });
                   }
                 } else {
-                  // 新建模式
-                  try {
-                    await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
-                      method: 'POST',
-                      body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
-                    });
-                  } catch (postErr) {
-                    console.warn('[saveRecord] POST新建失败，尝试PUT:', postErr);
-                    await window.__ZHIHR_AUTH__.apiRequest('/api/reviews/' + targetId, {
-                      method: 'PUT',
-                      body: JSON.stringify({ date: date, content: content, summary: summary })
-                    });
-                  }
+                  // 新建模式 - 后端已支持：同日已有记录时自动转为更新
+                  await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
+                  });
                 }
 
                 // API 成功后更新 _source 为 cloud
