@@ -302,6 +302,11 @@ async function handleRequest(request, env) {
     }
   }
 
+  // 数据库迁移接口 - 移除 reviews 表的唯一约束
+  if (path === '/api/admin/migrate-reviews' && method === 'POST') {
+    return handleMigrateReviews(request, env, corsHeaders)
+  }
+
   if (path.match(/^\/api\/feedbacks\/[a-f0-9\-]+$/)) {
     const id = path.split('/')[3]
     if (method === 'PUT') return handleUpdateFeedback(request, id, env, corsHeaders)
@@ -767,20 +772,31 @@ async function handleCreateReview(request, env, corsHeaders) {
   try {
     const body = await request.json()
     // 兼容前端字段名: date->review_date, summary->title
-    const title = sanitizeInput(body.title || body.summary, 200)
-    const content = body.content
     const review_date = body.review_date || body.date || new Date().toISOString().split('T')[0]
-
-    if (!title) {
-      return jsonResponse({ success: false, message: '复盘标题不能为空' }, 400, corsHeaders)
-    }
+    const title = sanitizeInput(body.title || body.summary, 200) || review_date
+    const content = body.content
 
     const db = env.DB
     // 使用前端提供的id或生成新id
     const reviewId = body.id || generateId()
 
-    await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-      .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
+    try {
+      await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
+    } catch (insertError) {
+      // INSERT失败，可能是唯一约束冲突（UNIQUE(user_id, review_date)）
+      // 尝试移除唯一约束后重试
+      console.warn('INSERT失败，尝试移除唯一约束:', insertError.message)
+      try {
+        await migrateReviewsRemoveUniqueConstraint(db)
+        // 迁移成功后重试INSERT
+        await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
+      } catch (retryError) {
+        console.error('迁移后重试INSERT仍失败:', retryError.message)
+        throw insertError
+      }
+    }
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(reviewId).first()
 
@@ -818,8 +834,8 @@ async function handleUpdateReviewByDate(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '日期不能为空' }, 400, corsHeaders)
     }
 
-    // 查找该日期的记录
-    const existing = await db.prepare('SELECT * FROM reviews WHERE user_id = ? AND review_date = ?').bind(user.userId, reviewDate).first()
+    // 查找该日期的最新记录（支持同日多条记录）
+    const existing = await db.prepare('SELECT * FROM reviews WHERE user_id = ? AND review_date = ? ORDER BY updated_at DESC LIMIT 1').bind(user.userId, reviewDate).first()
 
     if (!existing) {
       return jsonResponse({ success: false, message: '复盘不存在' }, 404, corsHeaders)
@@ -847,10 +863,10 @@ async function handleUpdateReviewByDate(request, env, corsHeaders) {
 
     fields.push('updated_at = ?')
     params.push(new Date().toISOString())
-    params.push(reviewDate)
+    params.push(existing.id)
     params.push(user.userId)
 
-    await db.prepare('UPDATE reviews SET ' + fields.join(', ') + ' WHERE review_date = ? AND user_id = ?').bind(...params).run()
+    await db.prepare('UPDATE reviews SET ' + fields.join(', ') + ' WHERE id = ? AND user_id = ?').bind(...params).run()
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(existing.id).first()
 
@@ -1111,6 +1127,58 @@ async function handleGetFeedbacks(request, env, corsHeaders) {
       data: feedbacks.results,
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }
     }, 200, corsHeaders)
+  } catch (error) {
+    return jsonResponse({ success: false, message: maskError(error) }, 500, corsHeaders)
+  }
+}
+
+// 数据库迁移核心逻辑：移除 reviews 表的 UNIQUE(user_id, review_date) 约束
+// SQLite/D1 不支持 ALTER TABLE DROP CONSTRAINT，需要重建表
+async function migrateReviewsRemoveUniqueConstraint(db) {
+  // 检查当前表结构是否有唯一约束
+  const tableInfo = await db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='reviews'").first()
+  const currentSchema = tableInfo?.sql || ''
+
+  if (!currentSchema.includes('UNIQUE')) {
+    return { migrated: false, message: 'reviews 表没有唯一约束，无需迁移', schema: currentSchema }
+  }
+
+  // 清理可能存在的残留表（之前迁移中途失败）
+  try { await db.prepare('DROP TABLE IF EXISTS reviews_new').run() } catch (e) { /* ignore */ }
+
+  // 重建表：创建新表 → 复制数据 → 删除旧表 → 重命名
+  await db.batch([
+    db.prepare(`CREATE TABLE reviews_new (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT,
+      review_date TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )`),
+    db.prepare('INSERT INTO reviews_new SELECT * FROM reviews'),
+    db.prepare('DROP TABLE reviews'),
+    db.prepare('ALTER TABLE reviews_new RENAME TO reviews'),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id)'),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_reviews_review_date ON reviews(user_id, review_date DESC)')
+  ])
+
+  const newTableInfo = await db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='reviews'").first()
+  return { migrated: true, message: 'reviews 表迁移成功，已移除唯一约束', oldSchema: currentSchema, newSchema: newTableInfo?.sql || '' }
+}
+
+// 数据库迁移 API 端点
+async function handleMigrateReviews(request, env, corsHeaders) {
+  const user = await getAuthenticatedUser(request, env)
+  if (!user) {
+    return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
+  }
+
+  try {
+    const result = await migrateReviewsRemoveUniqueConstraint(env.DB)
+    return jsonResponse({ success: true, ...result }, 200, corsHeaders)
   } catch (error) {
     return jsonResponse({ success: false, message: maskError(error) }, 500, corsHeaders)
   }

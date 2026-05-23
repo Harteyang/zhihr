@@ -698,6 +698,24 @@
             }
           }
 
+          // 自动检查并执行数据库迁移（移除 reviews 表的唯一约束）
+          function checkAndMigrateDatabase() {
+            var token = getToken();
+            if (!token) return;
+            // 只执行一次迁移检查
+            if (localStorage.getItem('zhihr_db_migrated') === 'v3') return;
+            window.__ZHIHR_AUTH__.apiRequest('/api/admin/migrate-reviews', { method: 'POST' })
+              .then(function(result) {
+                if (result && result.success) {
+                  console.log('数据库迁移检查:', result.message);
+                  localStorage.setItem('zhihr_db_migrated', 'v3');
+                }
+              })
+              .catch(function(err) {
+                console.warn('数据库迁移检查失败:', err);
+              });
+          }
+
           if (kcStore) {
             console.log('找到 Kc Store');
             window.__KcStore__ = kcStore;
@@ -747,7 +765,37 @@
               }
 
               // 已登录，执行原逻辑（内部会更新状态、缓存和提交云端）
-              return originalSaveRecord.call(this, date, content, summary, options);
+              console.log('[saveRecord] 已登录，调用originalSaveRecord, mode:', mode, 'date:', date);
+              try {
+                return await originalSaveRecord.call(this, date, content, summary, options);
+              } catch (err) {
+                console.error('[saveRecord] originalSaveRecord失败:', err);
+                // 如果原方法失败，手动保存到本地
+                var reviews = kcStore.getState().reviews || [];
+                var existingRecords = reviews.filter(function(r) { return r.date === date; });
+                var now = new Date().toISOString();
+                var updatedReviews;
+
+                if (existingRecords.length > 0 && mode !== 'new') {
+                  var existing = existingRecords[0];
+                  var idx = reviews.findIndex(function(r) { return r.id === existing.id; });
+                  updatedReviews = reviews.slice();
+                  updatedReviews[idx] = Object.assign({}, updatedReviews[idx], {
+                    content: content, summary: summary, updatedAt: now, _source: 'local'
+                  });
+                } else {
+                  var newId = 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                  var newRecord = {
+                    id: newId, date: date, content: content, summary: summary,
+                    createdAt: now, updatedAt: now, _source: 'local'
+                  };
+                  updatedReviews = [newRecord].concat(reviews);
+                }
+
+                kcStore.setState({ reviews: updatedReviews });
+                saveToLocalStorage(updatedReviews);
+                throw err;
+              }
             };
 
             // Patch loadFromCloud - 数据合并（支持同日多条记录和来源追踪）
@@ -817,6 +865,8 @@
                 window.__ZHIHR_AUTH__.store.getState().loadAuthFromStorage();
               }
               kcStore.getState().loadFromCloud();
+              // 自动检查并执行数据库迁移（移除唯一约束）
+              checkAndMigrateDatabase();
             }
           } else {
             console.log('Kc Store 未找到，100ms后重试');
