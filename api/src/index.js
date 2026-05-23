@@ -195,7 +195,17 @@ function sanitizeInput(str, maxLength = 255) {
 }
 
 function maskError(error) {
-  return '服务器内部错误，请稍后重试'
+  // 在响应中包含错误详情以便调试，但不暴露内部实现
+  const message = error?.message || String(error)
+  // 对已知错误返回可读信息，未知错误返回通用提示
+  if (message.includes('UNIQUE constraint')) {
+    return '该日期已存在复盘记录，请使用覆盖模式'
+  }
+  if (message.includes('no such table')) {
+    return '数据库表不存在，请联系管理员'
+  }
+  // 保留原始错误信息以便前端调试
+  return message || '服务器内部错误，请稍后重试'
 }
 
 function parsePagination(url) {
@@ -774,14 +784,62 @@ async function handleCreateReview(request, env, corsHeaders) {
     // 兼容前端字段名: date->review_date, summary->title
     const review_date = body.review_date || body.date || new Date().toISOString().split('T')[0]
     const title = sanitizeInput(body.title || body.summary, 200) || review_date
-    const content = body.content
+    // content 可能是对象或字符串，统一处理为字符串存储
+    let contentStr = null
+    if (body.content) {
+      contentStr = typeof body.content === 'string' ? body.content : JSON.stringify(body.content)
+    }
 
     const db = env.DB
     // 使用前端提供的id或生成新id
     const reviewId = body.id || generateId()
 
+    // 如果前端提供了id，先检查是否已存在（支持幂等创建）
+    if (body.id) {
+      const existing = await db.prepare('SELECT id FROM reviews WHERE id = ? AND user_id = ?').bind(body.id, user.userId).first()
+      if (existing) {
+        // 记录已存在，转为更新操作
+        await db.prepare('UPDATE reviews SET title = ?, content = ?, review_date = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+          .bind(title, contentStr, review_date, new Date().toISOString(), body.id, user.userId).run()
+        const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(body.id).first()
+        return jsonResponse({
+          success: true,
+          message: '更新成功',
+          data: {
+            id: review.id,
+            date: review.review_date,
+            title: review.title,
+            content: review.content ? JSON.parse(review.content) : null,
+            createdAt: review.created_at,
+            updatedAt: review.updated_at
+          }
+        }, 200, corsHeaders)
+      }
+    }
+
+    // 检查是否存在唯一约束冲突（user_id + review_date）
+    const existingByDate = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND review_date = ? ORDER BY updated_at DESC LIMIT 1').bind(user.userId, review_date).first()
+    if (existingByDate) {
+      // 同日已有记录，转为更新操作（兼容旧版唯一约束）
+      await db.prepare('UPDATE reviews SET title = ?, content = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+        .bind(title, contentStr, new Date().toISOString(), existingByDate.id, user.userId).run()
+      const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(existingByDate.id).first()
+      return jsonResponse({
+        success: true,
+        message: '已更新现有记录',
+        data: {
+          id: review.id,
+          date: review.review_date,
+          title: review.title,
+          content: review.content ? JSON.parse(review.content) : null,
+          createdAt: review.created_at,
+          updatedAt: review.updated_at
+        }
+      }, 200, corsHeaders)
+    }
+
     await db.prepare('INSERT INTO reviews (id, user_id, title, content, review_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-      .bind(reviewId, user.userId, title, content ? JSON.stringify(content) : null, review_date, new Date().toISOString(), new Date().toISOString()).run()
+      .bind(reviewId, user.userId, title, contentStr, review_date, new Date().toISOString(), new Date().toISOString()).run()
 
     const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(reviewId).first()
 
@@ -839,7 +897,7 @@ async function handleUpdateReviewByDate(request, env, corsHeaders) {
     }
     if (body.content !== undefined) {
       fields.push('content = ?')
-      params.push(JSON.stringify(body.content))
+      params.push(typeof body.content === 'string' ? body.content : JSON.stringify(body.content))
     }
 
     if (fields.length === 0) {
@@ -901,7 +959,7 @@ async function handleUpdateReview(request, reviewId, env, corsHeaders) {
     }
     if (updates.content !== undefined) {
       fields.push('content = ?')
-      params.push(JSON.stringify(updates.content))
+      params.push(typeof updates.content === 'string' ? updates.content : JSON.stringify(updates.content))
     }
     if (updates.review_date !== undefined) {
       fields.push('review_date = ?')
@@ -989,7 +1047,7 @@ async function handleSyncReviews(request, env, corsHeaders) {
     for (const review of clientReviews) {
       if (!review.id || !review.date) continue
 
-      const content = review.content ? JSON.stringify(review.content) : null
+      const content = review.content ? (typeof review.content === 'string' ? review.content : JSON.stringify(review.content)) : null
       const serverReview = serverMap.get(review.id)
 
       if (!serverReview) {
