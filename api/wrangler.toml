@@ -15,4 +15,5 @@ database_id = "cd693196-036e-4fd9-9d0c-e077683ce6f3"
 ALLOWED_ORIGINS = "https://zhihr.vip,https://www.zhihr.vip"
 
 # JWT_SECRET 必须通过 wrangler secret put JWT_SECRET 设置
+# ADMIN_SECRET 必须通过 wrangler secret put ADMIN_SECRET 设置
 # 切勿在此文件中写入密钥
