@@ -1058,7 +1058,8 @@
     // 用户信息键名
     const USER_ID_KEY = 'zhihr_user_id';
     const USERNAME_KEY = 'zhihr_username';
-    const TOKEN_KEY = 'zhihr_token';
+    const TOKEN_KEY = 'zhihr_access_token';
+    const REFRESH_TOKEN_KEY = 'zhihr_refresh_token';
 
     // 获取用户信息
     function getUserId() {
@@ -1073,6 +1074,10 @@
       return localStorage.getItem(TOKEN_KEY);
     }
 
+    function getRefreshToken() {
+      return localStorage.getItem(REFRESH_TOKEN_KEY);
+    }
+
     // 设置用户信息
     function setUserId(userId) {
       localStorage.setItem(USER_ID_KEY, userId);
@@ -1082,8 +1087,11 @@
       localStorage.setItem(USERNAME_KEY, username);
     }
 
-    function setToken(token) {
+    function setToken(token, refreshToken) {
       localStorage.setItem(TOKEN_KEY, token);
+      if (refreshToken) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      }
     }
 
     // 清除用户信息
@@ -1091,10 +1099,25 @@
       localStorage.removeItem(USER_ID_KEY);
       localStorage.removeItem(USERNAME_KEY);
       localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      // 兼容旧版
+      localStorage.removeItem('zhihr_token');
+    }
+
+    // 迁移旧版 token 到新 key
+    function migrateOldTokens() {
+      const oldToken = localStorage.getItem('zhihr_token');
+      if (oldToken && !getToken()) {
+        console.log('[Auth] Migrating old token to new key');
+        localStorage.setItem(TOKEN_KEY, oldToken);
+      }
     }
 
     // 当前用户状态
     let currentUserId = getUserId();
+
+    // 初始化时迁移旧版数据
+    migrateOldTokens();
 
     // 错误提示定时器
     let currentErrorTimeout = null;
@@ -1224,10 +1247,10 @@
           return;
         }
 
-        const { userId, token } = result.data;
+        const { userId, token, refreshToken } = result.data;
         setUserId(userId);
         setUsername(username);
-        setToken(token);
+        setToken(token, refreshToken);
 
         closeLoginModal();
         updateUserDisplay();
@@ -1284,10 +1307,10 @@
           return;
         }
 
-        const { userId, token } = result.data;
+        const { userId, token, refreshToken } = result.data;
         setUserId(userId);
         setUsername(username);
-        setToken(token);
+        setToken(token, refreshToken);
 
         closeLoginModal();
         updateUserDisplay();
