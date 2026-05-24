@@ -1,5 +1,12 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.zhihr.vip'
 
+const DEBUG = import.meta.env.DEV || localStorage.getItem('DEBUG_MODE') === 'true'
+
+function truncate(obj: unknown, maxLen = 300): string {
+  const str = typeof obj === 'string' ? obj : JSON.stringify(obj)
+  return str.length > maxLen ? str.slice(0, maxLen) + '...' : str
+}
+
 export class ApiError extends Error {
   status?: number
   constructor(message: string, status?: number) {
@@ -34,8 +41,12 @@ async function tryRefreshToken(): Promise<boolean> {
 
   refreshPromise = (async () => {
     const refreshToken = localStorage.getItem('zhihr_refresh_token')
-    if (!refreshToken) return false
+    if (!refreshToken) {
+      DEBUG && console.log('[API] No refresh token found')
+      return false
+    }
 
+    DEBUG && console.log('[API] Attempting token refresh...')
     try {
       const res = await fetch(`${API_BASE}/api/auth/refresh`, {
         method: 'POST',
@@ -43,12 +54,17 @@ async function tryRefreshToken(): Promise<boolean> {
         body: JSON.stringify({ refreshToken }),
       })
       const data = await res.json()
-      if (!data.success) return false
+      if (!data.success) {
+        DEBUG && console.log('[API] Token refresh failed:', data.message)
+        return false
+      }
 
       localStorage.setItem('zhihr_access_token', data.data.token)
       localStorage.setItem('zhihr_refresh_token', data.data.refreshToken)
+      DEBUG && console.log('[API] Token refresh success')
       return true
-    } catch {
+    } catch (e) {
+      DEBUG && console.error('[API] Token refresh error:', e)
       return false
     } finally {
       refreshPromise = null
@@ -62,10 +78,13 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
   const { method = 'GET', body, auth = true, skipRefresh = false } = options
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  let token: string | null = null
   if (auth) {
-    const token = localStorage.getItem('zhihr_access_token')
+    token = localStorage.getItem('zhihr_access_token')
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
+
+  DEBUG && console.log(`[API] → ${method} ${endpoint}`, body ? truncate(body) : '')
 
   let response: Response
   try {
@@ -74,19 +93,40 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
       headers,
       body: body ? JSON.stringify(body) : undefined,
     })
-  } catch {
+  } catch (e) {
+    DEBUG && console.error(`[API] ✗ Network error ${endpoint}:`, e)
     throw new NetworkError()
   }
 
+  DEBUG && console.log(`[API] ← ${response.status} ${endpoint}`)
+
   if (response.status === 401 && auth && !skipRefresh) {
+    DEBUG && console.log('[API] Got 401, attempting token refresh...')
     const refreshed = await tryRefreshToken()
-    if (refreshed) return apiRequest<T>(endpoint, { ...options, skipRefresh: true })
+    if (refreshed) {
+      DEBUG && console.log('[API] Token refreshed, retrying request...')
+      return apiRequest<T>(endpoint, { ...options, skipRefresh: true })
+    }
+    DEBUG && console.log('[API] Token refresh failed, clearing auth')
     clearAuthStorage()
     throw new AuthError()
   }
 
-  const data = await response.json()
-  if (!data.success) throw new ApiError(data.message || '请求失败', response.status)
+  let data: { success: boolean; message?: string; data?: unknown }
+  try {
+    data = await response.json()
+  } catch (e) {
+    DEBUG && console.error(`[API] ✗ Invalid JSON response:`, e)
+    throw new ApiError('服务器响应格式错误', response.status)
+  }
+
+  DEBUG && console.log(`[API] Response:`, truncate(data))
+
+  if (!data.success) {
+    DEBUG && console.error(`[API] ✗ Request failed:`, data.message)
+    throw new ApiError(data.message || '请求失败', response.status)
+  }
+
   return data as T
 }
 

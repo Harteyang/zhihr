@@ -12,6 +12,7 @@ interface ReviewsListResponse {
   success: boolean
   data: Review[]
   pagination: { page: number; pageSize: number; total: number; totalPages: number }
+  synced?: number
 }
 
 interface ReviewResponse {
