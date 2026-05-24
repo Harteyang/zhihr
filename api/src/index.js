@@ -281,6 +281,10 @@ async function handleRequest(request, env) {
     if (method === 'DELETE') return handleDeleteCategory(request, id, env, corsHeaders)
   }
 
+  if (path === '/api/reviews/sync' && method === 'POST') {
+    return handleSyncReviews(request, env, corsHeaders)
+  }
+
   if (path === '/api/reviews') {
     if (method === 'GET') return handleGetReviews(request, env, corsHeaders)
     if (method === 'POST') return handleCreateReview(request, env, corsHeaders)
@@ -291,10 +295,6 @@ async function handleRequest(request, env) {
     const id = path.split('/')[3]
     if (method === 'PUT') return handleUpdateReview(request, id, env, corsHeaders)
     if (method === 'DELETE') return handleDeleteReview(request, id, env, corsHeaders)
-  }
-
-  if (path === '/api/reviews/sync' && method === 'POST') {
-    return handleSyncReviews(request, env, corsHeaders)
   }
 
   if (path === '/api/config') {

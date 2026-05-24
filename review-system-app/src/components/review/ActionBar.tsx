@@ -9,12 +9,12 @@ interface ActionBarProps {
 
 export function ActionBar({ onSave, onReset, saving }: ActionBarProps) {
   return (
-    <div className="flex gap-3 mb-6">
-      <Button onClick={onSave} disabled={saving} className="gap-2">
+    <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <Button onClick={onSave} disabled={saving} className="gap-2 w-full sm:w-auto">
         <Save className="h-4 w-4" />
         {saving ? '保存中...' : '保存'}
       </Button>
-      <Button variant="outline" onClick={onReset} className="gap-2">
+      <Button variant="outline" onClick={onReset} className="gap-2 w-full sm:w-auto">
         <RotateCcw className="h-4 w-4" />
         重置
       </Button>

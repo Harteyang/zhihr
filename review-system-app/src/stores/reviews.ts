@@ -105,10 +105,19 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
   loadFromCloud: async () => {
     set({ isLoading: true })
     try {
-      const result = await reviewsApi.getReviews({ pageSize: 100 })
-      const cloudReviews = result.data
+      const allReviews: Review[] = []
+      let page = 1
+      let hasMore = true
+
+      while (hasMore) {
+        const result = await reviewsApi.getReviews({ page, pageSize: 100 })
+        allReviews.push(...result.data)
+        hasMore = page < result.pagination.totalPages
+        page++
+      }
+
       const localReviews = get().reviews
-      const merged = mergeReviews(localReviews, cloudReviews)
+      const merged = mergeReviews(localReviews, allReviews)
 
       set({ reviews: merged, isLoading: false })
       saveToLocalStorage(merged)
@@ -119,14 +128,18 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
 
   syncLocalToCloud: async () => {
     const localReviews = loadFromLocalStorage()
+    console.log('[Reviews] syncLocalToCloud - local reviews:', localReviews?.length ?? 0)
     if (!localReviews || localReviews.length === 0) return
 
     try {
+      console.log('[Reviews] Calling syncReviews API with', localReviews.length, 'reviews')
+      console.log('[Reviews] Sample review:', JSON.stringify(localReviews[0]).substring(0, 200))
       const result = await reviewsApi.syncReviews(localReviews)
+      console.log('[Reviews] syncReviews result:', result.data.length, 'reviews returned, success:', result.success)
       set({ reviews: result.data })
       saveToLocalStorage(result.data)
     } catch (err) {
-      console.warn('本地数据同步到云端失败:', err)
+      console.error('[Reviews] syncLocalToCloud failed:', err)
     }
   },
 

@@ -58,14 +58,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
     persistAuth({ userId, username: name, token, refreshToken })
 
+    console.log('[Auth] Login success, syncing local data to cloud...')
     const localReviews = loadFromLocalStorage()
+    console.log('[Auth] Local reviews count:', localReviews?.length ?? 0)
+
     if (localReviews && localReviews.length > 0) {
-      const reviewsStore = await import('./reviews')
-      await reviewsStore.useReviewsStore.getState().syncLocalToCloud()
+      try {
+        const reviewsStore = await import('./reviews')
+        console.log('[Auth] Calling syncLocalToCloud...')
+        await reviewsStore.useReviewsStore.getState().syncLocalToCloud()
+        console.log('[Auth] syncLocalToCloud completed')
+      } catch (err) {
+        console.error('[Auth] syncLocalToCloud failed:', err)
+      }
     }
 
-    const reviewsStore2 = await import('./reviews')
-    await reviewsStore2.useReviewsStore.getState().loadFromCloud()
+    try {
+      const reviewsStore2 = await import('./reviews')
+      console.log('[Auth] Calling loadFromCloud...')
+      await reviewsStore2.useReviewsStore.getState().loadFromCloud()
+      console.log('[Auth] loadFromCloud completed')
+    } catch (err) {
+      console.error('[Auth] loadFromCloud failed:', err)
+    }
   },
 
   register: async (username, password) => {
@@ -84,12 +99,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     const localReviews = loadFromLocalStorage()
     if (localReviews && localReviews.length > 0) {
-      const reviewsStore = await import('./reviews')
-      await reviewsStore.useReviewsStore.getState().syncLocalToCloud()
+      try {
+        const reviewsStore = await import('./reviews')
+        await reviewsStore.useReviewsStore.getState().syncLocalToCloud()
+      } catch (err) {
+        console.error('[Auth] syncLocalToCloud failed:', err)
+      }
     }
 
-    const reviewsStore2 = await import('./reviews')
-    await reviewsStore2.useReviewsStore.getState().loadFromCloud()
+    try {
+      const reviewsStore2 = await import('./reviews')
+      await reviewsStore2.useReviewsStore.getState().loadFromCloud()
+    } catch (err) {
+      console.error('[Auth] loadFromCloud failed:', err)
+    }
   },
 
   logout: () => {

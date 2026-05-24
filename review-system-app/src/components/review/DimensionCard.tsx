@@ -65,7 +65,7 @@ export function DimensionCard({ config, value, onChange }: DimensionCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {Icon && <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${iconColorMap[config.color]}20` }}><Icon className="w-5 h-5" style={{ color: iconColorMap[config.color] }} /></div>}
-            <CardTitle className="text-base font-semibold">{config.name}</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-semibold">{config.name}</CardTitle>
           </div>
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCollapsed(!collapsed)}>
             {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}

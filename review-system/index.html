@@ -800,34 +800,51 @@
 
               // 已登录：提交到云端
               try {
+                var apiResult;
                 if (existingRecords.length > 0 && mode !== 'new') {
                   // 覆盖模式
                   if (targetId.startsWith('local-')) {
                     // local- 开头的id在云端不存在，用POST创建（后端已支持幂等：存在则更新）
-                    await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
+                    apiResult = await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
                       method: 'POST',
                       body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
                     });
                   } else {
-                    await window.__ZHIHR_AUTH__.apiRequest('/api/reviews/' + targetId, {
+                    apiResult = await window.__ZHIHR_AUTH__.apiRequest('/api/reviews/' + targetId, {
                       method: 'PUT',
                       body: JSON.stringify({ date: date, content: content, summary: summary })
                     });
                   }
                 } else {
                   // 新建模式 - 后端已支持：同日已有记录时自动转为更新
-                  await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
+                  apiResult = await window.__ZHIHR_AUTH__.apiRequest('/api/reviews', {
                     method: 'POST',
                     body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
                   });
                 }
 
-                // API 成功后更新 _source 为 cloud
+                // API 成功后更新 _source 为 cloud，并同步后端返回的真实 id
                 var currentReviews = kcStore.getState().reviews || [];
                 var idx = currentReviews.findIndex(function(r) { return r.id === targetId; });
                 if (idx >= 0) {
                   var updated = currentReviews.slice();
-                  updated[idx] = Object.assign({}, updated[idx], { _source: 'cloud' });
+                  var patch = { _source: 'cloud' };
+                  // 如果后端返回了真实id（与前端local- id不同），同步更新并去重
+                  if (apiResult && apiResult.data && apiResult.data.id && apiResult.data.id !== targetId) {
+                    patch.id = apiResult.data.id;
+                    // 移除可能存在的同id云端记录（避免重复）
+                    updated = updated.filter(function(r, i) { return i !== idx && r.id !== apiResult.data.id; });
+                    // 重新定位 idx（过滤后位置可能变化）
+                    idx = updated.findIndex(function(r) { return r.id === targetId; });
+                    if (idx < 0) {
+                      // targetId 已被过滤，直接追加
+                      updated.push(Object.assign({}, currentReviews.find(function(r) { return r.id === targetId; }), patch));
+                    } else {
+                      updated[idx] = Object.assign({}, updated[idx], patch);
+                    }
+                  } else {
+                    updated[idx] = Object.assign({}, updated[idx], patch);
+                  }
                   kcStore.setState({ reviews: updated });
                   saveToLocalStorage(updated);
                 }
