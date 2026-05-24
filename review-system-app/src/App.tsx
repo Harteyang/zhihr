@@ -63,17 +63,19 @@ export default function App() {
     loadFromStorage()
     loadReviewsFromStorage()
     loadSettingsFromStorage()
+  }, [])
 
+  useEffect(() => {
     if (isAuthenticated) {
       loadFromCloud()
       loadConfigFromCloud()
     }
-  }, [])
+  }, [isAuthenticated])
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-5">
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
         {activeTab === 'record' && <RecordTab />}
         {activeTab === 'history' && <HistoryTab />}

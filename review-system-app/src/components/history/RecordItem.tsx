@@ -24,7 +24,7 @@ export function RecordItem({ record, onDelete }: RecordItemProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">{record.date}</CardTitle>
           <div className="flex items-center gap-2">
-            {record.summary && <span className="text-xs text-muted-foreground max-w-[200px] truncate">{record.summary}</span>}
+            {record.summary && <span className="text-xs text-muted-foreground max-w-[120px] sm:max-w-[200px] truncate">{record.summary}</span>}
             <span className="text-xs text-muted-foreground">{filledDimensions.length}项</span>
             <Button variant="ghost" size="icon" className="h-6 w-6">
               {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}

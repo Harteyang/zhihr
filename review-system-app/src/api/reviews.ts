@@ -23,23 +23,35 @@ interface ReviewResponse {
 function toApiPayload(review: Partial<Review>) {
   return {
     id: review.id,
-    review_date: review.date,
+    date: review.date,
     title: review.summary || review.date,
     content: review.content,
   }
 }
 
 function fromApiResponse(data: Record<string, unknown>): Review {
+  const rawContent = data.content
+  let parsedContent: ReviewContent
+  if (typeof rawContent === 'string') {
+    try {
+      parsedContent = JSON.parse(rawContent)
+    } catch {
+      parsedContent = {} as ReviewContent
+    }
+  } else if (rawContent && typeof rawContent === 'object') {
+    parsedContent = rawContent as ReviewContent
+  } else {
+    parsedContent = {} as ReviewContent
+  }
+
   return {
     id: data.id as string,
-    date: (data.review_date || data.date) as string,
+    date: (data.date || data.review_date) as string,
     title: (data.title || '') as string,
-    content: typeof data.content === 'string'
-      ? JSON.parse(data.content)
-      : (data.content as ReviewContent) || {} as ReviewContent,
+    content: parsedContent,
     summary: (data.title || '') as string,
-    createdAt: data.created_at as string,
-    updatedAt: data.updated_at as string,
+    createdAt: (data.createdAt || data.created_at) as string,
+    updatedAt: (data.updatedAt || data.updated_at) as string,
   }
 }
 
