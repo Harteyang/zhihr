@@ -17,6 +17,10 @@
   <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+  <!-- 共享认证模块 -->
+  <script src="shared-auth.js"></script>
+  <script src="shared-auth-modal.js"></script>
+
   <!-- Tailwind 配置 -->
   <script>
     tailwind.config = {
@@ -290,30 +294,25 @@
         <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
         <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
       </button>
-
-      <!-- 用户区域 -->
-      <div id="userArea" class="flex items-center gap-1 sm:gap-2 ml-1">
-        <!-- 未登录状态：显示登录按钮 -->
-        <button id="btnLogin" onclick="openLoginModal()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
-          <i data-lucide="log-in" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-          <span class="hidden sm:inline">登录</span>
+      <!-- 登录按钮 -->
+      <button id="btnLogin" onclick="openLoginModal()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+        <i data-lucide="log-in" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+        <span class="hidden sm:inline">登录</span>
+      </button>
+      <!-- 已登录状态 -->
+      <div id="loggedInArea" class="hidden relative">
+        <button id="btnUser" onclick="toggleUserMenu()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600">
+          <i data-lucide="user" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+          <span id="userDisplay" class="hidden sm:inline">账号</span>
         </button>
-        <!-- 已登录状态：显示用户昵称和下拉菜单 -->
-        <div id="loggedInArea" class="hidden relative">
-          <button id="btnUser" onclick="toggleUserMenu()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600">
-            <i data-lucide="user" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-            <span id="userDisplay" class="hidden sm:inline">账号</span>
-          </button>
-          <!-- 下拉菜单 -->
-          <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
-            <div id="menuUserInfo" class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-              <span id="menuUserDisplay"></span>
-            </div>
-            <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
-              退出登录
-            </button>
+        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+          <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+            <span id="menuUserDisplay"></span>
           </div>
+          <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            退出登录
+          </button>
         </div>
       </div>
     </div>
@@ -984,216 +983,47 @@
       }
     });
   </script>
-  <!-- ==================== 登录/注册 Modal ==================== -->
-  <div class="modal-overlay" id="loginModal">
-    <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">知HR工具集</h2>
-        <button onclick="closeLoginModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
 
-      <!-- 登录表单 -->
-      <div id="loginFormContent">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
-            <input type="text" id="loginUsername" placeholder="输入账号"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onkeypress="if(event.key==='Enter'){document.getElementById('loginPassword').focus();}">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
-            <input type="password" id="loginPassword" placeholder="输入密码"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onkeypress="if(event.key==='Enter'){handleLogin();}">
-          </div>
-          <div id="loginError" class="text-sm text-red-500 hidden"></div>
-          <button id="loginBtn" onclick="handleLogin()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-            登录
-          </button>
-          <p class="text-center text-sm text-slate-500 dark:text-slate-400">
-            没有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">注册新账号</a>
-          </p>
-        </div>
-      </div>
-
-      <!-- 注册表单 -->
-      <div id="registerFormContent" class="hidden">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
-            <input type="text" id="registerUsername" placeholder="设置账号" minlength="3"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
-            <input type="password" id="registerPassword" placeholder="设置密码（至少4位）" minlength="4"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">确认密码</label>
-            <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onkeypress="if(event.key==='Enter'){handleRegister();}">
-          </div>
-          <div id="registerError" class="text-sm text-red-500 hidden"></div>
-          <button id="registerBtn" onclick="handleRegister()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-            注册
-          </button>
-          <p class="text-center text-sm text-slate-500 dark:text-slate-400">
-            已有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">登录</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- ==================== 初始化 ==================== -->
   <script>
-    // ==================== 用户认证状态管理 ====================
-    // API配置
-    const AUTH_API_BASE_URL = 'https://api.zhihr.vip';
-
-    // 用户信息键名
-    const USER_ID_KEY = 'zhihr_user_id';
-    const USERNAME_KEY = 'zhihr_username';
-    const TOKEN_KEY = 'zhihr_access_token';
-    const REFRESH_TOKEN_KEY = 'zhihr_refresh_token';
-
-    // 获取用户信息
-    function getUserId() {
-      return localStorage.getItem(USER_ID_KEY);
-    }
-
-    function getUsername() {
-      return localStorage.getItem(USERNAME_KEY);
-    }
-
-    function getToken() {
-      return localStorage.getItem(TOKEN_KEY);
-    }
-
-    function getRefreshToken() {
-      return localStorage.getItem(REFRESH_TOKEN_KEY);
-    }
-
-    // 设置用户信息
-    function setUserId(userId) {
-      localStorage.setItem(USER_ID_KEY, userId);
-    }
-
-    function setUsername(username) {
-      localStorage.setItem(USERNAME_KEY, username);
-    }
-
-    function setToken(token, refreshToken) {
-      localStorage.setItem(TOKEN_KEY, token);
-      if (refreshToken) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    // 初始化共享认证
+    function initSharedAuth() {
+      if (SharedAuth) {
+        SharedAuth.init();
+        
+        // 监听认证状态变化
+        SharedAuth.on('auth:change', (state) => {
+          console.log('[Homepage] Auth state changed:', state);
+          updateUserDisplay();
+        });
+        
+        SharedAuth.on('auth:logout', () => {
+          console.log('[Homepage] User logged out');
+        });
+        
+        // 同步当前状态
+        const user = SharedAuth.getUser();
+        if (user.isAuthenticated) {
+          currentUserId = user.userId;
+        }
       }
     }
 
-    // 清除用户信息
-    function clearUserId() {
-      localStorage.removeItem(USER_ID_KEY);
-      localStorage.removeItem(USERNAME_KEY);
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      // 兼容旧版
-      localStorage.removeItem('zhihr_token');
-    }
-
-    // 迁移旧版 token 到新 key
-    function migrateOldTokens() {
-      const oldToken = localStorage.getItem('zhihr_token');
-      if (oldToken && !getToken()) {
-        console.log('[Auth] Migrating old token to new key');
-        localStorage.setItem(TOKEN_KEY, oldToken);
-      }
-    }
-
-    // 当前用户状态
-    let currentUserId = getUserId();
-
-    // 初始化时迁移旧版数据
-    migrateOldTokens();
-
-    // 错误提示定时器
-    let currentErrorTimeout = null;
-
-    function showError(errorElement, message, duration = 3000) {
-      if (currentErrorTimeout) {
-        clearTimeout(currentErrorTimeout);
-      }
-      errorElement.textContent = message;
-      errorElement.classList.remove('hidden');
-      currentErrorTimeout = setTimeout(() => {
-        errorElement.classList.add('hidden');
-      }, duration);
-    }
-
-    function setAuthButtonLoading(buttonId, loading, originalText) {
-      const btn = document.getElementById(buttonId);
-      if (btn) {
-        btn.disabled = loading;
-        btn.textContent = loading ? '请稍候...' : originalText;
-      }
-    }
-
-    // 打开登录弹窗
     function openLoginModal() {
-      document.getElementById('loginFormContent').classList.remove('hidden');
-      document.getElementById('registerFormContent').classList.add('hidden');
-      document.getElementById('loginModal').classList.add('active');
-      // 清空表单
-      document.getElementById('loginUsername').value = '';
-      document.getElementById('loginPassword').value = '';
-      document.getElementById('loginError').classList.add('hidden');
-      // 聚焦到账号输入框
-      setTimeout(() => {
-        document.getElementById('loginUsername').focus();
-      }, 100);
-    }
-
-    // 关闭登录弹窗
-    function closeLoginModal() {
-      document.getElementById('loginModal').classList.remove('active');
-    }
-
-    // 切换登录/注册模式
-    function toggleAuthMode() {
-      const loginFormContent = document.getElementById('loginFormContent');
-      const registerFormContent = document.getElementById('registerFormContent');
-      const loginError = document.getElementById('loginError');
-      const registerError = document.getElementById('registerError');
-
-      if (registerFormContent.classList.contains('hidden')) {
-        loginFormContent.classList.add('hidden');
-        registerFormContent.classList.remove('hidden');
-        registerError.classList.add('hidden');
-        // 清空注册表单
-        document.getElementById('registerUsername').value = '';
-        document.getElementById('registerPassword').value = '';
-        document.getElementById('registerPasswordConfirm').value = '';
-      } else {
-        loginFormContent.classList.remove('hidden');
-        registerFormContent.classList.add('hidden');
-        loginError.classList.add('hidden');
+      if (AuthModal) {
+        AuthModal.open('login');
       }
     }
 
-    // 更新用户显示状态
     function updateUserDisplay() {
-      const username = getUsername();
-      currentUserId = getUserId();
-
-      if (currentUserId && username) {
+      const user = SharedAuth ? SharedAuth.getUser() : { isAuthenticated: false, username: null };
+      
+      if (user.isAuthenticated && user.username) {
         // 已登录状态
         document.getElementById('btnLogin').classList.add('hidden');
         document.getElementById('loggedInArea').classList.remove('hidden');
-        document.getElementById('userDisplay').textContent = username;
-        document.getElementById('menuUserDisplay').textContent = username;
+        document.getElementById('userDisplay').textContent = user.username;
+        document.getElementById('menuUserDisplay').textContent = user.username;
       } else {
         // 未登录状态
         document.getElementById('btnLogin').classList.remove('hidden');
@@ -1201,14 +1031,23 @@
       }
     }
 
-    // 切换用户菜单显示
+    function handleLogout() {
+      if (confirm('确定要退出登录吗？')) {
+        if (SharedAuth) {
+          SharedAuth.logout();
+        }
+        updateUserDisplay();
+        alert('已退出登录');
+      }
+    }
+
     function toggleUserMenu() {
       const menu = document.getElementById('userMenu');
       menu.classList.toggle('hidden');
       lucide.createIcons();
     }
 
-    // 点击其他地方关闭菜单
+    // 点击其他地方关闭用户菜单
     document.addEventListener('click', (e) => {
       const menu = document.getElementById('userMenu');
       const btn = document.getElementById('btnUser');
@@ -1219,131 +1058,36 @@
       }
     });
 
-    // 登录处理
-    async function handleLogin() {
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      const loginError = document.getElementById('loginError');
-
-      if (!username || !password) {
-        showError(loginError, '请输入账号和密码');
-        return;
-      }
-
-      setAuthButtonLoading('loginBtn', true, '登录');
-      try {
-        const response = await fetch(`${AUTH_API_BASE_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-          showError(loginError, result.message);
-          return;
-        }
-
-        const { userId, token, refreshToken } = result.data;
-        setUserId(userId);
-        setUsername(username);
-        setToken(token, refreshToken);
-
-        closeLoginModal();
-        updateUserDisplay();
-        alert(`欢迎回来，${username}！`);
-      } catch (error) {
-        console.error('Login error:', error);
-        showError(loginError, '登录失败，请检查网络');
-      } finally {
-        setAuthButtonLoading('loginBtn', false, '登录');
-      }
-    }
-
-    // 注册处理
-    async function handleRegister() {
-      const username = document.getElementById('registerUsername').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-      const registerError = document.getElementById('registerError');
-
-      if (!username || !password || !passwordConfirm) {
-        showError(registerError, '请填写所有字段');
-        return;
-      }
-
-      if (username.length < 3) {
-        showError(registerError, '账号至少3个字符');
-        return;
-      }
-
-      if (password !== passwordConfirm) {
-        showError(registerError, '两次密码不一致');
-        return;
-      }
-
-      if (password.length < 4) {
-        showError(registerError, '密码至少4位');
-        return;
-      }
-
-      setAuthButtonLoading('registerBtn', true, '注册');
-      try {
-        const response = await fetch(`${AUTH_API_BASE_URL}/api/auth/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-          showError(registerError, result.message);
-          return;
-        }
-
-        const { userId, token, refreshToken } = result.data;
-        setUserId(userId);
-        setUsername(username);
-        setToken(token, refreshToken);
-
-        closeLoginModal();
-        updateUserDisplay();
-        alert(`注册成功，欢迎 ${username}！`);
-      } catch (error) {
-        console.error('Register error:', error);
-        showError(registerError, '注册失败，请检查网络');
-      } finally {
-        setAuthButtonLoading('registerBtn', false, '注册');
-      }
-    }
-
-    // 退出登录处理
-    async function handleLogout() {
-      if (!confirm('确定要退出登录吗？')) {
-        return;
-      }
-
-      clearUserId();
-      document.getElementById('userMenu').classList.add('hidden');
-      updateUserDisplay();
-      alert('已退出登录');
-    }
-
-    // 页面加载时更新用户显示
+    // 页面初始化
     document.addEventListener('DOMContentLoaded', () => {
+      // 初始化共享认证
+      initSharedAuth();
+      
+      // 初始化主题
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+      
+      // 主题切换
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+      
+      // 更新用户显示
       updateUserDisplay();
+      
+      // 初始化图标
       lucide.createIcons();
+      
+      // 渲染拼图网格和反馈看板
+      renderMosaicGrid();
+      renderFeedbackBoard();
+      
+      console.log('[Homepage] Initialized');
     });
-
-    // ==================== 初始化 ====================
-    renderMosaicGrid();
-    renderFeedbackBoard(); // 从JSONBin.io拉取数据
   </script>
 
 </body>

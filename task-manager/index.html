@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- 共享认证模块 -->
+    <script src="../shared-auth.js"></script>
+    <script src="../shared-auth-modal.js"></script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -97,7 +101,6 @@
         
         .task-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6; }
         
-        .dark .export-option:hover { border-color: #60a5fa; background: #334155; }
         .dark .category-item { background: #334155; }
         
         @media print {
@@ -133,71 +136,8 @@
         </div>
     </div>
 
-    <!-- 登录/注册 Modal -->
-    <div class="modal-overlay" id="loginModal">
-        <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">任务管理</h2>
-                <button onclick="closeLoginModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <!-- 登录表单 -->
-            <div id="loginFormContent">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
-                        <input type="text" id="loginUsername" placeholder="输入账号" 
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeypress="if(event.key==='Enter'){document.getElementById('loginPassword').focus();}">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
-                        <input type="password" id="loginPassword" placeholder="输入密码" 
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeypress="if(event.key==='Enter'){handleLogin();}">
-                    </div>
-                    <div id="loginError" class="text-sm text-red-500 hidden"></div>
-                    <button id="loginBtn" onclick="handleLogin()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                        登录
-                    </button>
-                    <p class="text-center text-sm text-slate-500 dark:text-slate-400">
-                        没有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">注册新账号</a>
-                    </p>
-                </div>
-            </div>
-            
-            <!-- 注册表单 -->
-            <div id="registerFormContent" class="hidden">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">账号</label>
-                        <input type="text" id="registerUsername" placeholder="设置账号" minlength="3"
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">密码</label>
-                        <input type="password" id="registerPassword" placeholder="设置密码（至少4位）" minlength="4"
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">确认密码</label>
-                        <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码"
-                               class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeypress="if(event.key==='Enter'){handleRegister();}">
-                    </div>
-                    <div id="registerError" class="text-sm text-red-500 hidden"></div>
-                    <button id="registerBtn" onclick="handleRegister()" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                        注册
-                    </button>
-                    <p class="text-center text-sm text-slate-500 dark:text-slate-400">
-                        已有账号？<a href="#" onclick="toggleAuthMode();return false;" class="text-blue-600 hover:underline">登录</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- 共享登录/注册弹窗 -->
+    <!-- 由 shared-auth-modal.js 动态生成 -->
 
     <!-- 统一导航栏 -->
     <nav class="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
@@ -215,16 +155,29 @@
         </div>
         
         <div class="flex items-center gap-2">
-            <button onclick="openImportModal()" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer" title="导入">
-                <i data-lucide="download" class="w-4 h-4"></i>
-            </button>
-            <button onclick="openExportModal()" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer" title="导出">
-                <i data-lucide="upload" class="w-4 h-4"></i>
-            </button>
             <button id="themeToggle" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer" aria-label="切换主题">
                 <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
                 <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
             </button>
+            <button id="btnLogin" onclick="openLoginModal()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="log-in" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                <span class="hidden sm:inline">登录</span>
+            </button>
+            <div id="loggedInArea" class="hidden relative">
+                <button id="btnUser" onclick="toggleUserMenu()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600">
+                    <i data-lucide="user" class="w-3 h-3 sm:w-4 sm:h-4"></i>
+                    <span id="userDisplay" class="hidden sm:inline">账号</span>
+                </button>
+                <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+                    <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                        <span id="menuUserDisplay"></span>
+                    </div>
+                    <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        退出登录
+                    </button>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -264,31 +217,6 @@
                             <i data-lucide="search" class="w-3 h-3 sm:w-4 sm:h-4 absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" id="searchInput" class="w-full md:w-64 pl-7 sm:pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 h-8 sm:h-9 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm" placeholder="搜索任务..." oninput="renderTasks()">
                         </div>
-                        <div id="userArea" class="flex items-center gap-1 sm:gap-2">
-                            <button id="btnLogin" onclick="openLoginModal()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600">
-                                <i data-lucide="log-in" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-                                <span class="hidden sm:inline">登录</span>
-                            </button>
-                            <div id="loggedInArea" class="hidden relative">
-                                <button id="btnUser" onclick="toggleUserMenu()" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600">
-                                    <i data-lucide="user" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-                                    <span id="userDisplay" class="hidden sm:inline">账号</span>
-                                </button>
-                                <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
-                                    <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                                        <span id="menuUserDisplay"></span>
-                                    </div>
-                                    <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
-                                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                                        退出登录
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <button onclick="syncData()" id="btnSync" class="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600" title="云端同步">
-                            <i data-lucide="refresh-cw" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-                            <span id="btnSyncText" class="hidden sm:inline">同步</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -338,7 +266,6 @@
         <!-- 打印区域 -->
         <div id="printArea" class="hidden print:block">
             <h1 class="text-2xl font-bold mb-4">任务列表</h1>
-            <p class="text-sm text-slate-500 mb-6">导出时间: <span id="exportDate"></span></p>
             <table class="w-full border-collapse" id="printTable">
             </table>
         </div>
@@ -389,79 +316,6 @@
         </div>
     </div>
 
-    <!-- 导出 Modal -->
-    <div class="modal-overlay" id="exportModal">
-        <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">导出任务</h2>
-                <button onclick="closeExportModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="space-y-3">
-                <div onclick="exportToCSV()" class="flex items-center gap-4 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-all">
-                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30">
-                        <i data-lucide="file-spreadsheet" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-slate-800 dark:text-slate-100">导出为 CSV</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">可用 Excel、Numbers 等表格软件打开</div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                </div>
-                <div onclick="exportToMD()" class="flex items-center gap-4 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-all">
-                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                        <i data-lucide="file-text" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-slate-800 dark:text-slate-100">导出为 Markdown</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">Tab 分隔的纯文本格式，CSV 兼容</div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 导入 Modal -->
-    <div class="modal-overlay" id="importModal">
-        <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">导入任务</h2>
-                <button onclick="closeImportModal()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <div class="space-y-3 mb-6">
-                <div onclick="selectImportFile('csv', 'add')" class="flex items-center gap-4 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-all">
-                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30">
-                        <i data-lucide="plus-circle" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-slate-800 dark:text-slate-100">新增导入</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">追加不重复的任务</div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                </div>
-                <div onclick="selectImportFile('csv', 'replace')" class="flex items-center gap-4 p-4 border-2 border-slate-200 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-all">
-                    <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30">
-                        <i data-lucide="refresh-cw" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-slate-800 dark:text-slate-100">覆盖导入</div>
-                        <div class="text-sm text-slate-500 dark:text-slate-400">清空现有任务后导入</div>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                </div>
-            </div>
-            <div class="text-center">
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    支持 CSV 和 Markdown 格式文件
-                </p>
-            </div>
-        </div>
-    </div>
-
     <!-- 分类管理 Modal -->
     <div class="modal-overlay" id="categoryModal">
         <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4">
@@ -480,9 +334,6 @@
         </div>
     </div>
 
-    <!-- 隐藏的文件输入 -->
-    <input type="file" id="fileInput" accept=".csv,.md,.markdown,.txt" class="hidden" onchange="handleFileImport(event)">
-
     <script>
         // ========================================
         // Cloudflare API 配置
@@ -494,9 +345,115 @@
         let isOnline = navigator.onLine;
         let currentUserId = null;
         let currentToken = null;
-        let isSyncing = false;
         let offlineQueue = [];
-        let localUpdatedAt = null;
+
+        function isLoggedIn() {
+            if (typeof SharedAuth === 'undefined' || !SharedAuth) return false;
+            const user = SharedAuth.getUser();
+            return !!(user && user.isAuthenticated && user.userId);
+        }
+
+        function getAuthToken() {
+            if (typeof SharedAuth === 'undefined' || !SharedAuth) return null;
+            return SharedAuth.getToken();
+        }
+
+        // ========================================
+        // 细粒度云端操作
+        // ========================================
+
+        async function createTaskToCloud(task) {
+            if (!isOnline) {
+                addToOfflineQueue('createTask', { task });
+                return;
+            }
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(task)
+                });
+                if (!response.ok) throw new Error(`创建任务失败: ${response.status}`);
+                const result = await response.json();
+                if (result.data && result.data.id) {
+                    const localTask = tasks.find(t => t.id === task.id);
+                    if (localTask) localTask.id = result.data.id;
+                    saveToStorage();
+                }
+                console.log('云端任务已创建:', task.id);
+            } catch (error) {
+                console.error('创建云端任务失败:', error);
+                addToOfflineQueue('createTask', { task });
+            }
+        }
+
+        async function updateTaskToCloud(taskId, task) {
+            if (!isOnline) {
+                addToOfflineQueue('updateTask', { taskId, task });
+                return;
+            }
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(task)
+                });
+                if (!response.ok) throw new Error(`更新任务失败: ${response.status}`);
+                console.log('云端任务已更新:', taskId);
+            } catch (error) {
+                console.error('更新云端任务失败:', error);
+                addToOfflineQueue('updateTask', { taskId, task });
+            }
+        }
+
+        async function deleteTaskFromCloud(taskId) {
+            if (!isOnline) {
+                addToOfflineQueue('delete', { taskId });
+                return;
+            }
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error(`删除任务失败: ${response.status}`);
+                console.log('云端任务已删除:', taskId);
+            } catch (error) {
+                console.error('删除云端任务失败:', error);
+                addToOfflineQueue('delete', { taskId });
+            }
+        }
+
+        async function syncCategoriesToCloud() {
+            if (!isOnline) return;
+            try {
+                const token = getAuthToken();
+                for (const category of categories) {
+                    await fetch(`${API_BASE_URL}/api/categories`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name: category })
+                    }).catch(() => {});
+                }
+                console.log('分类已同步到云端');
+            } catch (error) {
+                console.error('同步分类到云端失败:', error);
+            }
+        }
 
         // ========================================
         // 离线操作队列管理
@@ -528,7 +485,7 @@
         }
 
         async function processOfflineQueue() {
-            if (!isOnline || !currentUserId || offlineQueue.length === 0) {
+            if (!isOnline || !isLoggedIn() || offlineQueue.length === 0) {
                 return;
             }
 
@@ -544,16 +501,16 @@
             for (const item of queue) {
                 try {
                     switch (item.operation) {
-                        case 'save':
-                            await saveToCloud();
+                        case 'createTask':
+                            await createTaskToCloud(item.data.task);
                             successCount++;
                             break;
-                        case 'merge':
-                            await mergeLocalAndCloudData();
+                        case 'updateTask':
+                            await updateTaskToCloud(item.data.taskId, item.data.task);
                             successCount++;
                             break;
                         case 'delete':
-                            await deleteFromCloud(item.data.taskId);
+                            await deleteTaskFromCloud(item.data.taskId);
                             successCount++;
                             break;
                         default:
@@ -562,7 +519,6 @@
                 } catch (error) {
                     console.error('处理离线操作失败:', error);
                     failCount++;
-                    // 将失败的操作重新加入队列
                     offlineQueue.push(item);
                 }
             }
@@ -572,19 +528,13 @@
             }
 
             console.log('离线队列处理完成: 成功', successCount, '个, 失败', failCount, '个');
-            
-            if (successCount > 0) {
-                alert('离线操作已同步到云端');
-            }
         }
 
-        // 网络状态变化监听
         window.addEventListener('online', () => {
             isOnline = true;
             console.log('网络已恢复');
             
-            // 自动处理离线队列
-            if (currentUserId && offlineQueue.length > 0) {
+            if (isLoggedIn() && offlineQueue.length > 0) {
                 processOfflineQueue();
             }
         });
@@ -595,43 +545,42 @@
         });
 
         // ========================================
-        // 用户认证
+        // 用户认证（使用共享认证模块）
         // ========================================
-        async function hashPassword(password) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function getUserId() {
-            return localStorage.getItem('taskManagerUserId');
-        }
-
-        function getUsername() {
-            return localStorage.getItem('taskManagerUsername');
-        }
-
-        function setUserId(userId) {
-            localStorage.setItem('taskManagerUserId', userId);
-            currentUserId = userId;
-        }
-
-        function setUsername(username) {
-            localStorage.setItem('taskManagerUsername', username);
-        }
-
-        function setToken(token) {
-            localStorage.setItem('taskManagerToken', token);
-            currentToken = token;
-        }
-
-        function getToken() {
-            return localStorage.getItem('taskManagerToken');
+        
+        // 初始化共享认证
+        function initSharedAuth() {
+            if (typeof SharedAuth !== 'undefined' && SharedAuth) {
+                SharedAuth.init();
+                
+                SharedAuth.on('auth:change', (state) => {
+                    console.log('[TaskManager] Auth state changed:', state);
+                    updateUserDisplay();
+                    if (state.isAuthenticated) {
+                        mergeDataOnLogin();
+                    }
+                });
+                
+                SharedAuth.on('auth:logout', () => {
+                    console.log('[TaskManager] User logged out');
+                    tasks = [];
+                    categories = ['工作', '生活', '学习', '其他'];
+                    renderTasks();
+                    updateCategoryFilter();
+                });
+                
+                const user = SharedAuth.getUser();
+                if (user.isAuthenticated) {
+                    currentUserId = user.userId;
+                }
+            }
         }
 
         function clearUserId() {
+            if (typeof SharedAuth !== 'undefined' && SharedAuth?.isAuthenticated?.()) {
+                SharedAuth.logout();
+            }
+            // 清理旧的本地存储（兼容）
             localStorage.removeItem('taskManagerUserId');
             localStorage.removeItem('taskManagerUsername');
             localStorage.removeItem('taskManagerToken');
@@ -639,8 +588,10 @@
             currentToken = null;
         }
 
-        function closeLoginModal() {
-            document.getElementById('loginModal').classList.remove('active');
+        function openLoginModal() {
+            if (typeof AuthModal !== 'undefined' && AuthModal) {
+                AuthModal.open('login');
+            }
         }
 
         let confirmResolve = null;
@@ -664,162 +615,6 @@
             if (confirmResolve) {
                 confirmResolve(result);
                 confirmResolve = null;
-            }
-        }
-
-        let currentErrorTimeout = null;
-        function showError(errorElement, message, duration = 3000) {
-            if (currentErrorTimeout) {
-                clearTimeout(currentErrorTimeout);
-            }
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
-            currentErrorTimeout = setTimeout(() => {
-                errorElement.classList.add('hidden');
-            }, duration);
-        }
-
-        function setAuthButtonLoading(buttonId, loading, originalText) {
-            const btn = document.getElementById(buttonId);
-            if (btn) {
-                btn.disabled = loading;
-                btn.textContent = loading ? '请稍候...' : originalText;
-            }
-        }
-
-        async function handleLogin() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            const loginError = document.getElementById('loginError');
-
-            if (!username || !password) {
-                showError(loginError, '请输入账号和密码');
-                return;
-            }
-
-            setAuthButtonLoading('loginBtn', true, '登录');
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    showError(loginError, result.message);
-                    return;
-                }
-
-                const { userId, token } = result.data;
-                setUserId(userId);
-                setUsername(username);
-                setToken(token);
-                
-                closeLoginModal();
-                updateUserDisplay();
-
-                const hasLocalData = tasks.length > 0;
-                
-                if (hasLocalData && isOnline) {
-                    const choice = await showConfirmDialog(
-                        '数据同步',
-                        `检测到本地有 ${tasks.length} 个任务，如何处理？`,
-                        '合并',
-                        '清空'
-                    );
-                    
-                    if (choice) {
-                        await mergeLocalAndCloudData();
-                        alert('本地数据已合并到云端');
-                    }
-                }
-
-                await loadFromCloud();
-            } catch (error) {
-                console.error('Login error:', error);
-                showError(loginError, '登录失败，请检查网络');
-            } finally {
-                setAuthButtonLoading('loginBtn', false, '登录');
-            }
-        }
-
-        async function handleRegister() {
-            const username = document.getElementById('registerUsername').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-            const registerError = document.getElementById('registerError');
-
-            if (!username || !password || !passwordConfirm) {
-                showError(registerError, '请填写所有字段');
-                return;
-            }
-
-            if (username.length < 3) {
-                showError(registerError, '账号至少3个字符');
-                return;
-            }
-
-            if (password !== passwordConfirm) {
-                showError(registerError, '两次密码不一致');
-                return;
-            }
-
-            if (password.length < 4) {
-                showError(registerError, '密码至少4位');
-                return;
-            }
-
-            setAuthButtonLoading('registerBtn', true, '注册');
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    showError(registerError, result.message);
-                    return;
-                }
-
-                const { userId, token } = result.data;
-                setUserId(userId);
-                setUsername(username);
-                setToken(token);
-                
-                closeLoginModal();
-                updateUserDisplay();
-                await loadFromCloud();
-            } catch (error) {
-                console.error('Register error:', error);
-                showError(registerError, '注册失败，请检查网络');
-            } finally {
-                setAuthButtonLoading('registerBtn', false, '注册');
-            }
-        }
-
-        function toggleAuthMode() {
-            const loginFormContent = document.getElementById('loginFormContent');
-            const registerFormContent = document.getElementById('registerFormContent');
-            const loginError = document.getElementById('loginError');
-            const registerError = document.getElementById('registerError');
-
-            if (registerFormContent.classList.contains('hidden')) {
-                loginFormContent.classList.add('hidden');
-                registerFormContent.classList.remove('hidden');
-                registerError.classList.add('hidden');
-            } else {
-                loginFormContent.classList.remove('hidden');
-                registerFormContent.classList.add('hidden');
-                loginError.classList.add('hidden');
             }
         }
 
@@ -849,10 +644,7 @@
                     // 保留数据到本地
                     saveToStorage();
                     clearUserId();
-                    document.getElementById('userMenu').classList.add('hidden');
                     updateUserDisplay();
-                    document.getElementById('loginPassword').value = '';
-                    document.getElementById('loginError').classList.add('hidden');
                     alert('任务数据已保留到本地');
                     return;
                 }
@@ -862,10 +654,7 @@
             clearUserId();
             tasks = [];
             categories = ['工作', '生活', '学习', '其他'];
-            document.getElementById('userMenu').classList.add('hidden');
             updateUserDisplay();
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('loginError').classList.add('hidden');
             localStorage.removeItem('tasks');
             localStorage.removeItem('categories');
             renderTasks();
@@ -880,415 +669,157 @@
         }
 
         function updateUserDisplay() {
-            const username = getUsername();
+            const user = (typeof SharedAuth !== 'undefined' && SharedAuth) ? SharedAuth.getUser() : { isAuthenticated: false, username: null };
             
-            if (currentUserId && username) {
+            if (user.isAuthenticated && user.username) {
                 // 已登录状态
                 document.getElementById('btnLogin').classList.add('hidden');
                 document.getElementById('loggedInArea').classList.remove('hidden');
-                document.getElementById('userDisplay').textContent = username;
-                document.getElementById('menuUserDisplay').textContent = username;
+                document.getElementById('userDisplay').textContent = user.username;
+                document.getElementById('menuUserDisplay').textContent = user.username;
+                currentUserId = user.userId;
+                currentToken = getAuthToken();
             } else {
                 // 未登录状态
                 document.getElementById('btnLogin').classList.remove('hidden');
                 document.getElementById('loggedInArea').classList.add('hidden');
-            }
-        }
-
-        function openLoginModal() {
-            document.getElementById('loginFormContent').classList.remove('hidden');
-            document.getElementById('registerFormContent').classList.add('hidden');
-            document.getElementById('loginModal').classList.add('active');
-        }
-
-        function toggleUserMenu() {
-            const menu = document.getElementById('userMenu');
-            menu.classList.toggle('hidden');
-            lucide.createIcons();
-        }
-
-        // 点击其他地方关闭菜单
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('userMenu');
-            const btn = document.getElementById('btnUser');
-            if (menu && btn && !menu.classList.contains('hidden')) {
-                if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                    menu.classList.add('hidden');
-                }
-            }
-        });
-
-        // ========================================
-        // 在线状态
-        // ========================================
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('onlineIndicator');
-            const text = document.getElementById('syncText');
-            
-            if (isOnline) {
-                indicator.classList.remove('bg-red-500');
-                indicator.classList.add('bg-green-500');
-                text.textContent = '在线';
-            } else {
-                indicator.classList.remove('bg-green-500');
-                indicator.classList.add('bg-red-500');
-                text.textContent = '离线';
+                currentUserId = null;
+                currentToken = null;
             }
         }
 
         window.addEventListener('online', () => {
             isOnline = true;
-            updateOnlineStatus();
-            if (currentUserId) {
-                syncData();
+            if (isLoggedIn() && offlineQueue.length > 0) {
+                processOfflineQueue();
             }
         });
 
         window.addEventListener('offline', () => {
             isOnline = false;
-            updateOnlineStatus();
         });
 
         // ========================================
         // Cloudflare API 云端同步
         // ========================================
-        async function loadFromCloud() {
-            if (!isOnline) {
-                console.log('当前离线，使用本地数据');
-                return;
-            }
-
-            if (!currentToken) {
-                console.log('未登录，使用本地数据');
-                return;
-            }
+        async function loadCloudTasks() {
+            if (!isOnline || !isLoggedIn()) return null;
 
             try {
-                console.log('开始从云端加载数据...');
-                
-                // 加载任务
+                const token = getAuthToken();
                 const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-
-                if (!tasksResponse.ok) {
-                    throw new Error(`加载任务失败: ${tasksResponse.status}`);
-                }
-
+                if (!tasksResponse.ok) throw new Error(`加载任务失败: ${tasksResponse.status}`);
                 const tasksResult = await tasksResponse.json();
-                tasks = tasksResult.data || [];
+                return tasksResult.data || [];
+            } catch (error) {
+                console.error('加载云端任务失败:', error);
+                return null;
+            }
+        }
 
-                // 加载分类
+        async function loadCloudCategories() {
+            if (!isOnline || !isLoggedIn()) return null;
+
+            try {
+                const token = getAuthToken();
                 const categoriesResponse = await fetch(`${API_BASE_URL}/api/categories`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!categoriesResponse.ok) throw new Error(`加载分类失败: ${categoriesResponse.status}`);
+                const categoriesResult = await categoriesResponse.json();
+                return categoriesResult.data || [];
+            } catch (error) {
+                console.error('加载云端分类失败:', error);
+                return null;
+            }
+        }
+
+        async function mergeDataOnLogin() {
+            if (!isOnline || !isLoggedIn()) {
+                console.log('离线或未登录，跳过合并');
+                return;
+            }
+
+            const localTasks = [...tasks];
+            const localCategories = [...categories];
+
+            try {
+                const cloudTasks = await loadCloudTasks();
+                const cloudCategories = await loadCloudCategories();
+
+                if (cloudTasks === null && cloudCategories === null) {
+                    console.log('无法加载云端数据，保持本地数据不变');
+                    return;
+                }
+
+                const mergedTasks = [];
+                const processedIds = new Set();
+
+                if (cloudTasks) {
+                    cloudTasks.forEach(cloudTask => {
+                        const localTask = localTasks.find(t => t.id === cloudTask.id);
+                        if (localTask) {
+                            const cloudTime = new Date(cloudTask.updated_at || cloudTask.created_at || '1970-01-01').getTime();
+                            const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
+                            mergedTasks.push(localTime > cloudTime ? localTask : cloudTask);
+                        } else {
+                            mergedTasks.push(cloudTask);
+                        }
+                        processedIds.add(cloudTask.id);
+                    });
+                }
+
+                localTasks.forEach(localTask => {
+                    if (!processedIds.has(localTask.id)) {
+                        mergedTasks.push(localTask);
                     }
                 });
 
-                if (!categoriesResponse.ok) {
-                    throw new Error(`加载分类失败: ${categoriesResponse.status}`);
+                let mergedCategories = [...localCategories];
+                if (cloudCategories && cloudCategories.length > 0) {
+                    const cloudCatNames = cloudCategories.map(c => c.name);
+                    cloudCatNames.forEach(name => {
+                        if (!mergedCategories.includes(name)) {
+                            mergedCategories.push(name);
+                        }
+                    });
+                } else if (cloudCategories && cloudCategories.length === 0 && localCategories.length === 0) {
+                    mergedCategories = ['工作', '生活', '学习', '其他'];
                 }
 
-                const categoriesResult = await categoriesResponse.json();
-                const cloudCategories = categoriesResult.data || [];
-                
-                // 如果云端没有分类，使用默认分类
-                categories = cloudCategories.length > 0 ? cloudCategories.map(c => c.name) : ['工作', '生活', '学习', '其他'];
-                
+                tasks = mergedTasks;
+                categories = mergedCategories;
                 saveToStorage();
+
+                for (const task of mergedTasks) {
+                    const isCloudTask = cloudTasks && cloudTasks.find(t => t.id === task.id);
+                    const isLocalOnly = !isCloudTask;
+                    if (isLocalOnly) {
+                        await createTaskToCloud(task);
+                    } else {
+                        const localTask = localTasks.find(t => t.id === task.id);
+                        if (localTask) {
+                            const cloudTime = new Date(isCloudTask.updated_at || isCloudTask.created_at || '1970-01-01').getTime();
+                            const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
+                            if (localTime > cloudTime) {
+                                await updateTaskToCloud(task.id, task);
+                            }
+                        }
+                    }
+                }
+
+                await syncCategoriesToCloud();
+
                 renderTasks();
                 updateCategoryFilter();
-                console.log('已从云端加载数据:', tasks.length, '个任务');
-                alert('已从云端加载 ' + tasks.length + ' 个任务');
+                console.log('数据合并完成:', mergedTasks.length, '个任务,', mergedCategories.length, '个分类');
             } catch (error) {
-                console.error('加载云端数据失败:', error);
-                alert('加载云端数据失败，请检查网络\n错误: ' + error.message);
+                console.error('数据合并失败:', error);
             }
         }
 
-        async function mergeLocalAndCloudData() {
-            if (!isOnline || !currentToken) return;
-
-            try {
-                // 先获取云端数据
-                const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-
-                if (!tasksResponse.ok) {
-                    throw new Error(`获取云端任务失败: ${tasksResponse.status}`);
-                }
-
-                const tasksResult = await tasksResponse.json();
-                const cloudTasks = tasksResult.data || [];
-
-                // 合并任务：保留云端和本地的所有任务，去重（按id）
-                const mergedTasks = [...cloudTasks];
-                
-                tasks.forEach(localTask => {
-                    const exists = mergedTasks.find(t => t.id === localTask.id);
-                    if (!exists) {
-                        mergedTasks.push(localTask);
-                    } else {
-                        // 如果本地任务更新时间更晚，用本地的覆盖
-                        const localTime = new Date(localTask.updated_at || localTask.created_at || '1970-01-01').getTime();
-                        const cloudTime = new Date(exists.updated_at || exists.created_at || '1970-01-01').getTime();
-                        if (localTime > cloudTime) {
-                            const index = mergedTasks.findIndex(t => t.id === localTask.id);
-                            mergedTasks[index] = localTask;
-                        }
-                    }
-                });
-
-                // 上传合并后的任务
-                for (const task of mergedTasks) {
-                    const existing = cloudTasks.find(t => t.id === task.id);
-                    if (existing) {
-                        // 更新现有任务
-                        await fetch(`${API_BASE_URL}/api/tasks/${task.id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${currentToken}`
-                            },
-                            body: JSON.stringify(task)
-                        });
-                    } else {
-                        // 创建新任务
-                        await fetch(`${API_BASE_URL}/api/tasks`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${currentToken}`
-                            },
-                            body: JSON.stringify(task)
-                        });
-                    }
-                }
-
-                console.log('数据合并成功:', mergedTasks.length, '个任务');
-            } catch (error) {
-                console.error('合并数据失败:', error);
-                throw error;
-            }
-        }
-
-        async function deleteFromCloud(taskId) {
-            if (!currentToken) {
-                console.log('无法删除云端任务: 未登录');
-                return;
-            }
-
-            if (!isOnline) {
-                console.log('当前离线，将删除操作添加到队列');
-                addToOfflineQueue('delete', { taskId: taskId });
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-
-                if (!response.ok) {
-                    console.error('删除云端任务失败:', response.status);
-                    throw new Error(`删除失败: ${response.status}`);
-                }
-
-                console.log('云端任务已删除:', taskId);
-            } catch (error) {
-                console.error('删除云端任务失败:', error);
-                throw error;
-            }
-        }
-
-        async function saveToCloud(silent = false) {
-            if (!currentToken) {
-                console.log('无法保存到云端: 未登录');
-                return;
-            }
-
-            if (!isOnline) {
-                console.log('当前离线，将操作添加到队列');
-                addToOfflineQueue('save', { tasksCount: tasks.length });
-                return;
-            }
-
-            try {
-                console.log('开始保存到云端...');
-
-                // 保存所有任务
-                for (const task of tasks) {
-                    if (task.id) {
-                        // 更新现有任务
-                        await fetch(`${API_BASE_URL}/api/tasks/${task.id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${currentToken}`
-                            },
-                            body: JSON.stringify(task)
-                        });
-                    } else {
-                        // 创建新任务
-                        const response = await fetch(`${API_BASE_URL}/api/tasks`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${currentToken}`
-                            },
-                            body: JSON.stringify(task)
-                        });
-                        const result = await response.json();
-                        if (result.data) {
-                            task.id = result.data.id;
-                        }
-                    }
-                }
-
-                // 保存分类
-                for (const category of categories) {
-                    await fetch(`${API_BASE_URL}/api/categories`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${currentToken}`
-                        },
-                        body: JSON.stringify({ name: category })
-                    }).catch(() => {}); // 忽略重复错误
-                }
-
-                saveToStorage();
-                console.log('数据已保存到云端:', tasks.length, '个任务');
-                if (!silent) alert('同步成功！数据已保存到云端');
-            } catch (error) {
-                console.error('保存到云端失败:', error);
-                if (!silent) alert('保存到云端失败，请检查网络\n错误: ' + error.message);
-            }
-        }
-
-        async function syncData() {
-            if (isSyncing) {
-                return;
-            }
-
-            if (!isOnline) {
-                alert('当前离线，请连接网络后重试');
-                return;
-            }
-
-            if (!currentToken) {
-                openLoginModal();
-                return;
-            }
-
-            isSyncing = true;
-            updateSyncButton(true);
-
-            try {
-                await smartSync();
-            } finally {
-                isSyncing = false;
-                updateSyncButton(false);
-            }
-        }
-
-        function updateSyncButton(loading) {
-            const btn = document.getElementById('btnSync');
-            const btnText = document.getElementById('btnSyncText');
-            if (btn) {
-                btn.disabled = loading;
-                const icon = btn.querySelector('i');
-                if (icon) {
-                    icon.style.animation = loading ? 'spin 1s linear infinite' : 'none';
-                }
-            }
-            if (btnText) {
-                btnText.textContent = loading ? '同步中...' : '同步';
-            }
-        }
-
-        async function smartSync() {
-            if (!isOnline || !currentToken) return;
-
-            try {
-                // 获取云端任务数量
-                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('加载失败');
-                }
-
-                const result = await response.json();
-                const cloudTasks = result.data || [];
-                const cloudUpdatedAt = cloudTasks.length > 0 
-                    ? Math.max(...cloudTasks.map(t => new Date(t.updated_at || t.created_at || '1970-01-01').getTime()))
-                    : 0;
-                const localUpdatedAt = getLocalUpdatedAt();
-                const localTime = new Date(localUpdatedAt).getTime();
-
-                console.log('云端任务数:', cloudTasks.length);
-                console.log('云端更新时间:', cloudUpdatedAt);
-                console.log('本地更新时间:', localUpdatedAt);
-
-                if (cloudTasks.length === 0 && tasks.length > 0) {
-                    // 云端为空，本地有数据，上传
-                    await saveToCloud();
-                    alert('同步成功！本地数据已上传到云端');
-                } else if (cloudUpdatedAt > localTime) {
-                    // 云端数据更新，加载到本地
-                    await loadFromCloud();
-                    alert('同步成功！已从云端更新数据');
-                } else if (localTime > cloudUpdatedAt) {
-                    // 本地数据更新，保存到云端
-                    await saveToCloud();
-                    alert('同步成功！本地数据已上传到云端');
-                } else {
-                    alert('数据已是最新，无需同步');
-                }
-            } catch (error) {
-                console.error('同步失败:', error);
-                alert('同步失败，请稍后重试');
-            }
-        }
-
-        function getLocalUpdatedAt() {
-            if (localUpdatedAt) {
-                return localUpdatedAt;
-            }
-            
-            if (tasks.length === 0) {
-                return '1970-01-01T00:00:00Z';
-            }
-            
-            let latestTime = '1970-01-01T00:00:00Z';
-            tasks.forEach(task => {
-                if (task.updated_at) {
-                    const taskTime = new Date(task.updated_at).getTime();
-                    const latest = new Date(latestTime).getTime();
-                    if (taskTime > latest) {
-                        latestTime = task.updated_at;
-                    }
-                }
-            });
-            
-            return latestTime;
-        }
-
-        function updateLocalUpdatedAt() {
-            localUpdatedAt = new Date().toISOString();
-        }
 
         // ========================================
         // 原有功能
@@ -1303,40 +834,12 @@
         let prioritySortDirection = null;
         let categorySortDirection = null;
         let dueDateSortDirection = null;
-        let importMode = 'add';
         
         document.addEventListener('DOMContentLoaded', () => {
             isOnline = navigator.onLine;
-            
-            // 加载离线队列
             loadOfflineQueue();
-            
-            // 先加载本地数据作为默认值
             loadFromStorage();
-            
-            // 检查是否已登录
-            const savedUserId = getUserId();
-            
-            if (savedUserId) {
-                // 已登录，加载云端数据
-                currentUserId = savedUserId;
-                updateUserDisplay();
-                
-                if (isOnline) {
-                    setTimeout(() => {
-                        loadFromCloud();
-                    }, 500);
-                }
-            }
-            
-            // 如果有离线队列且在线，自动处理
-            if (isOnline && currentUserId && offlineQueue.length > 0) {
-                setTimeout(() => {
-                    processOfflineQueue();
-                }, 2000);
-            }
-            
-            // 初始化任务
+
             tasks.forEach(task => {
                 if (task.status === STATUS.COMPLETED && !task.completed_at) {
                     task.completed_at = task.updated_at || task.created_at || new Date().toISOString();
@@ -1761,7 +1264,7 @@
             }
 
             saveToStorage();
-            if (currentUserId) saveToCloud(true);
+            if (isLoggedIn()) updateTaskToCloud(taskId, task);
         }
 
         function toggleComplete(taskId, isChecked) {
@@ -1774,18 +1277,13 @@
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             if (confirm(`确定要删除任务「${task.title}」吗？此操作不可撤销。`)) {
-                // 更新本地时间戳
-                updateLocalUpdatedAt();
-                // 先从云端删除
-                if (currentUserId) {
+                if (isLoggedIn()) {
                     try {
-                        await deleteFromCloud(taskId);
+                        await deleteTaskFromCloud(taskId);
                     } catch (error) {
                         console.error('删除云端任务失败:', error);
-                        // 如果云端删除失败，仍然删除本地任务，离线队列会处理
                     }
                 }
-                // 再从本地删除
                 tasks = tasks.filter(t => t.id !== taskId);
                 saveToStorage();
                 renderTasks();
@@ -1823,8 +1321,8 @@
             renderTasks();
             closeAddModal();
 
-            if (currentUserId) {
-                await saveToCloud();
+            if (isLoggedIn()) {
+                await createTaskToCloud(newTask);
             }
         }
 
@@ -1832,295 +1330,6 @@
             const select = document.getElementById('newTaskCategory');
             select.innerHTML = '<option value="">(无)</option>' + 
                 categories.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function openExportModal() {
-            if (tasks.length === 0) {
-                alert('暂无任务可导出');
-                return;
-            }
-            document.getElementById('exportModal').classList.add('active');
-            lucide.createIcons();
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('active');
-        }
-
-        function exportToCSV() {
-            const headers = ['id', 'title', 'description', 'category', 'status', 'priority', 'due_date', 'created_at', 'updated_at', 'completed_at'];
-            const csvContent = [
-                headers.join(','),
-                ...tasks.map(task => headers.map(h => {
-                    const value = String(task[h] || '');
-                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-                        return `"${value.replace(/"/g, '""')}"`;
-                    }
-                    return value;
-                }).join(','))
-            ].join('\n');
-
-            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `tasks_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-            closeExportModal();
-        }
-
-        function exportToMD() {
-            const date = new Date().toISOString().split('T')[0];
-            const headers = ['ID', '标题', '描述', '分类', '状态', '优先级', '截止时间', '创建时间', '更新时间', '完成时间'];
-            let mdContent = `# 任务列表\n\n`;
-            mdContent += `> 导出时间: ${date} | 总计: ${tasks.length} 个任务\n\n`;
-            mdContent += `| ${headers.join(' | ')} |\n`;
-            mdContent += `| ${headers.map(() => '---').join(' | ')} |\n`;
-            
-            tasks.forEach(task => {
-                const row = [
-                    task.id || '',
-                    escapeMd(task.title) || '',
-                    escapeMd(task.description) || '',
-                    task.category || '',
-                    task.status || '',
-                    task.priority || '',
-                    task.due_date || '',
-                    task.created_at || '',
-                    task.updated_at ? task.updated_at.split('T')[0] : '',
-                    task.completed_at ? task.completed_at.split('T')[0] : ''
-                ];
-                mdContent += `| ${row.join(' | ')} |\n`;
-            });
-
-            const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `tasks_${date}.md`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-            closeExportModal();
-        }
-
-        function escapeMd(text) {
-            if (!text) return '';
-            return text.replace(/([*_`~\[\]()#+\-.!|])/g, '\\$1');
-        }
-
-        function openImportModal() {
-            document.getElementById('importModal').classList.add('active');
-            lucide.createIcons();
-        }
-
-        function closeImportModal() {
-            document.getElementById('importModal').classList.remove('active');
-        }
-
-        function selectImportFile(format, mode) {
-            importMode = mode;
-            const fileInput = document.getElementById('fileInput');
-            fileInput.accept = '.csv,.md,.markdown,.txt';
-            fileInput.click();
-            closeImportModal();
-        }
-
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const ext = file.name.toLowerCase().split('.').pop();
-            const isCSV = ext === 'csv';
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                if (isCSV || content.includes(',')) {
-                    importFromCSV(content);
-                } else {
-                    importFromMD(content);
-                }
-            };
-            reader.readAsText(file, 'UTF-8');
-            event.target.value = '';
-        }
-
-        function importFromCSV(content) {
-            if (importMode === 'replace') {
-                if (!confirm('确定要清空现有任务并导入新任务吗？此操作不可撤销。')) {
-                    return;
-                }
-                tasks = [];
-            }
-
-            const lines = content.split('\n').filter(line => line.trim());
-
-            if (lines.length < 2) {
-                alert('CSV文件格式不正确');
-                return;
-            }
-
-            const headers = parseCSVLine(lines[0]);
-            const taskObjs = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                if (values.length >= headers.length) {
-                    const task = {};
-                    headers.forEach((h, idx) => {
-                        task[h.trim()] = values[idx]?.trim() || '';
-                    });
-
-                    if (task.title) {
-                        const taskObj = {
-                            id: task.id ? parseInt(task.id) : Date.now() + i,
-                            title: task.title,
-                            description: task.description || '',
-                            category: task.category || '',
-                            status: task.status || STATUS.TODO,
-                            priority: task.priority || PRIORITY.MEDIUM,
-                            due_date: task.due_date || '',
-                            created_at: task.created_at || new Date().toISOString().split('T')[0],
-                            updated_at: task.updated_at || new Date().toISOString()
-                        };
-
-                        if (task.completed_at) {
-                            taskObj.completed_at = task.completed_at;
-                        } else if (taskObj.status === STATUS.COMPLETED) {
-                            taskObj.completed_at = taskObj.created_at;
-                        }
-
-                        if (importMode === 'replace' || !tasks.find(t => t.id === taskObj.id)) {
-                            taskObjs.push(taskObj);
-                        }
-                    }
-                }
-            }
-
-            if (taskObjs.length > 0) {
-                tasks.push(...taskObjs);
-                saveToStorage();
-                renderTasks();
-                alert(`成功导入 ${taskObjs.length} 个任务`);
-            } else {
-                alert('所有任务已存在，无新任务导入');
-            }
-        }
-
-        function importFromMD(content) {
-            if (importMode === 'replace') {
-                if (!confirm('确定要清空现有任务并导入新任务吗？此操作不可撤销。')) {
-                    return;
-                }
-                tasks = [];
-            }
-
-            const taskObjs = [];
-            const lines = content.split('\n');
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-
-                const taskMatch = line.match(/^- \[([ x])\]\s*(.+)$/);
-                if (taskMatch) {
-                    const isCompleted = taskMatch[1] === 'x';
-                    const title = taskMatch[2].replace(/\*\*|~~|🔴|🟡|🟢|📁|📅|✅/g, '').trim();
-
-                    const taskObj = {
-                        id: Date.now() + taskObjs.length,
-                        title: title,
-                        description: '',
-                        category: '',
-                        status: isCompleted ? STATUS.COMPLETED : STATUS.TODO,
-                        priority: PRIORITY.MEDIUM,
-                        due_date: '',
-                        created_at: new Date().toISOString().split('T')[0],
-                        updated_at: new Date().toISOString()
-                    };
-
-                    if (isCompleted) {
-                        taskObj.completed_at = new Date().toISOString();
-                    }
-
-                    const metaMatch = taskMatch[2].match(/📁([^📅✅🔴🟡🟢\s*]+)/);
-                    if (metaMatch) taskObj.category = metaMatch[1];
-                    
-                    const dateMatch = taskMatch[2].match(/📅(\d{4}-\d{2}-\d{2})/);
-                    if (dateMatch) taskObj.due_date = dateMatch[1];
-                    
-                    if (taskMatch[2].includes('🔴')) taskObj.priority = PRIORITY.HIGH;
-                    else if (taskMatch[2].includes('🟡')) taskObj.priority = PRIORITY.MEDIUM;
-                    else if (taskMatch[2].includes('🟢')) taskObj.priority = PRIORITY.LOW;
-
-                    if (importMode === 'replace' || !tasks.find(t => t.id === taskObj.id)) {
-                        taskObjs.push(taskObj);
-                    }
-                }
-                
-                const tabMatch = line.match(/^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|/);
-                if (tabMatch && tabMatch[2] && !line.includes('---') && !line.startsWith('#')) {
-                    const title = tabMatch[2].trim();
-                    if (title && title !== '标题') {
-                        const taskObj = {
-                            id: Date.now() + taskObjs.length,
-                            title: title,
-                            description: tabMatch[3]?.trim() || '',
-                            category: tabMatch[4]?.trim() || '',
-                            status: tabMatch[5]?.trim() || STATUS.TODO,
-                            priority: tabMatch[6]?.trim() || PRIORITY.MEDIUM,
-                            due_date: tabMatch[7]?.trim() || '',
-                            created_at: tabMatch[8]?.trim() || new Date().toISOString().split('T')[0],
-                            updated_at: new Date().toISOString()
-                        };
-                        
-                        if (taskObj.status === '已完成') taskObj.status = STATUS.COMPLETED;
-                        else if (taskObj.status === '进行中') taskObj.status = STATUS.IN_PROGRESS;
-                        else taskObj.status = STATUS.TODO;
-                        
-                        if (taskObj.priority === '高') taskObj.priority = PRIORITY.HIGH;
-                        else if (taskObj.priority === '中') taskObj.priority = PRIORITY.MEDIUM;
-                        else if (taskObj.priority === '低') taskObj.priority = PRIORITY.LOW;
-                        
-                        if (title && importMode === 'replace' || !tasks.find(t => t.title === title)) {
-                            taskObjs.push(taskObj);
-                        }
-                    }
-                }
-            }
-
-            if (taskObjs.length > 0) {
-                tasks.push(...taskObjs);
-                saveToStorage();
-                renderTasks();
-                alert(`成功导入 ${taskObjs.length} 个任务`);
-            } else if (taskObjs.length === 0 && content.trim()) {
-                alert('未找到有效的任务列表项');
-            } else {
-                alert('所有任务已存在，无新任务导入');
-            }
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current);
-            return result;
         }
 
         function updateCategoryFilter() {
@@ -2159,7 +1368,7 @@
             if (name && !categories.includes(name)) {
                 categories.push(name);
                 saveToStorage();
-                if (currentUserId) saveToCloud(true);
+                if (isLoggedIn()) syncCategoriesToCloud();
                 renderCategoryList();
                 updateCategoryFilter();
                 updateNewTaskCategorySelect();
@@ -2178,7 +1387,7 @@
             });
             
             saveToStorage();
-            if (currentUserId) saveToCloud(true);
+            if (isLoggedIn()) syncCategoriesToCloud();
             updateCategoryFilter();
             updateNewTaskCategorySelect();
             renderTasks();
@@ -2195,7 +1404,7 @@
                 
                 categories.splice(index, 1);
                 saveToStorage();
-                if (currentUserId) saveToCloud(true);
+                if (isLoggedIn()) syncCategoriesToCloud();
                 renderCategoryList();
                 updateCategoryFilter();
                 updateNewTaskCategorySelect();
@@ -2216,6 +1425,23 @@
                     overlay.classList.remove('active');
                 }
             });
+        });
+
+        // ========================================
+        // 页面初始化
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initSharedAuth();
+            updateUserDisplay();
+            lucide.createIcons();
+
+            if (isLoggedIn() && isOnline && offlineQueue.length > 0) {
+                setTimeout(() => {
+                    processOfflineQueue();
+                }, 2000);
+            }
+
+            console.log('[TaskManager] Initialized');
         });
     </script>
 </body>
