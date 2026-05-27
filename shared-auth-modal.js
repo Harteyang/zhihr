@@ -314,7 +314,7 @@
     div.id = CONFIG.MODAL_ID;
     div.className = 'modal-overlay';
     div.innerHTML = `
-      <div class="modal bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xl p-6 w-full max-w-md mx-4 transition-colors duration-200">
+      <div class="modal bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xl p-8 w-[420px] max-w-[90vw] mx-auto transition-all duration-300">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
@@ -338,13 +338,13 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">账号</label>
             <input type="text" id="zhihr-login-username" placeholder="输入账号"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               onkeypress="if(event.key==='Enter'){document.getElementById('zhihr-login-password').focus();}">
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">密码</label>
             <input type="password" id="zhihr-login-password" placeholder="输入密码"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               onkeypress="if(event.key==='Enter'){handleLogin();}">
           </div>
           <!-- 验证码 -->
@@ -365,7 +365,7 @@
               onkeypress="if(event.key==='Enter'){handleLogin();}">
           </div>
           <div id="${CONFIG.LOGIN_ERROR_ID}" class="text-sm text-red-500 hidden"></div>
-          <button id="${CONFIG.LOGIN_BTN_ID}" onclick="handleLogin()" class="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer text-sm">
+          <button id="${CONFIG.LOGIN_BTN_ID}" onclick="handleLogin()" class="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25 active:translate-y-0 active:shadow-md transition-all duration-200 cursor-pointer text-sm">
             登录
           </button>
           <p class="text-center text-sm text-slate-500 dark:text-slate-400">
@@ -378,17 +378,17 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">账号</label>
             <input type="text" id="zhihr-register-username" placeholder="设置账号（至少3位）" minlength="3"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200">
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">密码</label>
             <input type="password" id="zhihr-register-password" placeholder="设置密码（至少4位）" minlength="4"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200">
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">确认密码</label>
             <input type="password" id="zhihr-register-password-confirm" placeholder="再次输入密码"
-              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               onkeypress="if(event.key==='Enter'){handleRegister();}">
           </div>
           <!-- 验证码 -->
@@ -409,7 +409,7 @@
               onkeypress="if(event.key==='Enter'){handleRegister();}">
           </div>
           <div id="${CONFIG.REGISTER_ERROR_ID}" class="text-sm text-red-500 hidden"></div>
-          <button id="${CONFIG.REGISTER_BTN_ID}" onclick="handleRegister()" class="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer text-sm">
+          <button id="${CONFIG.REGISTER_BTN_ID}" onclick="handleRegister()" class="w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/25 active:translate-y-0 active:shadow-md transition-all duration-200 cursor-pointer text-sm">
             注册
           </button>
           <p class="text-center text-sm text-slate-500 dark:text-slate-400">
