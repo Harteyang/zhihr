@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 禁止缓存，确保始终加载最新代码 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>复盘系统 - 知HR工具集</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -117,8 +121,30 @@
     <!-- 统一认证模块 -->
     <script src="/shared-auth.js"></script>
     <script src="/shared-auth-modal.js"></script>
-    <script type="module" crossorigin src="assets/index-BmCB11Ko.js"></script>
-    <link rel="stylesheet" crossorigin href="assets/index-QXsWTBbi.css">
+    <script>
+      // 动态添加时间戳防止缓存
+      (function() {
+        var v = '?v=' + Date.now();
+        var scripts = document.getElementsByTagName('script');
+        // 找到 index-BmCB11Ko.js 并添加时间戳
+        var jsSrc = 'assets/index-BmCB11Ko.js';
+        var cssSrc = 'assets/index-QXsWTBbi.css';
+        
+        // 创建带时间戳的 script 标签
+        var script = document.createElement('script');
+        script.type = 'module';
+        script.crossOrigin = 'anonymous';
+        script.src = jsSrc + v;
+        document.head.appendChild(script);
+        
+        // 创建带时间戳的 link 标签
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.crossOrigin = 'anonymous';
+        link.href = cssSrc + v;
+        document.head.appendChild(link);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -145,156 +171,49 @@
     </div>
 
     <script>
-      // 复盘系统 - 本地数据存储逻辑
+      // 复盘系统 - 初始化与登录提示逻辑
       (function() {
         'use strict';
 
-        // ==================== localStorage 管理 ====================
-        var REVIEW_DATA_KEY = 'reviewData';
-        var CACHE_VERSION_KEY = 'reviewCacheVersion';
-        var CACHE_VERSION = 1;
-        var MAX_STORAGE_SIZE = 4 * 1024 * 1024;
-        var MAX_RECORDS = 500;
+        var API_BASE_URL = 'https://api.zhihr.vip';
 
-        function checkStorageQuota(neededBytes) {
-          try {
-            var used = 0;
-            for (var i = 0; i < localStorage.length; i++) {
-              var key = localStorage.key(i);
-              used += (localStorage.getItem(key) || '').length * 2;
-            }
-            return (used + neededBytes) < MAX_STORAGE_SIZE;
-          } catch (e) { return false; }
-        }
-
-        function validateReviews(data) {
-          if (!Array.isArray(data)) return [];
-          return data.filter(function(item) {
-            return item && typeof item === 'object' && typeof item.date === 'string' && item.date.length > 0;
-          }).slice(0, MAX_RECORDS);
-        }
-
-        function saveToLocalStorage(data) {
-          try {
-            var validated = validateReviews(data);
-            var jsonStr = JSON.stringify(validated);
-            if (!checkStorageQuota(jsonStr.length * 2)) {
-              var thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-              var recent = validated.filter(function(item) { return item.date >= thirtyDaysAgo; });
-              jsonStr = JSON.stringify(recent);
-              if (!checkStorageQuota(jsonStr.length * 2)) {
-                console.error('localStorage 空间不足，无法保存');
-                return;
-              }
-            }
-            localStorage.setItem(REVIEW_DATA_KEY, jsonStr);
-            localStorage.setItem(CACHE_VERSION_KEY, String(CACHE_VERSION));
-          } catch (e) {
-            if (e.name === 'QuotaExceededError' || e.code === 22) {
-              console.error('localStorage 配额已满，尝试清理旧数据');
-              try {
-                var sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                var emergency = (Array.isArray(data) ? data : []).filter(function(item) {
-                  return item && item.date >= sevenDaysAgo;
-                });
-                localStorage.setItem(REVIEW_DATA_KEY, JSON.stringify(emergency));
-              } catch (e2) {
-                console.error('紧急清理后仍无法保存:', e2);
-              }
-            } else {
-              console.error('保存到 localStorage 失败:', e);
-            }
-          }
-        }
-
-        function loadFromLocalStorage() {
-          try {
-            var data = localStorage.getItem(REVIEW_DATA_KEY);
-            if (!data) return null;
-            var parsed = JSON.parse(data);
-            var version = parseInt(localStorage.getItem(CACHE_VERSION_KEY) || '0', 10);
-            if (version < CACHE_VERSION && version > 0) {
-              console.warn('缓存版本过旧，将重新加载');
-            }
-            return validateReviews(parsed);
-          } catch (e) {
-            console.error('读取 localStorage 数据损坏，清除缓存:', e);
-            try { localStorage.removeItem(REVIEW_DATA_KEY); } catch (e2) {}
-            return null;
-          }
-        }
-
-        // ==================== Kc Store 注入 ====================
-        function patchKcStore() {
-          var kcStore = null;
-
-          if (window.__KcStore__) {
-            kcStore = window.__KcStore__;
+        // ==================== 登录提示（非阻塞式）====================
+        function showLoginPrompt() {
+          var lastPromptTime = localStorage.getItem('reviewLoginPromptTime');
+          var now = Date.now();
+          if (lastPromptTime && now - parseInt(lastPromptTime) < 30 * 60 * 1000) {
+            return;
           }
 
-          if (!kcStore) {
-            for (var key in window) {
-              try {
-                var obj = window[key];
-                if (obj && typeof obj === 'function' && obj.getState && obj.subscribe) {
-                  var state = obj.getState();
-                  if (state && Array.isArray(state.reviews) && state.saveRecord) {
-                    kcStore = obj;
-                    break;
-                  }
-                }
-              } catch (e) {}
+          var existing = document.getElementById('review-login-prompt');
+          if (existing) return;
+
+          var notification = document.createElement('div');
+          notification.id = 'review-login-prompt';
+          notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#DBEAFE;border-left:4px solid #2563EB;padding:16px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-family:sans-serif;max-width:400px;transition:opacity 0.3s;';
+          notification.innerHTML = '<div style="display:flex;align-items:center;gap:12px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><div><p style="margin:0 0 8px 0;font-weight:600;color:#1E40AF;font-size:14px;">数据已本地保存</p><p style="margin:0 0 12px 0;color:#334155;font-size:13px;line-height:1.5;">登录后可将数据同步到云端，在多设备间访问。不登录数据仅保存在本地。</p><div style="display:flex;gap:8px;"><button id="review-prompt-login" style="background:#2563EB;color:white;border:none;padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;">登录同步</button><button id="review-prompt-dismiss" style="background:transparent;color:#64748B;border:1px solid #CBD5E1;padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer;">继续离线使用</button></div></div></div>';
+          document.body.appendChild(notification);
+          localStorage.setItem('reviewLoginPromptTime', now.toString());
+
+          document.getElementById('review-prompt-login').onclick = function() {
+            notification.style.opacity = '0';
+            setTimeout(function() { notification.remove(); }, 300);
+            if (typeof AuthModal !== 'undefined') {
+              AuthModal.open('login');
             }
-          }
+          };
 
-          if (kcStore) {
-            console.log('找到 Kc Store');
-            window.__KcStore__ = kcStore;
-
-            var originalSaveRecord = kcStore.getState().saveRecord;
-            kcStore.getState().saveRecord = async function(date, content, summary, options) {
-              var mode = (options && options.mode) ? options.mode : 'auto';
-              var reviews = kcStore.getState().reviews || [];
-              var existingRecords = reviews.filter(function(r) { return r.date === date; });
-              var now = new Date().toISOString();
-              var updatedReviews;
-              var targetId;
-
-              console.log('[saveRecord] mode:', mode, 'date:', date, 'existingCount:', existingRecords.length);
-
-              if (existingRecords.length > 0 && mode !== 'new') {
-                var existing = existingRecords[0];
-                var idx = reviews.findIndex(function(r) { return r.id === existing.id; });
-                targetId = existing.id;
-                updatedReviews = reviews.slice();
-                updatedReviews[idx] = Object.assign({}, updatedReviews[idx], {
-                  content: content, summary: summary, updatedAt: now, _source: 'local'
-                });
-              } else {
-                targetId = 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                var newRecord = {
-                  id: targetId, date: date, content: content, summary: summary,
-                  createdAt: now, updatedAt: now, _source: 'local'
-                };
-                updatedReviews = [newRecord].concat(reviews);
-              }
-
-              kcStore.setState({ reviews: updatedReviews });
-              saveToLocalStorage(updatedReviews);
-            };
-
-            // 空的 loadFromCloud 方法，保持接口兼容
-            kcStore.getState().loadFromCloud = async function() {
-              console.log('云端同步功能已禁用');
-              kcStore.setState({ isLoading: false });
-            };
-
-            console.log('Kc Store 已注入本地存储逻辑');
-          } else {
-            console.log('Kc Store 未找到，100ms 后重试');
-            setTimeout(patchKcStore, 100);
-          }
+          document.getElementById('review-prompt-dismiss').onclick = function() {
+            notification.style.opacity = '0';
+            setTimeout(function() { notification.remove(); }, 300);
+          };
         }
+
+        // ==================== 监听需要登录的事件 ====================
+        window.addEventListener('review:need-login', function(e) {
+          console.log('[review:need-login] 用户未登录，显示登录提示');
+          showLoginPrompt();
+        });
 
         // ==================== 初始化 ====================
         function init() {
@@ -308,6 +227,29 @@
                 var store = window.__ZHIHR_AUTH__.store;
                 var token = SharedAuth.getToken();
                 store.getState().setAuth(data.userId, data.username, token);
+                
+                console.log('[auth:login] 登录成功，开始同步数据...');
+                
+                // 等待 Kc Store 初始化完成
+                var trySync = function() {
+                  var kcStore = window.__KcStore__;
+                  if (!kcStore || !kcStore.getState) {
+                    setTimeout(trySync, 200);
+                    return;
+                  }
+                  
+                  // 先加载云端数据并合并
+                  if (kcStore.getState().loadFromCloud) {
+                    kcStore.getState().loadFromCloud().then(function() {
+                      // 云端数据加载完成后，同步本地未同步的数据
+                      if (kcStore.getState().syncLocalToCloud) {
+                        kcStore.getState().syncLocalToCloud();
+                      }
+                    });
+                  }
+                };
+                
+                setTimeout(trySync, 500);
               }
             });
             
@@ -315,6 +257,7 @@
             SharedAuth.on('auth:logout', function() {
               if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
                 window.__ZHIHR_AUTH__.store.getState().clearAuth();
+                console.log('[auth:logout] 已退出登录');
               }
             });
           }
@@ -322,12 +265,6 @@
           // 初始化 AuthModal
           if (typeof AuthModal !== 'undefined') {
             AuthModal.init();
-          }
-
-          if (typeof DOMContentLoaded !== 'undefined') {
-            patchKcStore();
-          } else {
-            document.addEventListener('DOMContentLoaded', patchKcStore);
           }
         }
 
@@ -340,6 +277,7 @@
       function showConfirmDialog(title, message, confirmText, cancelText) {
         return new Promise(function(resolve) {
           confirmResolve = resolve;
+          window.confirmResolve = resolve;
           document.getElementById('confirmTitle').textContent = title;
           document.getElementById('confirmMessage').textContent = message;
           document.getElementById('confirmBtn').textContent = confirmText || '确定';
@@ -350,8 +288,10 @@
       }
       function confirmCallback(result) {
         document.getElementById('confirmModal').classList.remove('active');
-        if (confirmResolve) {
-          confirmResolve(result);
+        var resolver = window.confirmResolve || confirmResolve;
+        if (resolver) {
+          resolver(result);
+          window.confirmResolve = null;
           confirmResolve = null;
         }
       }
