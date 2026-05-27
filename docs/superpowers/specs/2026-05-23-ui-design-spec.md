@@ -399,6 +399,170 @@ pnpm install lucide-react
 
 移动端全宽，PC端最大 448px。
 
+### 8.2 登录弹窗规范
+
+登录弹窗是所有工具共用的认证组件，必须保持视觉一致性。
+
+#### 8.2.1 弹窗结构
+
+```html
+<div class="modal-overlay" id="zhihr-auth-modal">
+  <div class="modal">
+    <!-- 头部 -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <svg className="text-primary" /> <!-- Logo -->
+        <h2 class="text-xl font-semibold text-foreground">登录</h2>
+      </div>
+      <button onclick="AuthModal.close()" class="p-1 text-muted-foreground hover:text-foreground transition-colors">
+        <X className="h-5 w-5" />
+      </button>
+    </div>
+    
+    <!-- 表单内容 -->
+    <div class="space-y-4">
+      <!-- 账号输入框 -->
+      <div>
+        <label class="block text-sm font-medium text-muted-foreground mb-1.5">账号</label>
+        <input type="text" placeholder="输入账号" class="w-full px-4 py-3 border border-input rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all" />
+      </div>
+      
+      <!-- 密码输入框 -->
+      <div>
+        <label class="block text-sm font-medium text-muted-foreground mb-1.5">密码</label>
+        <input type="password" placeholder="输入密码" class="w-full px-4 py-3 border border-input rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all" />
+      </div>
+      
+      <!-- 验证码 -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-2 bg-muted rounded-md">
+          <span class="text-sm font-medium text-foreground">3 + 10 = ?</span>
+          <button type="button" onclick="refreshCaptcha()" class="p-1 text-muted-foreground hover:text-primary transition-colors">
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
+        <input type="number" placeholder="答案" class="w-20 px-3 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" />
+      </div>
+      
+      <!-- 错误提示 -->
+      <div id="login-error" class="text-sm text-destructive hidden"></div>
+      
+      <!-- 登录按钮 -->
+      <button class="w-full px-4 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all">
+        登录
+      </button>
+      
+      <!-- 注册链接 -->
+      <p class="text-center text-sm text-muted-foreground">
+        没有账号？<a href="#" onclick="AuthModal.open('register');return false;" class="text-primary hover:underline font-medium">注册新账号</a>
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+#### 8.2.2 弹窗样式规范
+
+| 元素 | 类名 | 说明 |
+|------|------|------|
+| 遮罩层 | `modal-overlay` | 全屏半透明背景，固定定位 |
+| 弹窗容器 | `modal` | 白色背景卡片，居中显示 |
+| 移动端宽度 | `w-full` | 移动端全屏 |
+| PC端宽度 | `sm:max-w-md` | PC端最大 448px |
+| 圆角 | `rounded-xl` | 12px 圆角 |
+| 内边距 | `p-6` | 24px 内边距 |
+| 阴影 | `shadow-lg` | 中等阴影 |
+
+#### 8.2.3 遮罩层 CSS
+
+```css
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 448px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+```
+
+#### 8.2.4 表单字段规范
+
+| 字段类型 | 样式要求 |
+|----------|----------|
+| 标签 | `text-sm font-medium text-muted-foreground mb-1.5` |
+| 输入框 | `h-10 px-4 rounded-xl border border-input bg-background` |
+| 按钮 | `h-10 w-full bg-primary hover:bg-primary/90 rounded-xl font-semibold` |
+| 验证码容器 | `flex items-center gap-3` |
+
+#### 8.2.5 注册表单结构
+
+注册表单与登录表单结构一致，包含以下额外字段：
+
+```html
+<div id="register-form" class="space-y-4">
+  <div>
+    <label class="block text-sm font-medium text-muted-foreground mb-1.5">账号</label>
+    <input type="text" placeholder="设置账号（至少3位）" minlength="3" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-muted-foreground mb-1.5">密码</label>
+    <input type="password" placeholder="设置密码（至少4位）" minlength="4" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-muted-foreground mb-1.5">确认密码</label>
+    <input type="password" placeholder="再次输入密码" />
+  </div>
+  <!-- 验证码 -->
+  <div class="flex items-center gap-3">...</div>
+  <button>注册</button>
+  <p>已有账号？<a href="#" onclick="AuthModal.open('login');return false;">登录</a></p>
+</div>
+```
+
+#### 8.2.6 弹窗交互规范
+
+| 交互 | 实现方式 |
+|------|----------|
+| 打开弹窗 | `AuthModal.open('login')` 或 `AuthModal.open('register')` |
+| 关闭弹窗 | `AuthModal.close()` |
+| 切换表单 | 调用 `AuthModal.open()` 切换显示登录/注册表单 |
+| 回车键提交 | 账号框→密码框→验证码框→登录按钮 |
+
+#### 8.2.7 共享认证模块
+
+所有工具应通过以下方式引入共享认证模块：
+
+```html
+<script src="../shared-auth.js"></script>
+<script src="../shared-auth-modal.js"></script>
+```
+
+登录按钮点击事件：
+
+```html
+<button onclick="AuthModal.open('login')">登录</button>
+```
+
 ---
 
 ## 9. 工具拼图块 (Mosaic Tile)
