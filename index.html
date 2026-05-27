@@ -638,28 +638,30 @@
 
     // ==================== 搜索功能 ====================
     const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        const searchTerm = prompt('搜索工具名称:');
+        if (searchTerm) {
+          const foundTool = TOOLS_CONFIG.find(tool =>
+            tool.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
 
-    searchBtn.addEventListener('click', () => {
-      const searchTerm = prompt('搜索工具名称:');
-      if (searchTerm) {
-        const foundTool = TOOLS_CONFIG.find(tool =>
-          tool.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        if (foundTool) {
-          window.open(foundTool.url, '_blank');
-        } else {
-          alert('未找到相关工具，请提交建议让我们开发！');
+          if (foundTool) {
+            window.open(foundTool.url, '_blank');
+          } else {
+            alert('未找到相关工具，请提交建议让我们开发！');
+          }
         }
-      }
-    });
+      });
+    }
 
     // ==================== 帮助功能 ====================
     const helpBtn = document.getElementById('helpBtn');
-
-    helpBtn.addEventListener('click', () => {
-      alert('使用说明：\n\n1. 点击彩色拼图块打开对应工具\n2. 点击灰色拼图块提交新工具建议\n3. 使用搜索按钮快速查找工具\n4. 切换深色/浅色模式适应环境');
-    });
+    if (helpBtn) {
+      helpBtn.addEventListener('click', () => {
+        alert('使用说明：\n\n1. 点击彩色拼图块打开对应工具\n2. 点击灰色拼图块提交新工具建议\n3. 使用搜索按钮快速查找工具\n4. 切换深色/浅色模式适应环境');
+      });
+    }
 
     // ==================== 反馈看板渲染（优先使用本地缓存） ====================
     async function renderFeedbackBoard() {
