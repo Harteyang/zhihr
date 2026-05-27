@@ -577,8 +577,11 @@
         }
 
         function clearUserId() {
-            if (typeof SharedAuth !== 'undefined' && SharedAuth?.isAuthenticated?.()) {
-                SharedAuth.logout();
+            // 正确检查认证状态并调用 logout
+            if (typeof SharedAuth !== 'undefined' && SharedAuth && typeof SharedAuth.isAuthenticated === 'function') {
+                if (SharedAuth.isAuthenticated()) {
+                    SharedAuth.logout();
+                }
             }
             // 清理旧的本地存储（兼容）
             localStorage.removeItem('taskManagerUserId');
@@ -619,6 +622,12 @@
         }
 
         async function handleLogout() {
+            // 先关闭用户菜单
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.classList.add('hidden');
+            }
+            
             const confirmExit = await showConfirmDialog(
                 '退出登录',
                 '确定要退出登录吗？',
@@ -657,6 +666,7 @@
             updateUserDisplay();
             localStorage.removeItem('tasks');
             localStorage.removeItem('categories');
+            localStorage.removeItem('taskManagerOfflineQueue');
             renderTasks();
             updateCategoryFilter();
         }
@@ -685,6 +695,14 @@
                 document.getElementById('loggedInArea').classList.add('hidden');
                 currentUserId = null;
                 currentToken = null;
+            }
+        }
+
+        // 切换用户菜单显示/隐藏
+        function toggleUserMenu() {
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.classList.toggle('hidden');
             }
         }
 
@@ -835,7 +853,8 @@
         let categorySortDirection = null;
         let dueDateSortDirection = null;
         
-        document.addEventListener('DOMContentLoaded', () => {
+        // 主初始化函数
+        function initializeApp() {
             isOnline = navigator.onLine;
             loadOfflineQueue();
             loadFromStorage();
@@ -850,8 +869,20 @@
             updateCategoryFilter();
             initTheme();
             initColumnResize();
+            
+            // 初始化共享认证
+            initSharedAuth();
+            updateUserDisplay();
+            
+            if (isLoggedIn() && isOnline && offlineQueue.length > 0) {
+                setTimeout(() => {
+                    processOfflineQueue();
+                }, 2000);
+            }
+
             lucide.createIcons();
-        });
+            console.log('[TaskManager] Initialized');
+        }
         
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
@@ -1430,19 +1461,7 @@
         // ========================================
         // 页面初始化
         // ========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            initSharedAuth();
-            updateUserDisplay();
-            lucide.createIcons();
-
-            if (isLoggedIn() && isOnline && offlineQueue.length > 0) {
-                setTimeout(() => {
-                    processOfflineQueue();
-                }, 2000);
-            }
-
-            console.log('[TaskManager] Initialized');
-        });
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
