@@ -225,6 +225,69 @@
       display: flex;
     }
 
+    /* 确认对话框样式 */
+    #confirmModal .modal {
+      border-radius: 0.75rem;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .dark #confirmModal .modal {
+      border-color: rgba(51, 65, 85, 0.8);
+    }
+
+    #confirmIcon {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      background: #DBEAFE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dark #confirmIcon {
+      background: rgba(30, 58, 138, 0.3);
+    }
+
+    #confirmBtn {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      background: #2563EB;
+      color: white;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+
+    #confirmBtn:hover {
+      background: #1D4ED8;
+    }
+
+    #cancelBtn {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      background: #E2E8F0;
+      color: #334155;
+      font-weight: 500;
+      border-radius: 0.375rem;
+      transition: background-color 0.2s;
+    }
+
+    .dark #cancelBtn {
+      background: #334155;
+      color: #E2E8F0;
+    }
+
+    #cancelBtn:hover {
+      background: #CBD5E1;
+    }
+
+    .dark #cancelBtn:hover {
+      background: #475569;
+    }
+
     /* 打印样式 */
     @media print {
       .no-print {
@@ -262,6 +325,27 @@
 </head>
 
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+
+  <!-- 自定义确认对话框 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal bg-white dark:bg-slate-800 p-6 w-full max-w-sm mx-4">
+      <div class="text-center">
+        <div id="confirmIcon" class="mx-auto mb-4">
+          <i data-lucide="alert-circle" class="w-8 h-8 text-blue-600 dark:text-blue-400"></i>
+        </div>
+        <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2"></h3>
+        <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6"></p>
+        <div class="flex gap-3">
+          <button id="confirmBtn" onclick="confirmCallback(true)" class="px-4 py-2 font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+            确定
+          </button>
+          <button id="cancelBtn" onclick="confirmCallback(false)" class="px-4 py-2 font-medium rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== 统一导航栏 ==================== -->
   <nav class="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
@@ -1017,12 +1101,50 @@
     }
 
     function handleLogout() {
-      if (confirm('确定要退出登录吗？')) {
+      // 先关闭用户菜单
+      const userMenu = document.getElementById('userMenu');
+      if (userMenu) {
+        userMenu.classList.add('hidden');
+      }
+
+      showConfirmDialog(
+        '退出登录',
+        '确定要退出登录吗？',
+        '退出',
+        '取消'
+      ).then((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+
         if (SharedAuth) {
           SharedAuth.logout();
         }
         updateUserDisplay();
-        alert('已退出登录');
+      });
+    }
+
+    let confirmResolve = null;
+
+    function showConfirmDialog(title, message, confirmText = '确定', cancelText = '取消') {
+      return new Promise((resolve) => {
+        confirmResolve = resolve;
+
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmBtn').textContent = confirmText;
+        document.getElementById('cancelBtn').textContent = cancelText;
+
+        document.getElementById('confirmModal').classList.add('active');
+        lucide.createIcons();
+      });
+    }
+
+    function confirmCallback(result) {
+      document.getElementById('confirmModal').classList.remove('active');
+      if (confirmResolve) {
+        confirmResolve(result);
+        confirmResolve = null;
       }
     }
 

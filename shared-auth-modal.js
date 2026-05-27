@@ -45,6 +45,9 @@
 
   let isOpen = false;
   let currentMode = 'login'; // 'login' | 'register'
+  let loginErrorCount = 0;
+  let registerErrorCount = 0;
+  const MAX_ERROR_COUNT = 3;
 
   // ==================== 生成验证码 ====================
   function generateCaptcha() {
@@ -117,6 +120,15 @@
     return { valid: true };
   }
 
+  // ==================== 是否启用验证码 ====================
+  function shouldShowCaptcha() {
+    if (currentMode === 'login') {
+      return loginErrorCount >= MAX_ERROR_COUNT;
+    } else {
+      return registerErrorCount >= MAX_ERROR_COUNT;
+    }
+  }
+
   // ==================== 登录处理 ====================
   async function handleLogin() {
     const usernameInput = document.getElementById('zhihr-login-username');
@@ -125,19 +137,21 @@
     
     const username = usernameInput?.value.trim() || '';
     const password = passwordInput?.value || '';
-    const captchaAnswer = parseInt(captchaInput?.value || '');
-
-    // 验证码验证
-    if (captchaAnswer !== captchaData.answer) {
-      showError(CONFIG.LOGIN_ERROR_ID, '验证码错误，请重试');
-      refreshCaptcha();
-      return;
-    }
 
     const validation = validateLogin(username, password);
     if (!validation.valid) {
       showError(CONFIG.LOGIN_ERROR_ID, validation.message);
       return;
+    }
+
+    // 如果达到错误次数阈值，需要验证验证码
+    if (shouldShowCaptcha()) {
+      const captchaAnswer = parseInt(captchaInput?.value || '');
+      if (captchaAnswer !== captchaData.answer) {
+        showError(CONFIG.LOGIN_ERROR_ID, '验证码错误，请重试');
+        refreshCaptcha();
+        return;
+      }
     }
 
     setButtonLoading(CONFIG.LOGIN_BTN_ID, true, '登录');
@@ -148,13 +162,19 @@
     setButtonLoading(CONFIG.LOGIN_BTN_ID, false, '登录');
 
     if (result.success) {
+      loginErrorCount = 0;
       close();
       // 触发全局通知
       if (window.onAuthSuccess) {
         window.onAuthSuccess(result.data);
       }
     } else {
-      showError(CONFIG.LOGIN_ERROR_ID, result.message || '登录失败');
+      loginErrorCount++;
+      if (loginErrorCount >= MAX_ERROR_COUNT) {
+        showError(CONFIG.LOGIN_ERROR_ID, result.message || '登录失败，请输入验证码继续');
+      } else {
+        showError(CONFIG.LOGIN_ERROR_ID, `${result.message || '登录失败'}（第${loginErrorCount}次错误，再错${MAX_ERROR_COUNT - loginErrorCount}次将启用验证码）`);
+      }
     }
   }
 
@@ -168,19 +188,21 @@
     const username = usernameInput?.value.trim() || '';
     const password = passwordInput?.value || '';
     const passwordConfirm = passwordConfirmInput?.value || '';
-    const captchaAnswer = parseInt(captchaInput?.value || '');
-
-    // 验证码验证
-    if (captchaAnswer !== captchaData.answer) {
-      showError(CONFIG.REGISTER_ERROR_ID, '验证码错误，请重试');
-      refreshCaptcha();
-      return;
-    }
 
     const validation = validateRegister(username, password, passwordConfirm);
     if (!validation.valid) {
       showError(CONFIG.REGISTER_ERROR_ID, validation.message);
       return;
+    }
+
+    // 如果达到错误次数阈值，需要验证验证码
+    if (shouldShowCaptcha()) {
+      const captchaAnswer = parseInt(captchaInput?.value || '');
+      if (captchaAnswer !== captchaData.answer) {
+        showError(CONFIG.REGISTER_ERROR_ID, '验证码错误，请重试');
+        refreshCaptcha();
+        return;
+      }
     }
 
     setButtonLoading(CONFIG.REGISTER_BTN_ID, true, '注册');
@@ -191,13 +213,19 @@
     setButtonLoading(CONFIG.REGISTER_BTN_ID, false, '注册');
 
     if (result.success) {
+      registerErrorCount = 0;
       close();
       // 触发全局通知
       if (window.onAuthSuccess) {
         window.onAuthSuccess(result.data);
       }
     } else {
-      showError(CONFIG.REGISTER_ERROR_ID, result.message || '注册失败');
+      registerErrorCount++;
+      if (registerErrorCount >= MAX_ERROR_COUNT) {
+        showError(CONFIG.REGISTER_ERROR_ID, result.message || '注册失败，请输入验证码继续');
+      } else {
+        showError(CONFIG.REGISTER_ERROR_ID, `${result.message || '注册失败'}（第${registerErrorCount}次错误，再错${MAX_ERROR_COUNT - registerErrorCount}次将启用验证码）`);
+      }
     }
   }
 
@@ -236,6 +264,18 @@
       if (loginError) loginError.classList.add('hidden');
       if (registerError) registerError.classList.add('hidden');
       if (modalTitle) modalTitle.textContent = '注册';
+    }
+
+    // 根据错误次数决定是否显示验证码
+    const showCaptcha = shouldShowCaptcha();
+    const captchaContainer = document.getElementById('zhihr-captcha-section');
+    const captchaContainerReg = document.getElementById('zhihr-captcha-section-reg');
+    
+    if (captchaContainer) {
+      captchaContainer.classList.toggle('hidden', !showCaptcha);
+    }
+    if (captchaContainerReg) {
+      captchaContainerReg.classList.toggle('hidden', !showCaptcha);
     }
 
     // 清空表单
@@ -348,7 +388,7 @@
               onkeypress="if(event.key==='Enter'){handleLogin();}">
           </div>
           <!-- 验证码 -->
-          <div class="flex items-center gap-3">
+          <div id="zhihr-captcha-section" class="flex items-center gap-3 hidden">
             <div class="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md">
               <span id="zhihr-captcha-question" class="text-sm font-medium text-slate-800 dark:text-slate-200">${captchaData.question}</span>
               <button type="button" onclick="refreshCaptcha()" class="p-1 text-slate-500 hover:text-blue-600 cursor-pointer rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" title="刷新验证码">
@@ -392,7 +432,7 @@
               onkeypress="if(event.key==='Enter'){handleRegister();}">
           </div>
           <!-- 验证码 -->
-          <div class="flex items-center gap-3">
+          <div id="zhihr-captcha-section-reg" class="flex items-center gap-3 hidden">
             <div class="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md">
               <span id="zhihr-captcha-question-reg" class="text-sm font-medium text-slate-800 dark:text-slate-200">${captchaData.question}</span>
               <button type="button" onclick="refreshCaptcha()" class="p-1 text-slate-500 hover:text-blue-600 cursor-pointer rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" title="刷新验证码">
