@@ -216,6 +216,22 @@
           // 初始化 SharedAuth
           if (typeof SharedAuth !== 'undefined') {
             SharedAuth.init();
+            
+            // 监听登录事件，同步到复盘系统的 Zustand store
+            SharedAuth.on('auth:login', function(data) {
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                var store = window.__ZHIHR_AUTH__.store;
+                var token = SharedAuth.getToken();
+                store.getState().setAuth(data.userId, data.username, token);
+              }
+            });
+            
+            // 监听登出事件
+            SharedAuth.on('auth:logout', function() {
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().clearAuth();
+              }
+            });
           }
 
           // 初始化 AuthModal
