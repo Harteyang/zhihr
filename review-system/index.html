@@ -5,7 +5,41 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>复盘系统 - 知HR工具集</title>
-    <link href="https://fonts.loli.net/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fira Sans', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+      /* 弹窗遮罩层样式 - 与任务管理系统一致 */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+      }
+      
+      .modal-overlay.active {
+        display: flex;
+      }
+    </style>
     <script>
       window.__API_BASE_URL__ = window.__API_BASE_URL__ || null;
       if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
@@ -26,49 +60,9 @@
     <div id="root"></div>
 
     <script>
-      // 复盘系统 - 数据合并与登录检查逻辑
+      // 复盘系统 - 本地数据存储逻辑
       (function() {
         'use strict';
-
-        // ==================== 存储键名（与 SharedAuth 统一） ====================
-        var TOKEN_KEY = 'zhihr_access_token';
-        var REFRESH_TOKEN_KEY = 'zhihr_refresh_token';
-        var USER_ID_KEY = 'zhihr_user_id';
-        var USERNAME_KEY = 'zhihr_username';
-
-        function getToken() { return localStorage.getItem(TOKEN_KEY); }
-        function getRefreshToken() { return localStorage.getItem(REFRESH_TOKEN_KEY); }
-        function getUserId() { return localStorage.getItem(USER_ID_KEY); }
-        function getUsername() { return localStorage.getItem(USERNAME_KEY); }
-
-        // ==================== 待提交队列 ====================
-        var pendingFormDataQueue = [];
-
-        // 登录成功事件处理
-        window.addEventListener('zhihr-login-success', function(e) {
-          var Kc = window.__KcStore__;
-          if (Kc && typeof Kc.getState === 'function') {
-            Kc.getState().loadFromCloud().then(function() {
-              while (pendingFormDataQueue.length > 0) {
-                var data = pendingFormDataQueue.shift();
-                var opts = data.mode ? { mode: data.mode } : undefined;
-                Kc.getState().saveRecord(data.date, data.content, data.summary, opts);
-              }
-            }).catch(function(err) {
-              console.warn('云端同步失败:', err);
-              while (pendingFormDataQueue.length > 0) {
-                var data = pendingFormDataQueue.shift();
-                var opts = data.mode ? { mode: data.mode } : undefined;
-                Kc.getState().saveRecord(data.date, data.content, data.summary, opts);
-              }
-            });
-          }
-        });
-
-        // 退出登录事件处理
-        window.addEventListener('zhihr-logout', function() {
-          pendingFormDataQueue = [];
-        });
 
         // ==================== localStorage 管理 ====================
         var REVIEW_DATA_KEY = 'reviewData';
@@ -175,14 +169,13 @@
             var originalSaveRecord = kcStore.getState().saveRecord;
             kcStore.getState().saveRecord = async function(date, content, summary, options) {
               var mode = (options && options.mode) ? options.mode : 'auto';
-              var token = getToken();
               var reviews = kcStore.getState().reviews || [];
               var existingRecords = reviews.filter(function(r) { return r.date === date; });
               var now = new Date().toISOString();
               var updatedReviews;
               var targetId;
 
-              console.log('[saveRecord] mode:', mode, 'date:', date, 'existingCount:', existingRecords.length, 'loggedIn:', !!token);
+              console.log('[saveRecord] mode:', mode, 'date:', date, 'existingCount:', existingRecords.length);
 
               if (existingRecords.length > 0 && mode !== 'new') {
                 var existing = existingRecords[0];
@@ -203,135 +196,15 @@
 
               kcStore.setState({ reviews: updatedReviews });
               saveToLocalStorage(updatedReviews);
-
-              // 未登录：提示登录
-              if (!token) {
-                pendingFormDataQueue.push({ date: date, content: content, summary: summary, mode: mode });
-                if (typeof AuthModal !== 'undefined') {
-                  AuthModal.open('login');
-                }
-                return;
-              }
-
-              // 已登录：提交到云端
-              try {
-                var apiResult;
-                if (existingRecords.length > 0 && mode !== 'new') {
-                  if (targetId.startsWith('local-')) {
-                    apiResult = await SharedAuth.apiRequest('/api/reviews', {
-                      method: 'POST',
-                      body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
-                    });
-                  } else {
-                    apiResult = await SharedAuth.apiRequest('/api/reviews/' + targetId, {
-                      method: 'PUT',
-                      body: JSON.stringify({ date: date, content: content, summary: summary })
-                    });
-                  }
-                } else {
-                  apiResult = await SharedAuth.apiRequest('/api/reviews', {
-                    method: 'POST',
-                    body: JSON.stringify({ id: targetId, date: date, content: content, summary: summary })
-                  });
-                }
-
-                var currentReviews = kcStore.getState().reviews || [];
-                var idx = currentReviews.findIndex(function(r) { return r.id === targetId; });
-                if (idx >= 0) {
-                  var updated = currentReviews.slice();
-                  var patch = { _source: 'cloud' };
-                  if (apiResult && apiResult.data && apiResult.data.id && apiResult.data.id !== targetId) {
-                    patch.id = apiResult.data.id;
-                    updated = updated.filter(function(r, i) { return i !== idx && r.id !== apiResult.data.id; });
-                    idx = updated.findIndex(function(r) { return r.id === targetId; });
-                    if (idx < 0) {
-                      updated.push(Object.assign({}, currentReviews.find(function(r) { return r.id === targetId; }), patch));
-                    } else {
-                      updated[idx] = Object.assign({}, updated[idx], patch);
-                    }
-                  } else {
-                    updated[idx] = Object.assign({}, updated[idx], patch);
-                  }
-                  kcStore.setState({ reviews: updated });
-                  saveToLocalStorage(updated);
-                }
-              } catch (err) {
-                console.warn('[saveRecord] 云端提交失败，数据已本地缓存:', err);
-              }
             };
 
+            // 空的 loadFromCloud 方法，保持接口兼容
             kcStore.getState().loadFromCloud = async function() {
-              try {
-                var token = getToken();
-                if (!token) {
-                  kcStore.setState({ isLoading: false });
-                  return;
-                }
-
-                var allCloudData = [];
-                var page = 1;
-                var hasMore = true;
-                while (hasMore) {
-                  var result = await SharedAuth.apiRequest('/api/reviews?pageSize=100&page=' + page);
-                  if (result && result.success && result.data) {
-                    allCloudData = allCloudData.concat(result.data);
-                    var pagination = result.pagination;
-                    if (pagination && page < pagination.totalPages) {
-                      page++;
-                    } else {
-                      hasMore = false;
-                    }
-                  } else {
-                    hasMore = false;
-                  }
-                }
-
-                if (allCloudData.length > 0) {
-                  var cloudData = allCloudData.map(function(item) {
-                    return Object.assign({}, item, { _source: 'cloud' });
-                  });
-                  var localData = kcStore.getState().reviews || [];
-
-                  var mergedMap = new Map();
-                  localData.forEach(function(item) {
-                    if (item.id) mergedMap.set(item.id, item);
-                  });
-
-                  cloudData.forEach(function(item) {
-                    if (item.id) {
-                      var existing = mergedMap.get(item.id);
-                      if (existing && existing._source === 'local' &&
-                          existing.updatedAt && item.updatedAt &&
-                          new Date(existing.updatedAt) >= new Date(item.updatedAt)) {
-                        return;
-                      }
-                      mergedMap.set(item.id, item);
-                    }
-                  });
-
-                  var merged = Array.from(mergedMap.values()).sort(function(a, b) {
-                    if (a.date !== b.date) return b.date.localeCompare(a.date);
-                    return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
-                  });
-
-                  kcStore.setState({ reviews: merged, isLoading: false });
-                  saveToLocalStorage(merged);
-                  console.log('数据已合并:', merged.length, '条记录');
-                }
-              } catch (error) {
-                console.warn('云端数据拉取失败，使用本地缓存:', error);
-                kcStore.setState({ isLoading: false });
-              }
+              console.log('云端同步功能已禁用');
+              kcStore.setState({ isLoading: false });
             };
 
-            console.log('Kc Store 已注入登录检查和数据合并逻辑');
-
-            if (getToken()) {
-              console.log('已登录，从云端同步数据...');
-              if (SharedAuth && SharedAuth.getUser()) {
-                kcStore.getState().loadFromCloud();
-              }
-            }
+            console.log('Kc Store 已注入本地存储逻辑');
           } else {
             console.log('Kc Store 未找到，100ms 后重试');
             setTimeout(patchKcStore, 100);
@@ -350,7 +223,6 @@
             AuthModal.init();
           }
 
-          // 注入 Kc Store
           if (typeof DOMContentLoaded !== 'undefined') {
             patchKcStore();
           } else {
