@@ -1,0 +1,172 @@
+import { create } from 'zustand'
+import type { Review, ReviewContent, ReviewMode } from '@/types/review'
+import { saveReview, getReviews, fromApiResponse, deleteReview } from '@/api/reviews'
+import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData } from '@/lib/storage'
+import { useAuthStore } from './auth'
+import { generateId, getToday } from '@/lib/utils'
+
+interface ReviewsState {
+  reviews: Review[]
+  isLoading: boolean
+
+  getRecordByDate: (date: string) => Review | undefined
+  getRecordsInRange: (start: string, end: string) => Review[]
+
+  saveRecord: (date: string, content: ReviewContent, summary: string, mode?: ReviewMode) => Promise<void>
+  deleteRecord: (id: string) => Promise<void>
+
+  loadFromCloud: () => Promise<void>
+  syncLocalToCloud: () => Promise<void>
+  loadFromLocalStorage: () => void
+}
+
+export const useReviewsStore = create<ReviewsState>((set, get) => ({
+  reviews: [],
+  isLoading: false,
+
+  getRecordByDate: (date: string) => {
+    return get().reviews.find(r => r.date === date)
+  },
+
+  getRecordsInRange: (start: string, end: string) => {
+    return get().reviews.filter(r => r.date >= start && r.date <= end)
+  },
+
+  saveRecord: async (date, content, summary, mode = 'auto') => {
+    const { isAuthenticated } = useAuthStore.getState()
+    const now = new Date().toISOString()
+    const today = getToday()
+    const summaryVal = summary || date || today
+
+    // 1. 乐观更新：立即更新 store + localStorage
+    const existing = get().reviews.find(r => r.date === date)
+    let updated: Review
+
+    if (existing && mode !== 'new') {
+      // 覆盖模式
+      updated = { ...existing, content, summary: summaryVal, updatedAt: now, _source: 'local' }
+      set({ reviews: get().reviews.map(r => r.id === existing.id ? updated : r) })
+    } else {
+      // 新建模式
+      updated = {
+        id: generateId(),
+        date: date || today,
+        content,
+        summary: summaryVal,
+        createdAt: now,
+        updatedAt: now,
+        _source: 'local',
+      }
+      set({ reviews: [updated, ...get().reviews] })
+    }
+    saveToLocalStorage(get().reviews)
+
+    // 2. 已登录 → 异步写云端
+    if (isAuthenticated) {
+      try {
+        const result = await saveReview({
+          id: updated.id,
+          date: updated.date,
+          content,
+          summary: summaryVal,
+        })
+
+        // 更新云端返回的 ID
+        if (result.data && result.data.id && result.data.id !== updated.id) {
+          set({
+            reviews: get().reviews.map(r =>
+              r.id === updated.id ? { ...r, id: result.data.id, _source: 'cloud' as const } : r
+            ),
+          })
+        } else {
+          set({
+            reviews: get().reviews.map(r =>
+              r.id === updated.id ? { ...r, _source: 'cloud' as const } : r
+            ),
+          })
+        }
+        saveToLocalStorage(get().reviews)
+      } catch (err) {
+        console.warn('云端保存失败，数据已本地缓存:', err)
+      }
+    }
+  },
+
+  deleteRecord: async (id: string) => {
+    const { isAuthenticated } = useAuthStore.getState()
+
+    // 乐观删除
+    set({ reviews: get().reviews.filter(r => r.id !== id) })
+    saveToLocalStorage(get().reviews)
+
+    if (isAuthenticated) {
+      try {
+        await deleteReview(id)
+      } catch (err) {
+        console.warn('云端删除失败:', err)
+      }
+    }
+  },
+
+  loadFromCloud: async () => {
+    const { isAuthenticated } = useAuthStore.getState()
+    if (!isAuthenticated) return
+
+    set({ isLoading: true })
+    try {
+      const result = await getReviews({ pageSize: 100 })
+      if (result.success && result.data) {
+        const cloudReviews = result.data.map(fromApiResponse)
+        const localReviews = get().reviews
+        const merged = mergeReviews(localReviews, cloudReviews)
+        set({ reviews: merged, isLoading: false })
+        saveToLocalStorage(merged)
+      } else {
+        set({ isLoading: false })
+      }
+    } catch (err) {
+      console.warn('云端数据拉取失败，使用本地缓存:', err)
+      set({ isLoading: false })
+    }
+  },
+
+  syncLocalToCloud: async () => {
+    const { isAuthenticated } = useAuthStore.getState()
+    if (!isAuthenticated) return
+
+    const localOnly = get().reviews.filter(r => r._source === 'local')
+    if (localOnly.length === 0) {
+      console.log('[syncLocalToCloud] 无本地未同步数据')
+      return
+    }
+
+    console.log('[syncLocalToCloud] 开始同步', localOnly.length, '条本地数据到云端...')
+
+    for (const rec of localOnly) {
+      try {
+        const today = getToday()
+        await saveReview({
+          id: rec.id,
+          date: rec.date || today,
+          content: rec.content,
+          summary: rec.summary || rec.date || today,
+        })
+        console.log('[syncLocalToCloud] 同步成功:', rec.id)
+      } catch (err) {
+        console.warn('[syncLocalToCloud] 同步失败:', rec.id, err)
+      }
+    }
+
+    // 同步完成后重新从云端拉取
+    await get().loadFromCloud()
+    console.log('[syncLocalToCloud] 同步完成')
+  },
+
+  loadFromLocalStorage: () => {
+    const data = loadFromLocalStorage()
+    if (data) {
+      const migrated = migrateLegacyData(data)
+      set({ reviews: migrated })
+    }
+  },
+}))

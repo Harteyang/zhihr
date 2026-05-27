@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 禁止缓存，确保始终加载最新代码 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>复盘系统 - 知HR工具集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fira Sans', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+      /* 弹窗遮罩层样式 - 与任务管理系统一致 */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+      }
+      
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      /* 确认对话框样式 */
+      #confirmModal .modal {
+        border-radius: 0.75rem;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+
+      .dark #confirmModal .modal {
+        border-color: rgba(51, 65, 85, 0.8);
+      }
+
+      #confirmIcon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: #DBEAFE;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .dark #confirmIcon {
+        background: rgba(30, 58, 138, 0.3);
+      }
+
+      #confirmBtn {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        background: #2563EB;
+        color: white;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        transition: background-color 0.2s;
+      }
+
+      #confirmBtn:hover {
+        background: #1D4ED8;
+      }
+
+      #cancelBtn {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        background: #E2E8F0;
+        color: #334155;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        transition: background-color 0.2s;
+      }
+
+      .dark #cancelBtn {
+        background: #334155;
+        color: #E2E8F0;
+      }
+
+      #cancelBtn:hover {
+        background: #CBD5E1;
+      }
+
+      .dark #cancelBtn:hover {
+        background: #475569;
+      }
+    </style>
+    <script>
+      window.__API_BASE_URL__ = window.__API_BASE_URL__ || null;
+      if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        var noop = function() {};
+        console.log = noop;
+        console.info = noop;
+        console.warn = noop;
+        console.debug = noop;
+      }
+    </script>
+    <!-- 统一认证模块 -->
+    <script src="/shared-auth.js"></script>
+    <script src="/shared-auth-modal.js"></script>
+    <script>
+      // 动态添加时间戳防止缓存
+      (function() {
+        var v = '?v=' + Date.now();
+        var scripts = document.getElementsByTagName('script');
+        // 找到 index-BmCB11Ko.js 并添加时间戳
+        var jsSrc = 'assets/index-BmCB11Ko.js';
+        var cssSrc = 'assets/index-QXsWTBbi.css';
+        
+        // 创建带时间戳的 script 标签
+        var script = document.createElement('script');
+        script.type = 'module';
+        script.crossOrigin = 'anonymous';
+        script.src = jsSrc + v;
+        document.head.appendChild(script);
+        
+        // 创建带时间戳的 link 标签
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.crossOrigin = 'anonymous';
+        link.href = cssSrc + v;
+        document.head.appendChild(link);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- 自定义确认对话框 -->
+    <div class="modal-overlay" id="confirmModal">
+      <div class="modal bg-white dark:bg-slate-800 p-6 w-full max-w-sm mx-4">
+        <div class="text-center">
+          <div id="confirmIcon" class="mx-auto mb-4">
+            <i data-lucide="alert-circle" class="w-8 h-8 text-blue-600 dark:text-blue-400"></i>
+          </div>
+          <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2"></h3>
+          <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6"></p>
+          <div class="flex gap-3">
+            <button id="confirmBtn" onclick="confirmCallback(true)" class="px-4 py-2 font-medium rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+              确定
+            </button>
+            <button id="cancelBtn" onclick="confirmCallback(false)" class="px-4 py-2 font-medium rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 复盘系统 - 初始化与登录提示逻辑
+      (function() {
+        'use strict';
+
+        var API_BASE_URL = 'https://api.zhihr.vip';
+
+        // ==================== 登录提示（非阻塞式）====================
+        function showLoginPrompt() {
+          var lastPromptTime = localStorage.getItem('reviewLoginPromptTime');
+          var now = Date.now();
+          if (lastPromptTime && now - parseInt(lastPromptTime) < 30 * 60 * 1000) {
+            return;
+          }
+
+          var existing = document.getElementById('review-login-prompt');
+          if (existing) return;
+
+          var notification = document.createElement('div');
+          notification.id = 'review-login-prompt';
+          notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#DBEAFE;border-left:4px solid #2563EB;padding:16px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-family:sans-serif;max-width:400px;transition:opacity 0.3s;';
+          notification.innerHTML = '<div style="display:flex;align-items:center;gap:12px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><div><p style="margin:0 0 8px 0;font-weight:600;color:#1E40AF;font-size:14px;">数据已本地保存</p><p style="margin:0 0 12px 0;color:#334155;font-size:13px;line-height:1.5;">登录后可将数据同步到云端，在多设备间访问。不登录数据仅保存在本地。</p><div style="display:flex;gap:8px;"><button id="review-prompt-login" style="background:#2563EB;color:white;border:none;padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;">登录同步</button><button id="review-prompt-dismiss" style="background:transparent;color:#64748B;border:1px solid #CBD5E1;padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer;">继续离线使用</button></div></div></div>';
+          document.body.appendChild(notification);
+          localStorage.setItem('reviewLoginPromptTime', now.toString());
+
+          document.getElementById('review-prompt-login').onclick = function() {
+            notification.style.opacity = '0';
+            setTimeout(function() { notification.remove(); }, 300);
+            if (typeof AuthModal !== 'undefined') {
+              AuthModal.open('login');
+            }
+          };
+
+          document.getElementById('review-prompt-dismiss').onclick = function() {
+            notification.style.opacity = '0';
+            setTimeout(function() { notification.remove(); }, 300);
+          };
+        }
+
+        // ==================== 监听需要登录的事件 ====================
+        window.addEventListener('review:need-login', function(e) {
+          console.log('[review:need-login] 用户未登录，显示登录提示');
+          showLoginPrompt();
+        });
+
+        // ==================== 初始化 ====================
+        function init() {
+          // 初始化 SharedAuth
+          if (typeof SharedAuth !== 'undefined') {
+            SharedAuth.init();
+            
+            // 监听登录事件，同步到复盘系统的 Zustand store
+            SharedAuth.on('auth:login', function(data) {
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                var store = window.__ZHIHR_AUTH__.store;
+                var token = SharedAuth.getToken();
+                store.getState().setAuth(data.userId, data.username, token);
+                
+                console.log('[auth:login] 登录成功，开始同步数据...');
+                
+                // 等待 Kc Store 初始化完成
+                var trySync = function() {
+                  var kcStore = window.__KcStore__;
+                  if (!kcStore || !kcStore.getState) {
+                    setTimeout(trySync, 200);
+                    return;
+                  }
+                  
+                  // 先加载云端数据并合并
+                  if (kcStore.getState().loadFromCloud) {
+                    kcStore.getState().loadFromCloud().then(function() {
+                      // 云端数据加载完成后，同步本地未同步的数据
+                      if (kcStore.getState().syncLocalToCloud) {
+                        kcStore.getState().syncLocalToCloud();
+                      }
+                    });
+                  }
+                };
+                
+                setTimeout(trySync, 500);
+              }
+            });
+            
+            // 监听登出事件
+            SharedAuth.on('auth:logout', function() {
+              if (window.__ZHIHR_AUTH__ && window.__ZHIHR_AUTH__.store) {
+                window.__ZHIHR_AUTH__.store.getState().clearAuth();
+                console.log('[auth:logout] 已退出登录');
+              }
+            });
+          }
+
+          // 初始化 AuthModal
+          if (typeof AuthModal !== 'undefined') {
+            AuthModal.init();
+          }
+        }
+
+        window.addEventListener('load', init);
+      })();
+    </script>
+    <script>
+      // 确认对话框回调
+      var confirmResolve = null;
+      function showConfirmDialog(title, message, confirmText, cancelText) {
+        return new Promise(function(resolve) {
+          confirmResolve = resolve;
+          window.confirmResolve = resolve;
+          document.getElementById('confirmTitle').textContent = title;
+          document.getElementById('confirmMessage').textContent = message;
+          document.getElementById('confirmBtn').textContent = confirmText || '确定';
+          document.getElementById('cancelBtn').textContent = cancelText || '取消';
+          document.getElementById('confirmModal').classList.add('active');
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+      }
+      function confirmCallback(result) {
+        document.getElementById('confirmModal').classList.remove('active');
+        var resolver = window.confirmResolve || confirmResolve;
+        if (resolver) {
+          resolver(result);
+          window.confirmResolve = null;
+          confirmResolve = null;
+        }
+      }
+
+      window.onerror = function(msg, url, line, col, error) {
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:16px;background:#fee2e2;color:#991b1b;font-family:sans-serif;z-index:99999;border-bottom:2px solid #f87171;';
+        overlay.innerHTML = '<strong>应用出现错误</strong><p style="margin:4px 0 0;font-size:14px;">页面遇到了问题，请刷新重试。如问题持续，请联系管理员。</p><button onclick="this.parentElement.remove()" style="margin-top:8px;padding:4px 12px;cursor:pointer;">关闭</button>';
+        document.body.appendChild(overlay);
+      };
+    </script>
+  </body>
+</html>
