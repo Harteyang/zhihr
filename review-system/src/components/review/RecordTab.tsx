@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
-import { saveAutosave, loadAutosave, clearAutosave } from '@/lib/storage'
+import { saveAutosave, clearAutosave } from '@/lib/storage'
 import { DEFAULT_DIMENSIONS } from '@/lib/dimensions'
 import type { ReviewContent, ReviewMode } from '@/types/review'
 import { getEmptyDimensionData, formatDimensionValue } from '@/types/review'
@@ -48,20 +48,6 @@ export function RecordTab() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed())
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  // 使用 ref 持久化标记，即使组件卸载再挂载也不会重置
-  const hasLoadedTodayRecord = useRef(false)
-  // 记录上次加载的 todayRecord 的 id，避免同一记录重复加载
-  const lastLoadedRecordId = useRef<string | null>(null)
-
-  // 只在 todayRecord 变化且尚未加载过该记录时才填充
-  useEffect(() => {
-    if (todayRecord && todayRecord.id !== lastLoadedRecordId.current) {
-      setContent(todayRecord.content)
-      setSummary(todayRecord.summary)
-      lastLoadedRecordId.current = todayRecord.id
-      hasLoadedTodayRecord.current = true
-    }
-  }, [todayRecord])
 
   // 自动保存
   useEffect(() => {
@@ -70,20 +56,6 @@ export function RecordTab() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [content, summary])
-
-  // 加载自动保存
-  useEffect(() => {
-    if (!todayRecord) {
-      const autosaved = loadAutosave()
-      if (autosaved && autosaved.date === getToday()) {
-        const hasContent = Object.values(autosaved.content || {}).some(v => v)
-        if (hasContent || autosaved.summary) {
-          setContent(autosaved.content)
-          setSummary(autosaved.summary)
-        }
-      }
-    }
-  }, [])
 
   // 响应式
   useEffect(() => {
@@ -113,9 +85,6 @@ export function RecordTab() {
       // 保存成功后重置数据
       setContent(emptyContent)
       setSummary('')
-      // 重置 lastLoadedRecordId，下次进入可重新加载今日记录
-      lastLoadedRecordId.current = null
-      hasLoadedTodayRecord.current = false
       clearAutosave()
     } catch (err) {
       // 保存失败，保持数据不变，保留自动保存
@@ -128,8 +97,6 @@ export function RecordTab() {
   const handleReset = () => {
     setContent(emptyContent)
     setSummary('')
-    lastLoadedRecordId.current = null
-    hasLoadedTodayRecord.current = false
     clearAutosave()
   }
 
