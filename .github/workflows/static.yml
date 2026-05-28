@@ -38,14 +38,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/package.json') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: |
           cd review-system
-          pnpm install --frozen-lockfile
+          pnpm install
           VITE_BASE=/review-system/ pnpm build
 
       - name: Prepare deployment
