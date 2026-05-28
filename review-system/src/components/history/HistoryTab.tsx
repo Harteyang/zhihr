@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/lib/utils'
 import { Calendar, Trash2, ChevronRight, FileText, Edit3, Save, X } from 'lucide-react'
 import type { Review, ReviewContent } from '@/types/review'
+import { parseDimensionValue } from '@/types/review'
 
 export function HistoryTab() {
   const allReviews = useReviewsStore(s => s.reviews)
@@ -119,16 +120,29 @@ export function HistoryTab() {
 function ReviewDetail({ review }: { review: Review }) {
   const updateRecord = useReviewsStore(s => s.updateRecord)
   const [isEditing, setIsEditing] = useState(false)
-  const [editedContent, setEditedContent] = useState<ReviewContent>(review.content)
+  const [editedContent, setEditedContent] = useState<Record<string, string>>(Object.fromEntries(
+    Object.entries(review.content).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
+  ))
   const [editedSummary, setEditedSummary] = useState(review.summary)
 
   const handleSave = async () => {
-    await updateRecord(review.id, editedContent, editedSummary)
+    const contentToSave = Object.fromEntries(
+      Object.entries(editedContent).map(([key, value]) => {
+        try {
+          return [key, JSON.parse(value)]
+        } catch {
+          return [key, value]
+        }
+      })
+    ) as unknown as ReviewContent
+    await updateRecord(review.id, contentToSave, editedSummary)
     setIsEditing(false)
   }
 
   const handleCancel = () => {
-    setEditedContent(review.content)
+    setEditedContent(Object.fromEntries(
+      Object.entries(review.content).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
+    ))
     setEditedSummary(review.summary)
     setIsEditing(false)
   }
@@ -208,26 +222,43 @@ function ReviewDetail({ review }: { review: Review }) {
       )}
 
       {/* 维度内容 */}
-      {hasContent && Object.entries(content).map(([key, value]) => (
-        <div key={key} className="mb-3">
-          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1 capitalize">
-            {dimensionLabels[key] || key}
-          </label>
-          {isEditing ? (
-            <textarea
-              value={editedContent[key as keyof ReviewContent] || ''}
-              onChange={(e) => setEditedContent({ ...editedContent, [key]: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              rows={3}
-              placeholder={`输入${dimensionLabels[key] || key}相关内容`}
-            />
-          ) : (
-            <div className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
-              {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value || '-')}
-            </div>
-          )}
-        </div>
-      ))}
+      {hasContent && Object.entries(content).map(([key, value]) => {
+        const parsed = parseDimensionValue(value)
+        const hasStructured = Object.values(parsed.structured).some(v => v)
+        const hasFreeform = parsed.freeform
+        return (
+          <div key={key} className="mb-4">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1 capitalize">
+              {dimensionLabels[key] || key}
+            </label>
+            {isEditing ? (
+              <textarea
+                value={editedContent[key] || ''}
+                onChange={(e) => setEditedContent({ ...editedContent, [key]: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                rows={3}
+                placeholder={`输入${dimensionLabels[key] || key}相关内容`}
+              />
+            ) : (
+              <div className="space-y-2 text-sm">
+                {hasStructured && (
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(parsed.structured).filter(([_, v]) => v).map(([k, v]) => (
+                      <span key={k} className="inline-flex items-center px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs">
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {hasFreeform && (
+                  <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{parsed.freeform}</p>
+                )}
+                {!hasStructured && !hasFreeform && <span className="text-slate-400">-</span>}
+              </div>
+            )}
+          </div>
+        )
+      })}
 
       {!hasContent && !review.summary && (
         <p className="text-sm text-slate-500 dark:text-slate-400">暂无内容</p>

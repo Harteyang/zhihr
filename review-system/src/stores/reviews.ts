@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Review, ReviewContent, ReviewMode } from '@/types/review'
+import { parseDimensionValue, formatDimensionValue } from '@/types/review'
 import { saveReview, getReviews, fromApiResponse, deleteReview } from '@/api/reviews'
 import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData, deduplicateReviews, hasContentChanged } from '@/lib/storage'
 import { useAuthStore } from './auth'
@@ -87,13 +88,23 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
       // 合并模式：合并到最新记录
       const mergedContent = { ...existing.content }
       for (const key of Object.keys(content) as (keyof ReviewContent)[]) {
-        const newVal = content[key]?.trim()
-        const existingVal = existing.content[key]?.trim()
-        if (newVal) {
-          if (existingVal && !existingVal.includes(newVal)) {
-            mergedContent[key] = `${existingVal}\n${newVal}`
-          } else if (!existingVal) {
-            mergedContent[key] = newVal
+        const newParsed = parseDimensionValue(content[key])
+        const existingParsed = parseDimensionValue(existing.content[key])
+        const newFreeform = newParsed.freeform?.trim() || ''
+        const existingFreeform = existingParsed.freeform?.trim() || ''
+        if (newFreeform) {
+          if (existingFreeform && !existingFreeform.includes(newFreeform)) {
+            mergedContent[key] = formatDimensionValue({
+              structured: { ...existingParsed.structured, ...newParsed.structured },
+              freeform: `${existingFreeform}\n${newFreeform}`
+            })
+          } else if (!existingFreeform) {
+            mergedContent[key] = formatDimensionValue(newParsed)
+          } else {
+            mergedContent[key] = formatDimensionValue({
+              structured: { ...existingParsed.structured, ...newParsed.structured },
+              freeform: existingFreeform
+            })
           }
         }
       }

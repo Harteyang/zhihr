@@ -1,11 +1,16 @@
 import type { Review, ReviewContent } from '@/types/review'
+import { parseDimensionValue } from '@/types/review'
 
 export function hasContentChanged(newContent: ReviewContent, existingContent: ReviewContent, newSummary?: string, existingSummary?: string): boolean {
   const keys = ['health', 'work', 'study', 'social', 'finance', 'life', 'spirit', 'leisure'] as const
   
   for (const key of keys) {
-    const newVal = newContent[key]?.trim() || ''
-    const existingVal = existingContent[key]?.trim() || ''
+    const newParsed = parseDimensionValue(newContent[key])
+    const existingParsed = parseDimensionValue(existingContent[key])
+    
+    const newVal = JSON.stringify(newParsed)
+    const existingVal = JSON.stringify(existingParsed)
+    
     if (newVal !== existingVal) {
       return true
     }

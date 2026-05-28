@@ -1,19 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { DimensionConfig } from '@/lib/dimensions'
-import type { ReviewContent } from '@/types/review'
+import type { ReviewContent, DimensionData } from '@/types/review'
+import { parseDimensionValue, formatDimensionValue } from '@/types/review'
 import { cn } from '@/lib/utils'
 import * as Icons from 'lucide-react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, X } from 'lucide-react'
 
 interface DimensionCardProps {
   config: DimensionConfig
-  value: string
+  value: string | DimensionData
   onChange: (value: string) => void
   collapsed: boolean
   onToggle?: () => void
 }
 
-// 统一使用中性边框颜色，保持简洁
 const colorMap: Record<string, { bg: string; text: string; border: string; iconBg: string }> = {
   emerald: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40' },
   blue: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-blue-600 dark:text-blue-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-blue-100 dark:bg-blue-900/40' },
@@ -29,6 +29,59 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
   const colors = colorMap[config.color] || colorMap.blue
   const IconComponent = (Icons as any)[config.icon] || Icons.FileText
 
+  const parsedValue = parseDimensionValue(value)
+  const [structuredData, setStructuredData] = useState<Record<string, string>>(parsedValue.structured)
+  const [freeformData, setFreeformData] = useState(parsedValue.freeform)
+  const [customItems, setCustomItems] = useState<{ id: string; label: string; placeholder: string }[]>([])
+
+  useEffect(() => {
+    const parsed = parseDimensionValue(value)
+    setStructuredData(parsed.structured)
+    setFreeformData(parsed.freeform)
+  }, [value])
+
+  const updateStructuredItem = (itemId: string, itemValue: string) => {
+    const newStructured = { ...structuredData, [itemId]: itemValue }
+    emitChange(newStructured, freeformData)
+  }
+
+  const removeStructuredItem = (itemId: string) => {
+    const newStructured = { ...structuredData }
+    delete newStructured[itemId]
+    emitChange(newStructured, freeformData)
+  }
+
+  const addCustomItem = (label: string) => {
+    const id = `custom_${Date.now()}`
+    const newItem = { id, label, placeholder: label }
+    setCustomItems([...customItems, newItem])
+    emitChange(structuredData, freeformData)
+  }
+
+  const removeCustomItem = (itemId: string) => {
+    setCustomItems(customItems.filter(item => item.id !== itemId))
+    const newStructured = { ...structuredData }
+    delete newStructured[itemId]
+    emitChange(newStructured, freeformData)
+  }
+
+  const updateFreeform = (val: string) => {
+    setFreeformData(val)
+    emitChange(structuredData, val)
+  }
+
+  const emitChange = (structured: Record<string, string>, freeform: string) => {
+    const newData: DimensionData = { structured, freeform }
+    onChange(formatDimensionValue(newData))
+  }
+
+  const allItems = [
+    ...config.structuredItems.map(item => ({ ...item, isCustom: false })),
+    ...customItems.map(item => ({ ...item, isCustom: true })),
+  ]
+
+  const hasAnyContent = Object.values(structuredData).some(v => v) || freeformData
+
   return (
     <div className={cn(
       'rounded-xl border transition-all duration-200',
@@ -41,6 +94,9 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
             <IconComponent className={cn('w-4 h-4', colors.text)} />
           </div>
           <span className="font-medium text-slate-800 dark:text-slate-100">{config.name}</span>
+          {hasAnyContent && !collapsed && (
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+          )}
         </div>
         {onToggle && (
           <button onClick={onToggle} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer">
@@ -50,54 +106,99 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
       </div>
 
       {!collapsed && (
-        <div className="mt-3">
-          {config.type === 'structured' && config.structuredItems ? (
-            <StructuredInput items={config.structuredItems} value={value} onChange={onChange} />
-          ) : (
+        <div className="mt-3 space-y-4">
+          {/* 结构化项目区域 */}
+          {allItems.length > 0 && (
+            <div className="space-y-2">
+              {allItems.map(item => (
+                <div key={item.id} className="flex items-center gap-2">
+                  <span className="text-xs text-slate-600 dark:text-slate-400 w-16 shrink-0 truncate">{item.label}</span>
+                  <input
+                    type="text"
+                    value={structuredData[item.id] || ''}
+                    onChange={(e) => updateStructuredItem(item.id, e.target.value)}
+                    placeholder={item.placeholder}
+                    className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={() => removeStructuredItem(item.id)}
+                    className="p-1 text-slate-400 hover:text-red-500 cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {/* 添加自定义项目 */}
+              <AddItemButton onAdd={addCustomItem} />
+            </div>
+          )}
+
+          {/* 自由填写区域 */}
+          <div>
             <textarea
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
+              value={freeformData}
+              onChange={(e) => updateFreeform(e.target.value)}
               rows={3}
-              placeholder={config.placeholder || `记录今天的${config.name.toLowerCase()}...`}
+              placeholder={`记录今天的${config.name.toLowerCase()}...`}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
             />
-          )}
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-function StructuredInput({ items, value, onChange }: {
-  items: { label: string; placeholder: string }[]
-  value: string
-  onChange: (v: string) => void
-}) {
-  // 解析结构化数据
-  let parsed: Record<string, string> = {}
-  try {
-    if (value) parsed = JSON.parse(value)
-  } catch { /* ignore */ }
+function AddItemButton({ onAdd }: { onAdd: (label: string) => void }) {
+  const [isAdding, setIsAdding] = useState(false)
+  const [label, setLabel] = useState('')
 
-  const updateItem = (label: string, itemValue: string) => {
-    parsed[label] = itemValue
-    onChange(JSON.stringify(parsed))
+  const handleAdd = () => {
+    if (label.trim()) {
+      onAdd(label.trim())
+      setLabel('')
+      setIsAdding(false)
+    }
+  }
+
+  if (isAdding) {
+    return (
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="项目名称"
+          className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAdd()
+            if (e.key === 'Escape') setIsAdding(false)
+          }}
+        />
+        <button
+          onClick={handleAdd}
+          className="p-1.5 text-blue-600 hover:text-blue-700 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setIsAdding(false)}
+          className="p-1.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-2">
-      {items.map(item => (
-        <div key={item.label} className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400 w-12 shrink-0">{item.label}</span>
-          <input
-            type="text"
-            value={parsed[item.label] || ''}
-            onChange={(e) => updateItem(item.label, e.target.value)}
-            placeholder={item.placeholder}
-            className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </div>
-      ))}
-    </div>
+    <button
+      onClick={() => setIsAdding(true)}
+      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 cursor-pointer mt-1"
+    >
+      <Plus className="w-3 h-3" />
+      添加项目
+    </button>
   )
 }
