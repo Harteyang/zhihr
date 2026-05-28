@@ -123,7 +123,7 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
     saveToLocalStorage(get().reviews)
     toast.success(`记录${actionType}成功`)
 
-    // 2. 已登录 → 异步写云端
+    // 2. 已登录 → 同步写云端
     if (isAuthenticated) {
       try {
         const result = await saveReview({
@@ -150,10 +150,12 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
         saveToLocalStorage(get().reviews)
         toast.success('数据已同步到云端')
       } catch (err) {
-        console.warn('云端保存失败，数据已本地缓存:', err)
-        toast.info('数据已保存，将在下次登录时同步')
+        console.warn('云端保存失败:', err)
+        toast.error('云端同步失败，请检查网络后重试')
+        throw new Error('云端同步失败')
       }
     } else {
+      // 未登录状态：本地保存成功即视为完成
       toast.info('数据已本地保存，登录后将自动同步')
     }
   },

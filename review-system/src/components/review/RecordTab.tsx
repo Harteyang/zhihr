@@ -26,7 +26,25 @@ export function RecordTab() {
   const [content, setContent] = useState<ReviewContent>(emptyContent)
   const [summary, setSummary] = useState('')
   const [isMobile, setIsMobile] = useState(false)
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  // 默认桌面端展开，移动端折叠
+  const getInitialCollapsed = () => {
+    const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
+    if (isMobileDevice) {
+      return {
+        health: true,
+        work: true,
+        study: true,
+        social: true,
+        finance: true,
+        life: true,
+        spirit: true,
+        leisure: true,
+        summary: true,
+      }
+    }
+    return {}
+  }
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed())
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -85,7 +103,13 @@ export function RecordTab() {
     setIsSaving(true)
     try {
       await saveRecord(getToday(), content, summary, selectedMode)
+      // 保存成功后重置数据
+      setContent(emptyContent)
+      setSummary('')
       clearAutosave()
+    } catch (err) {
+      // 保存失败，保持数据不变，保留自动保存
+      console.warn('保存失败，保留数据:', err)
     } finally {
       setIsSaving(false)
     }
