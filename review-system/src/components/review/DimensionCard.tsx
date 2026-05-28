@@ -33,21 +33,30 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
   const [structuredData, setStructuredData] = useState<Record<string, string>>(parsedValue.structured)
   const [freeformData, setFreeformData] = useState(parsedValue.freeform)
   const [customItems, setCustomItems] = useState<{ id: string; label: string; placeholder: string }[]>([])
+  const [localValues, setLocalValues] = useState<Record<string, string>>({})
+  const [isComposing, setIsComposing] = useState(false)
 
   useEffect(() => {
     const parsed = parseDimensionValue(value)
-    setStructuredData(parsed.structured)
-    setFreeformData(parsed.freeform)
-  }, [value])
+    if (!isComposing) {
+      setStructuredData(parsed.structured)
+      setFreeformData(parsed.freeform)
+      setLocalValues({})
+    }
+  }, [value, isComposing])
 
   const updateStructuredItem = (itemId: string, itemValue: string) => {
-    const newStructured = { ...structuredData, [itemId]: itemValue }
-    emitChange(newStructured, freeformData)
+    setLocalValues(prev => ({ ...prev, [itemId]: itemValue }))
+    if (!isComposing) {
+      const newStructured = { ...structuredData, ...localValues, [itemId]: itemValue }
+      emitChange(newStructured, freeformData)
+    }
   }
 
   const removeStructuredItem = (itemId: string) => {
-    const newStructured = { ...structuredData }
+    const newStructured = { ...structuredData, ...localValues }
     delete newStructured[itemId]
+    delete localValues[itemId]
     emitChange(newStructured, freeformData)
   }
 
@@ -55,19 +64,42 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
     const id = `custom_${Date.now()}`
     const newItem = { id, label, placeholder: label }
     setCustomItems([...customItems, newItem])
-    emitChange(structuredData, freeformData)
+    emitChange({ ...structuredData, ...localValues }, freeformData)
   }
 
   const removeCustomItem = (itemId: string) => {
     setCustomItems(customItems.filter(item => item.id !== itemId))
-    const newStructured = { ...structuredData }
+    const newStructured = { ...structuredData, ...localValues }
     delete newStructured[itemId]
     emitChange(newStructured, freeformData)
   }
 
   const updateFreeform = (val: string) => {
-    setFreeformData(val)
-    emitChange(structuredData, val)
+    if (!isComposing) {
+      setFreeformData(val)
+      emitChange({ ...structuredData, ...localValues }, val)
+    } else {
+      setFreeformData(val)
+    }
+  }
+
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setIsComposing(false)
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement
+    const value = target.value
+    if (target.tagName === 'TEXTAREA') {
+      emitChange({ ...structuredData, ...localValues }, value)
+    } else {
+      const itemId = target.getAttribute('data-item-id')
+      if (itemId) {
+        const newStructured = { ...structuredData, ...localValues, [itemId]: value }
+        emitChange(newStructured, freeformData)
+      }
+    }
   }
 
   const emitChange = (structured: Record<string, string>, freeform: string) => {
@@ -121,8 +153,11 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
                   <span className="text-xs text-slate-600 dark:text-slate-400 w-14 shrink-0 truncate">{item.label}</span>
                   <input
                     type="text"
-                    value={structuredData[item.id] || ''}
+                    value={localValues[item.id] !== undefined ? localValues[item.id] : (structuredData[item.id] || '')}
                     onChange={(e) => updateStructuredItem(item.id, e.target.value)}
+                    onCompositionStart={handleCompositionStart}
+                    onCompositionEnd={handleCompositionEnd}
+                    data-item-id={item.id}
                     placeholder={item.placeholder}
                     className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
@@ -138,6 +173,8 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
             <textarea
               value={freeformData}
               onChange={(e) => updateFreeform(e.target.value)}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               rows={3}
               placeholder={`记录今天的${config.name.toLowerCase()}...`}
               className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
