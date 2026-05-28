@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Review, ReviewContent, ReviewMode } from '@/types/review'
 import { saveReview, getReviews, fromApiResponse, deleteReview } from '@/api/reviews'
-import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData, deduplicateReviews } from '@/lib/storage'
+import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData, deduplicateReviews, hasContentChanged } from '@/lib/storage'
 import { useAuthStore } from './auth'
 import { useToastStore } from './toast'
 import { generateId, getToday } from '@/lib/utils'
@@ -19,6 +19,8 @@ interface ReviewsState {
   loadFromCloud: () => Promise<void>
   syncLocalToCloud: () => Promise<void>
   loadFromLocalStorage: () => void
+  clearSyncedReviews: () => void
+  getLocalOnlyReviews: () => Review[]
 }
 
 export const useReviewsStore = create<ReviewsState>((set, get) => ({
@@ -40,13 +42,43 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
     const today = getToday()
     const summaryVal = summary || date || today
 
-    // 1. 乐观更新：立即更新 store + localStorage
+    const DAILY_LIMIT = 10
+
+    // 1. 查找当天最新记录
     const sameDateRecords = get().reviews.filter(r => r.date === date)
     const existing = sameDateRecords.length > 0
-      ? sameDateRecords.reduce((latest, r) => 
+      ? sameDateRecords.reduce((latest, r) =>
           new Date(r.updatedAt).getTime() > new Date(latest.updatedAt).getTime() ? r : latest
         )
       : undefined
+
+    // 检查内容是否有修改
+    const contentChanged = existing ? hasContentChanged(content, existing.content, summary, existing.summary) : true
+
+    // 2. 检查次数限制和内容修改
+    if (existing) {
+      // 当天有记录时：覆盖、合并、新建都需要检查内容是否有修改
+      if (!contentChanged) {
+        toast.info('内容没有修改，无需保存')
+        return
+      }
+      // 检查次数限制
+      if (mode === 'new' && sameDateRecords.length >= DAILY_LIMIT) {
+        toast.error(`当天新建次数已达上限（${DAILY_LIMIT}次），请明天再试或使用覆盖/合并模式`)
+        return
+      }
+      if (mode === 'merge' && sameDateRecords.length >= DAILY_LIMIT) {
+        toast.error(`当天提交次数已达上限（${DAILY_LIMIT}次），请明天再试`)
+        return
+      }
+    } else {
+      // 当天无记录时：新建不需要检查内容修改
+      if (mode === 'new' && sameDateRecords.length >= DAILY_LIMIT) {
+        toast.error(`当天新建次数已达上限（${DAILY_LIMIT}次），请明天再试`)
+        return
+      }
+    }
+
     let updated: Review
     let actionType: '覆盖' | '新建' | '合并'
 
@@ -69,12 +101,12 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
       set({ reviews: get().reviews.map(r => r.id === existing.id ? updated : r) })
       actionType = '合并'
     } else if (existing && mode !== 'new') {
-      // 覆盖模式：只覆盖最新的那条记录，保留其他记录
+      // 覆盖模式
       updated = { ...existing, content, summary: summaryVal, updatedAt: now, _source: 'local' }
       set({ reviews: get().reviews.map(r => r.id === existing.id ? updated : r) })
       actionType = '覆盖'
     } else {
-      // 新建模式：创建新记录
+      // 新建模式
       updated = {
         id: generateId(),
         date: date || today,
@@ -225,5 +257,16 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
       const migrated = migrateLegacyData(data)
       set({ reviews: migrated })
     }
+  },
+
+  clearSyncedReviews: () => {
+    const localOnly = get().reviews.filter(r => r._source === 'local')
+    set({ reviews: localOnly })
+    saveToLocalStorage(localOnly)
+    console.log('[clearSyncedReviews] 已清除已同步数据，保留', localOnly.length, '条本地数据')
+  },
+
+  getLocalOnlyReviews: () => {
+    return get().reviews.filter(r => r._source === 'local')
   },
 }))

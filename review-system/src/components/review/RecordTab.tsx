@@ -15,9 +15,13 @@ const emptyContent: ReviewContent = {
 }
 
 export function RecordTab() {
-  const todayRecord = useReviewsStore(s => s.reviews.find(r => r.date === getToday()))
+  const allReviews = useReviewsStore(s => s.reviews)
   const saveRecord = useReviewsStore(s => s.saveRecord)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+
+  const todayRecord = isAuthenticated
+    ? allReviews.find(r => r.date === getToday())
+    : allReviews.filter(r => r._source === 'local').find(r => r.date === getToday())
 
   const [content, setContent] = useState<ReviewContent>(emptyContent)
   const [summary, setSummary] = useState('')

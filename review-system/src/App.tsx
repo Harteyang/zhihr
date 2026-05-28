@@ -19,11 +19,11 @@ export default function App() {
   const toastMessages = useToastStore(s => s.messages)
   const removeToast = useToastStore(s => s.remove)
 
-  // 登录后自动同步
+  // 登录后自动同步：先同步本地数据到云端，再拉取云端数据合并
   useEffect(() => {
     if (isAuthenticated) {
-      loadFromCloud().then(() => {
-        syncLocalToCloud()
+      syncLocalToCloud().then(() => {
+        loadFromCloud()
       })
     }
   }, [isAuthenticated])
