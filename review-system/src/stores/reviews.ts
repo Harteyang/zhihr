@@ -174,6 +174,55 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
     }
   },
 
+  updateRecord: async (id: string, content: ReviewContent, summary: string) => {
+    const { isAuthenticated } = useAuthStore.getState()
+    const toast = useToastStore.getState()
+    const now = new Date().toISOString()
+
+    const existing = get().reviews.find(r => r.id === id)
+    if (!existing) {
+      toast.error('记录不存在')
+      return
+    }
+
+    // 检查内容是否有修改
+    const contentChanged = hasContentChanged(content, existing.content, summary, existing.summary)
+    if (!contentChanged) {
+      toast.info('内容没有修改，无需保存')
+      return
+    }
+
+    // 乐观更新
+    const updated: Review = {
+      ...existing,
+      content,
+      summary: summary || existing.summary,
+      updatedAt: now,
+      _source: 'local',
+    }
+    set({ reviews: get().reviews.map(r => r.id === id ? updated : r) })
+    saveToLocalStorage(get().reviews)
+    toast.success('记录更新成功')
+
+    // 同步到云端
+    if (isAuthenticated) {
+      try {
+        await saveReview({
+          id: updated.id,
+          date: updated.date,
+          content,
+          summary: summary || existing.summary,
+        })
+        set({ reviews: get().reviews.map(r => r.id === id ? { ...r, _source: 'cloud' as const } : r) })
+        saveToLocalStorage(get().reviews)
+        toast.success('数据已同步到云端')
+      } catch (err) {
+        console.warn('云端更新失败:', err)
+        toast.info('数据已保存，将在下次登录时同步')
+      }
+    }
+  },
+
   loadFromCloud: async () => {
     const { isAuthenticated } = useAuthStore.getState()
     if (!isAuthenticated) return
