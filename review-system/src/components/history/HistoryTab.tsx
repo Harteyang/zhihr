@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/lib/utils'
-import { Calendar, Trash2, ChevronRight, FileText } from 'lucide-react'
-import type { Review } from '@/types/review'
+import { Calendar, Trash2, ChevronRight, FileText, Edit3, Save, X } from 'lucide-react'
+import type { Review, ReviewContent } from '@/types/review'
 
 export function HistoryTab() {
   const allReviews = useReviewsStore(s => s.reviews)
@@ -117,8 +117,34 @@ export function HistoryTab() {
 }
 
 function ReviewDetail({ review }: { review: Review }) {
+  const updateRecord = useReviewsStore(s => s.updateRecord)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedContent, setEditedContent] = useState<ReviewContent>(review.content)
+  const [editedSummary, setEditedSummary] = useState(review.summary)
+
+  const handleSave = async () => {
+    await updateRecord(review.id, editedContent, editedSummary)
+    setIsEditing(false)
+  }
+
+  const handleCancel = () => {
+    setEditedContent(review.content)
+    setEditedSummary(review.summary)
+    setIsEditing(false)
+  }
+
   const content = review.content
   const hasContent = content && typeof content === 'object'
+  const dimensionLabels: Record<string, string> = {
+    health: '健康',
+    work: '工作',
+    study: '学习',
+    social: '社交',
+    finance: '财务',
+    life: '生活',
+    spirit: '精神',
+    leisure: '休闲',
+  }
 
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-5">
@@ -126,30 +152,86 @@ function ReviewDetail({ review }: { review: Review }) {
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           {formatDate(review.date)}
         </h3>
-        {review._source === 'cloud' && (
-          <span className="text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-            已同步
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {review._source === 'cloud' && (
+            <span className="text-xs px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+              已同步
+            </span>
+          )}
+          {isEditing ? (
+            <>
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                保存
+              </button>
+              <button
+                onClick={handleCancel}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+                取消
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 cursor-pointer"
+            >
+              <Edit3 className="w-4 h-4" />
+              编辑
+            </button>
+          )}
+        </div>
       </div>
 
-      {review.summary && (
-        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-          <p className="text-sm text-slate-700 dark:text-slate-300">{review.summary}</p>
+      {/* 总结 */}
+      {isEditing ? (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">总结</label>
+          <input
+            type="text"
+            value={editedSummary}
+            onChange={(e) => setEditedSummary(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="输入今日总结"
+          />
         </div>
-      )}
-
-      {hasContent && Object.entries(content).map(([key, value]) => {
-        if (!value) return null
-        return (
-          <div key={key} className="mb-3">
-            <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1 capitalize">{key}</h4>
-            <div className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
-              {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-            </div>
+      ) : (
+        review.summary && (
+          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+            <p className="text-sm text-slate-700 dark:text-slate-300">{review.summary}</p>
           </div>
         )
-      })}
+      )}
+
+      {/* 维度内容 */}
+      {hasContent && Object.entries(content).map(([key, value]) => (
+        <div key={key} className="mb-3">
+          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1 capitalize">
+            {dimensionLabels[key] || key}
+          </label>
+          {isEditing ? (
+            <textarea
+              value={editedContent[key as keyof ReviewContent] || ''}
+              onChange={(e) => setEditedContent({ ...editedContent, [key]: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              rows={3}
+              placeholder={`输入${dimensionLabels[key] || key}相关内容`}
+            />
+          ) : (
+            <div className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+              {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value || '-')}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {!hasContent && !review.summary && (
+        <p className="text-sm text-slate-500 dark:text-slate-400">暂无内容</p>
+      )}
     </div>
   )
 }
