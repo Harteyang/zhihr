@@ -27,7 +27,7 @@ export function RecordTab() {
   const [summary, setSummary] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   // 默认桌面端展开，移动端折叠
-  const getInitialCollapsed = () => {
+  const getInitialCollapsed = (): Record<string, boolean> => {
     const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
     if (isMobileDevice) {
       return {

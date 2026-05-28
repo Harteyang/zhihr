@@ -14,6 +14,7 @@ interface ReviewsState {
   getRecordsInRange: (start: string, end: string) => Review[]
 
   saveRecord: (date: string, content: ReviewContent, summary: string, mode?: ReviewMode) => Promise<void>
+  updateRecord: (id: string, content: ReviewContent, summary: string) => Promise<void>
   deleteRecord: (id: string) => Promise<void>
 
   loadFromCloud: () => Promise<void>
