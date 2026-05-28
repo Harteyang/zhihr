@@ -13,15 +13,16 @@ interface DimensionCardProps {
   onToggle?: () => void
 }
 
+// 统一使用中性边框颜色，保持简洁
 const colorMap: Record<string, { bg: string; text: string; border: string; iconBg: string }> = {
-  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40' },
-  blue: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800', iconBg: 'bg-blue-100 dark:bg-blue-900/40' },
-  purple: { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800', iconBg: 'bg-purple-100 dark:bg-purple-900/40' },
-  pink: { bg: 'bg-pink-50 dark:bg-pink-900/20', text: 'text-pink-600 dark:text-pink-400', border: 'border-pink-200 dark:border-pink-800', iconBg: 'bg-pink-100 dark:bg-pink-900/40' },
-  amber: { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800', iconBg: 'bg-amber-100 dark:bg-amber-900/40' },
-  teal: { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-600 dark:text-teal-400', border: 'border-teal-200 dark:border-teal-800', iconBg: 'bg-teal-100 dark:bg-teal-900/40' },
-  indigo: { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800', iconBg: 'bg-indigo-100 dark:bg-indigo-900/40' },
-  orange: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800', iconBg: 'bg-orange-100 dark:bg-orange-900/40' },
+  emerald: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-emerald-100 dark:bg-emerald-900/40' },
+  blue: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-blue-600 dark:text-blue-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-blue-100 dark:bg-blue-900/40' },
+  purple: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-purple-600 dark:text-purple-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-purple-100 dark:bg-purple-900/40' },
+  pink: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-pink-600 dark:text-pink-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-pink-100 dark:bg-pink-900/40' },
+  amber: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-amber-600 dark:text-amber-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-amber-100 dark:bg-amber-900/40' },
+  teal: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-teal-600 dark:text-teal-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-teal-100 dark:bg-teal-900/40' },
+  indigo: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-indigo-100 dark:bg-indigo-900/40' },
+  orange: { bg: 'bg-slate-50 dark:bg-slate-800/50', text: 'text-orange-600 dark:text-orange-400', border: 'border-slate-200 dark:border-slate-700', iconBg: 'bg-orange-100 dark:bg-orange-900/40' },
 }
 
 export function DimensionCard({ config, value, onChange, collapsed, onToggle }: DimensionCardProps) {
