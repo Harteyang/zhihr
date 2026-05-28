@@ -77,8 +77,14 @@ export function parseDimensionValue(value: string | DimensionData | undefined): 
     } catch {
       return { structured: {}, freeform: value }
     }
+    // 如果JSON解析成功但不是有效的DimensionData，也返回默认值
+    return { structured: {}, freeform: value }
   }
-  return value as DimensionData
+  // 如果是对象，确保有 structured 属性
+  if (typeof value === 'object' && 'structured' in value && 'freeform' in value) {
+    return value as DimensionData
+  }
+  return { structured: {}, freeform: '' }
 }
 
 export function formatDimensionValue(data: DimensionData): string {
