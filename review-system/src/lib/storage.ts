@@ -1,4 +1,24 @@
-import type { Review } from '@/types/review'
+import type { Review, ReviewContent } from '@/types/review'
+
+export function hasContentChanged(newContent: ReviewContent, existingContent: ReviewContent, newSummary?: string, existingSummary?: string): boolean {
+  const keys = ['health', 'work', 'study', 'social', 'finance', 'life', 'spirit', 'leisure'] as const
+  
+  for (const key of keys) {
+    const newVal = newContent[key]?.trim() || ''
+    const existingVal = existingContent[key]?.trim() || ''
+    if (newVal !== existingVal) {
+      return true
+    }
+  }
+  
+  if (newSummary !== undefined && existingSummary !== undefined) {
+    if ((newSummary || '').trim() !== (existingSummary || '').trim()) {
+      return true
+    }
+  }
+  
+  return false
+}
 
 const STORAGE_KEY = 'reviewData'
 const AUTOSAVE_KEY = 'reviewAutosave'

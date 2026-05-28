@@ -11,6 +11,7 @@ import {
   closeAuthModal,
   sharedAuthLogout,
 } from '@/lib/shared-auth-bridge'
+import { useReviewsStore } from './reviews'
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   userId: null,
@@ -94,6 +95,8 @@ export function initAuthFromSharedAuth() {
 }
 
 export function logout() {
+  const { clearSyncedReviews } = useReviewsStore.getState()
+  clearSyncedReviews()
   sharedAuthLogout()
   useAuthStore.getState().clearAuth()
 }

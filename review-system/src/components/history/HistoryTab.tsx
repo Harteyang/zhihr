@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useReviewsStore } from '@/stores/reviews'
+import { useAuthStore } from '@/stores/auth'
 import { formatDate } from '@/lib/utils'
 import { Calendar, Trash2, ChevronRight, FileText } from 'lucide-react'
 import type { Review } from '@/types/review'
 
 export function HistoryTab() {
-  const reviews = useReviewsStore(s => s.reviews)
+  const allReviews = useReviewsStore(s => s.reviews)
   const deleteRecord = useReviewsStore(s => s.deleteRecord)
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const [selectedReview, setSelectedReview] = useState<Review | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+
+  const reviews = isAuthenticated ? allReviews : allReviews.filter(r => r._source === 'local')
 
   const handleDelete = async (id: string) => {
     await deleteRecord(id)
