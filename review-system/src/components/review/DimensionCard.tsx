@@ -150,7 +150,7 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
                   >
                     <X className="w-3 h-3" />
                   </button>
-                  <span className="text-xs text-slate-600 dark:text-slate-400 w-14 shrink-0 truncate">{item.label}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400 w-14 shrink-0 truncate">{item.label}</span>
                   <input
                     type="text"
                     value={localValues[item.id] !== undefined ? localValues[item.id] : (structuredData[item.id] || '')}
