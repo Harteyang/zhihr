@@ -48,14 +48,17 @@ export function RecordTab() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed())
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  // 标记是否已从 todayRecord 加载过，避免 HistoryTab 编辑时联动覆盖
+  const [loadedFromRecord, setLoadedFromRecord] = useState(false)
 
-  // 加载今日记录 - 只在今日记录的 ID 变化时触发，避免不必要的内容填充
+  // 只在首次加载且 todayRecord 存在时填充，之后不再自动同步
   useEffect(() => {
-    if (todayRecord) {
+    if (!loadedFromRecord && todayRecord) {
       setContent(todayRecord.content)
       setSummary(todayRecord.summary)
+      setLoadedFromRecord(true)
     }
-  }, [todayRecord?.id])
+  }, [todayRecord, loadedFromRecord])
 
   // 自动保存
   useEffect(() => {
@@ -107,6 +110,7 @@ export function RecordTab() {
       // 保存成功后重置数据
       setContent(emptyContent)
       setSummary('')
+      setLoadedFromRecord(false)
       clearAutosave()
     } catch (err) {
       // 保存失败，保持数据不变，保留自动保存
@@ -119,6 +123,7 @@ export function RecordTab() {
   const handleReset = () => {
     setContent(emptyContent)
     setSummary('')
+    setLoadedFromRecord(false)
     clearAutosave()
   }
 
