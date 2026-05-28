@@ -4,15 +4,16 @@ import { useAuthStore } from '@/stores/auth'
 import { saveAutosave, loadAutosave, clearAutosave } from '@/lib/storage'
 import { DEFAULT_DIMENSIONS } from '@/lib/dimensions'
 import type { ReviewContent, ReviewMode } from '@/types/review'
+import { getEmptyDimensionData, formatDimensionValue } from '@/types/review'
 import { getToday } from '@/lib/utils'
 import { DimensionCard } from './DimensionCard'
 import { SummarySection } from './SummarySection'
 import { ActionBar } from './ActionBar'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
-const emptyContent: ReviewContent = {
-  health: '', work: '', study: '', social: '', finance: '', life: '', spirit: '', leisure: '',
-}
+const emptyContent: ReviewContent = Object.fromEntries(
+  DEFAULT_DIMENSIONS.map(dim => [dim.key, formatDimensionValue(getEmptyDimensionData())])
+) as unknown as ReviewContent
 
 export function RecordTab() {
   const allReviews = useReviewsStore(s => s.reviews)
