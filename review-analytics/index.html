@@ -72,21 +72,36 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-200">
   <nav class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="window.open('https://www.zhihr.vip', '_blank')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
         <circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>
       </svg>
       <div>
-        <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">复盘分析</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">8维度复盘数据可视化洞察</p>
+        <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100"> 知HR-复盘分析</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Vibe Coding，为HR制作效率工具</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <div id="auth-section">
-        <button onclick="AuthModal.open('login')" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          <span class="hidden sm:inline">登录</span>
+      <!-- 登录按钮（未登录状态） -->
+      <button id="btnLogin" onclick="AuthModal.open('login')" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span class="hidden sm:inline">登录</span>
+      </button>
+      <!-- 已登录状态 -->
+      <div id="loggedInArea" class="hidden relative">
+        <button id="btnUser" onclick="toggleUserMenu()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="userDisplay" class="hidden sm:inline">账号</span>
         </button>
+        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+          <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+            <span id="menuUserDisplay"></span>
+          </div>
+          <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            退出登录
+          </button>
+        </div>
       </div>
       <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer" title="切换主题">
         <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -277,6 +292,27 @@
       </div>
     </div>
   </main>
+
+  <!-- 自定义确认对话框 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal bg-white dark:bg-slate-800 p-6 w-full max-w-sm mx-4 rounded-xl">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">退出登录</h3>
+        <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6">确定要退出登录吗？</p>
+        <div class="flex gap-3">
+          <button id="confirmBtn" onclick="confirmCallback(true)" class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+            确定
+          </button>
+          <button id="cancelBtn" onclick="confirmCallback(false)" class="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <footer class="text-center py-3 text-xs text-slate-400 dark:text-slate-600 border-t border-slate-200 dark:border-slate-700">
     <span id="data-source-info">数据来源：云端 | 共 0 条记录</span>
@@ -1457,28 +1493,18 @@ function initTheme() {
 
 // ==================== AUTH ====================
 function updateAuthUI() {
-  const section = document.getElementById('auth-section');
-  if (SharedAuth.isAuthenticated()) {
-    const user = SharedAuth.getUser();
-    section.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-slate-600 dark:text-slate-400 hidden sm:inline">${user?.username || ''}</span>
-        <button onclick="handleLogout()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span class="hidden sm:inline">退出</span>
-        </button>
-      </div>
-    `;
+  const user = SharedAuth ? SharedAuth.getUser() : { isAuthenticated: false, username: null };
+  if (user.isAuthenticated && user.username) {
+    document.getElementById('btnLogin').classList.add('hidden');
+    document.getElementById('loggedInArea').classList.remove('hidden');
+    document.getElementById('userDisplay').textContent = user.username;
+    document.getElementById('menuUserDisplay').textContent = user.username;
     hideAllStates();
     if (reviews.length === 0) loadData();
     else { document.getElementById('app-content').classList.remove('hidden'); renderCurrentTab(); }
   } else {
-    section.innerHTML = `
-      <button onclick="AuthModal.open('login')" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        <span class="hidden sm:inline">登录</span>
-      </button>
-    `;
+    document.getElementById('btnLogin').classList.remove('hidden');
+    document.getElementById('loggedInArea').classList.add('hidden');
     hideAllStates();
     document.getElementById('login-prompt').classList.remove('hidden');
     document.getElementById('app-content').classList.add('hidden');
@@ -1487,9 +1513,51 @@ function updateAuthUI() {
 }
 
 function handleLogout() {
-  SharedAuth.logout();
-  reviews = [];
-  updateAuthUI();
+  const userMenu = document.getElementById('userMenu');
+  if (userMenu) {
+    userMenu.classList.add('hidden');
+  }
+  showConfirmDialog(
+    '退出登录',
+    '确定要退出登录吗？',
+    '退出',
+    '取消'
+  ).then((confirmed) => {
+    if (!confirmed) {
+      return;
+    }
+    if (SharedAuth) {
+      SharedAuth.logout();
+    }
+    reviews = [];
+    updateAuthUI();
+  });
+}
+
+let confirmResolve = null;
+
+function showConfirmDialog(title, message, confirmText = '确定', cancelText = '取消') {
+  return new Promise((resolve) => {
+    confirmResolve = resolve;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmBtn').textContent = confirmText;
+    document.getElementById('cancelBtn').textContent = cancelText;
+    document.getElementById('confirmModal').classList.add('active');
+  });
+}
+
+function confirmCallback(result) {
+  document.getElementById('confirmModal').classList.remove('active');
+  if (confirmResolve) {
+    confirmResolve(result);
+    confirmResolve = null;
+  }
+}
+
+function toggleUserMenu() {
+  const menu = document.getElementById('userMenu');
+  menu.classList.toggle('hidden');
 }
 
 // ==================== INIT ====================
@@ -1522,6 +1590,17 @@ function init() {
   window.onAuthSuccess = (data) => {
     if (SharedAuth.isAuthenticated()) loadData();
   };
+
+  // 点击其他地方关闭用户菜单
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('userMenu');
+    const btn = document.getElementById('btnUser');
+    if (menu && btn && !menu.classList.contains('hidden')) {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
