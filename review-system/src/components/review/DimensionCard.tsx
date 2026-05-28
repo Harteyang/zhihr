@@ -111,8 +111,14 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
           {allItems.length > 0 && (
             <div className="space-y-2">
               {allItems.map(item => (
-                <div key={item.id} className="flex items-center gap-2">
-                  <span className="text-xs text-slate-600 dark:text-slate-400 w-16 shrink-0 truncate">{item.label}</span>
+                <div key={item.id} className="flex items-center gap-1.5 group">
+                  <button
+                    onClick={() => item.isCustom ? removeCustomItem(item.id) : removeStructuredItem(item.id)}
+                    className="px-0.5 py-0.5 text-slate-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 w-14 shrink-0 truncate">{item.label}</span>
                   <input
                     type="text"
                     value={structuredData[item.id] || ''}
@@ -120,12 +126,6 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
                     placeholder={item.placeholder}
                     className="flex-1 px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
-                  <button
-                    onClick={() => removeStructuredItem(item.id)}
-                    className="p-1 text-slate-400 hover:text-red-500 cursor-pointer"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
                 </div>
               ))}
               {/* 添加自定义项目 */}

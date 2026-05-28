@@ -49,13 +49,13 @@ export function RecordTab() {
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
-  // 加载今日记录
+  // 加载今日记录 - 只在今日记录的 ID 变化时触发，避免不必要的内容填充
   useEffect(() => {
     if (todayRecord) {
       setContent(todayRecord.content)
       setSummary(todayRecord.summary)
     }
-  }, [todayRecord])
+  }, [todayRecord?.id])
 
   // 自动保存
   useEffect(() => {

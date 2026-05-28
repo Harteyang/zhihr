@@ -117,22 +117,70 @@ export function HistoryTab() {
   )
 }
 
+import { getStructuredItemLabelMap, getStructuredItemKeyByLabel } from '@/lib/dimensions'
+
+const labelMap = getStructuredItemLabelMap()
+
+function formatContentForEdit(parsed: { structured: Record<string, string>; freeform: string }): string {
+  const lines: string[] = []
+  for (const [key, value] of Object.entries(parsed.structured)) {
+    if (value) {
+      // 使用中文标签替换英文 key
+      const label = labelMap[key] || key
+      lines.push(`${label}: ${value}`)
+    }
+  }
+  if (parsed.freeform) {
+    if (lines.length > 0) lines.push('')
+    lines.push(parsed.freeform)
+  }
+  return lines.join('\n')
+}
+
+function parseContentFromEdit(text: string): { structured: Record<string, string>; freeform: string } {
+  const structured: Record<string, string> = {}
+  const freeformLines: string[] = []
+  const lines = text.split('\n')
+  
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      freeformLines.push('')
+      continue
+    }
+    const colonIndex = trimmed.indexOf(':')
+    if (colonIndex > 0) {
+      const label = trimmed.substring(0, colonIndex).trim()
+      const value = trimmed.substring(colonIndex + 1).trim()
+      if (label && value) {
+        // 尝试将中文标签转换回 key
+        const key = getStructuredItemKeyByLabel(label) || label
+        structured[key] = value
+        continue
+      }
+    }
+    freeformLines.push(line)
+  }
+  
+  return {
+    structured,
+    freeform: freeformLines.join('\n').trim()
+  }
+}
+
 function ReviewDetail({ review }: { review: Review }) {
   const updateRecord = useReviewsStore(s => s.updateRecord)
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState<Record<string, string>>(Object.fromEntries(
-    Object.entries(review.content).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
+    Object.entries(review.content).map(([key, value]) => [key, formatContentForEdit(parseDimensionValue(value))])
   ))
   const [editedSummary, setEditedSummary] = useState(review.summary)
 
   const handleSave = async () => {
     const contentToSave = Object.fromEntries(
       Object.entries(editedContent).map(([key, value]) => {
-        try {
-          return [key, JSON.parse(value)]
-        } catch {
-          return [key, value]
-        }
+        const parsed = parseContentFromEdit(value)
+        return [key, JSON.stringify(parsed)]
       })
     ) as unknown as ReviewContent
     await updateRecord(review.id, contentToSave, editedSummary)
@@ -141,7 +189,7 @@ function ReviewDetail({ review }: { review: Review }) {
 
   const handleCancel = () => {
     setEditedContent(Object.fromEntries(
-      Object.entries(review.content).map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
+      Object.entries(review.content).map(([key, value]) => [key, formatContentForEdit(parseDimensionValue(value))])
     ))
     setEditedSummary(review.summary)
     setIsEditing(false)
@@ -237,7 +285,7 @@ function ReviewDetail({ review }: { review: Review }) {
                 onChange={(e) => setEditedContent({ ...editedContent, [key]: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={3}
-                placeholder={`输入${dimensionLabels[key] || key}相关内容`}
+                placeholder={`key: value\n或直接输入自由文本`}
               />
             ) : (
               <div className="space-y-2 text-sm">
