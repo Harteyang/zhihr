@@ -21,34 +21,45 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-slate-800 dark:text-slate-100">复盘系统</span>
-          <span className="text-xs text-slate-400">知HR</span>
+    <>
+      <header className="h-16 bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        {/* 左侧：Logo + 工具名称 */}
+        <div 
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => window.open('https://www.zhihr.vip', '_blank')}
+        >
+          {/* Logo */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 dark:text-blue-400">
+            <circle cx="12" cy="5" r="1"/>
+            <path d="m9 20 3-6 3 6"/>
+            <path d="m6 8 6 2 6-2"/>
+            <path d="M12 10v4"/>
+          </svg>
+
+          {/* 工具名称 */}
+          <div>
+            <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-100">知HR-复盘系统</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Vibe Coding，为HR制作效率工具</p>
+          </div>
         </div>
 
+        {/* 右侧：功能按钮 */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-            title={theme === 'dark' ? '切换亮色' : '切换暗色'}
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-
           {isAuthenticated ? (
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                className="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-600"
               >
-                <User className="w-4 h-4" />
-                <span className="text-sm">{username}</span>
+                <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline text-sm">{username}</span>
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+                  <div className="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                    <span>{username}</span>
+                  </div>
                   <button
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer"
@@ -62,14 +73,24 @@ export function Navbar() {
           ) : (
             <button
               onClick={() => openModal('login')}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm transition-colors cursor-pointer"
+              className="px-2 sm:px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer flex items-center gap-1.5"
             >
-              <LogIn className="w-4 h-4" />
-              登录
+              <LogIn className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">登录</span>
             </button>
           )}
+
+          {/* 主题切换 */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:bg-slate-700 rounded-md transition-colors duration-200 cursor-pointer"
+            title={theme === 'dark' ? '切换亮色' : '切换暗色'}
+            aria-label="切换主题"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
         </div>
-      </div>
+      </header>
 
       {/* 退出确认弹窗 */}
       {showLogoutConfirm && (
@@ -99,6 +120,6 @@ export function Navbar() {
           </div>
         </div>
       )}
-    </header>
+    </>
   )
 }

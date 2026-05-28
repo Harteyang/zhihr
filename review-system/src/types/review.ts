@@ -47,4 +47,4 @@ export interface ReviewCreateResponse {
   data: ReviewApiResponse
 }
 
-export type ReviewMode = 'auto' | 'new' | 'overwrite'
+export type ReviewMode = 'auto' | 'new' | 'overwrite' | 'merge'

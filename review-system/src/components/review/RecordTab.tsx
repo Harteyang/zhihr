@@ -3,12 +3,12 @@ import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { saveAutosave, loadAutosave, clearAutosave } from '@/lib/storage'
 import { DEFAULT_DIMENSIONS } from '@/lib/dimensions'
-import type { ReviewContent } from '@/types/review'
+import type { ReviewContent, ReviewMode } from '@/types/review'
 import { getToday } from '@/lib/utils'
 import { DimensionCard } from './DimensionCard'
 import { SummarySection } from './SummarySection'
 import { ActionBar } from './ActionBar'
-import { Save, RotateCcw } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 const emptyContent: ReviewContent = {
   health: '', work: '', study: '', social: '', finance: '', life: '', spirit: '', leisure: '',
@@ -24,6 +24,7 @@ export function RecordTab() {
   const [isMobile, setIsMobile] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   // 加载今日记录
   useEffect(() => {
@@ -71,10 +72,15 @@ export function RecordTab() {
     setCollapsed(prev => ({ ...prev, [key]: !prev[key] }))
   }, [])
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    setShowConfirm(true)
+  }
+
+  const confirmSave = async (selectedMode: ReviewMode) => {
+    setShowConfirm(false)
     setIsSaving(true)
     try {
-      await saveRecord(getToday(), content, summary)
+      await saveRecord(getToday(), content, summary, selectedMode)
       clearAutosave()
     } finally {
       setIsSaving(false)
@@ -113,6 +119,18 @@ export function RecordTab() {
         onSave={handleSave}
         onReset={handleReset}
         isSaving={isSaving}
+      />
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="确认保存"
+        message={todayRecord ? '今日已有记录，请选择保存方式：' : '确认要保存今日记录吗？'}
+        confirmText="确认保存"
+        cancelText="取消"
+        onConfirm={confirmSave}
+        onCancel={() => setShowConfirm(false)}
+        showModeOptions={!!todayRecord}
+        defaultMode="overwrite"
       />
     </div>
   )

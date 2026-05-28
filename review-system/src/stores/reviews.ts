@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import type { Review, ReviewContent, ReviewMode } from '@/types/review'
 import { saveReview, getReviews, fromApiResponse, deleteReview } from '@/api/reviews'
-import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData } from '@/lib/storage'
+import { saveToLocalStorage, loadFromLocalStorage, mergeReviews, migrateLegacyData, deduplicateReviews } from '@/lib/storage'
 import { useAuthStore } from './auth'
+import { useToastStore } from './toast'
 import { generateId, getToday } from '@/lib/utils'
 
 interface ReviewsState {
@@ -32,22 +33,48 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
     return get().reviews.filter(r => r.date >= start && r.date <= end)
   },
 
-  saveRecord: async (date, content, summary, mode = 'auto') => {
+  saveRecord: async (date, content, summary, mode: ReviewMode = 'auto') => {
     const { isAuthenticated } = useAuthStore.getState()
+    const toast = useToastStore.getState()
     const now = new Date().toISOString()
     const today = getToday()
     const summaryVal = summary || date || today
 
     // 1. 乐观更新：立即更新 store + localStorage
-    const existing = get().reviews.find(r => r.date === date)
+    const sameDateRecords = get().reviews.filter(r => r.date === date)
+    const existing = sameDateRecords.length > 0
+      ? sameDateRecords.reduce((latest, r) => 
+          new Date(r.updatedAt).getTime() > new Date(latest.updatedAt).getTime() ? r : latest
+        )
+      : undefined
     let updated: Review
+    let actionType: '覆盖' | '新建' | '合并'
 
-    if (existing && mode !== 'new') {
-      // 覆盖模式
+    if (existing && mode === 'merge') {
+      // 合并模式：合并到最新记录
+      const mergedContent = { ...existing.content }
+      for (const key of Object.keys(content) as (keyof ReviewContent)[]) {
+        const newVal = content[key]?.trim()
+        const existingVal = existing.content[key]?.trim()
+        if (newVal) {
+          if (existingVal && !existingVal.includes(newVal)) {
+            mergedContent[key] = `${existingVal}\n${newVal}`
+          } else if (!existingVal) {
+            mergedContent[key] = newVal
+          }
+        }
+      }
+      const mergedSummary = summary ? (existing.summary ? `${existing.summary} ${summary}` : summary) : existing.summary
+      updated = { ...existing, content: mergedContent, summary: mergedSummary || summaryVal, updatedAt: now, _source: 'local' }
+      set({ reviews: get().reviews.map(r => r.id === existing.id ? updated : r) })
+      actionType = '合并'
+    } else if (existing && mode !== 'new') {
+      // 覆盖模式：只覆盖最新的那条记录，保留其他记录
       updated = { ...existing, content, summary: summaryVal, updatedAt: now, _source: 'local' }
       set({ reviews: get().reviews.map(r => r.id === existing.id ? updated : r) })
+      actionType = '覆盖'
     } else {
-      // 新建模式
+      // 新建模式：创建新记录
       updated = {
         id: generateId(),
         date: date || today,
@@ -58,8 +85,11 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
         _source: 'local',
       }
       set({ reviews: [updated, ...get().reviews] })
+      actionType = '新建'
     }
+    // 保存到本地
     saveToLocalStorage(get().reviews)
+    toast.success(`记录${actionType}成功`)
 
     // 2. 已登录 → 异步写云端
     if (isAuthenticated) {
@@ -69,7 +99,7 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
           date: updated.date,
           content,
           summary: summaryVal,
-        })
+        }, mode)
 
         // 更新云端返回的 ID
         if (result.data && result.data.id && result.data.id !== updated.id) {
@@ -86,9 +116,13 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
           })
         }
         saveToLocalStorage(get().reviews)
+        toast.success('数据已同步到云端')
       } catch (err) {
         console.warn('云端保存失败，数据已本地缓存:', err)
+        toast.info('数据已保存，将在下次登录时同步')
       }
+    } else {
+      toast.info('数据已本地保存，登录后将自动同步')
     }
   },
 
@@ -132,6 +166,7 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
 
   syncLocalToCloud: async () => {
     const { isAuthenticated } = useAuthStore.getState()
+    const toast = useToastStore.getState()
     if (!isAuthenticated) return
 
     const localOnly = get().reviews.filter(r => r._source === 'local')
@@ -141,25 +176,47 @@ export const useReviewsStore = create<ReviewsState>((set, get) => ({
     }
 
     console.log('[syncLocalToCloud] 开始同步', localOnly.length, '条本地数据到云端...')
+    let successCount = 0
+    let failCount = 0
 
     for (const rec of localOnly) {
       try {
         const today = getToday()
-        await saveReview({
-          id: rec.id,
+        const result = await saveReview({
           date: rec.date || today,
           content: rec.content,
           summary: rec.summary || rec.date || today,
-        })
-        console.log('[syncLocalToCloud] 同步成功:', rec.id)
+        }, 'new')
+
+        if (result.success && result.data) {
+          const cloudId = result.data.id
+          if (cloudId) {
+            set({
+              reviews: get().reviews.map(r =>
+                r.id === rec.id ? { ...r, id: cloudId, _source: 'cloud' as const } : r
+              ),
+            })
+            saveToLocalStorage(get().reviews)
+          }
+        }
+        console.log('[syncLocalToCloud] 同步成功:', rec.id, '→', result.data?.id || rec.id)
+        successCount++
       } catch (err) {
         console.warn('[syncLocalToCloud] 同步失败:', rec.id, err)
+        failCount++
       }
     }
 
-    // 同步完成后重新从云端拉取
+    // 同步完成后重新从云端拉取（确保数据一致）
     await get().loadFromCloud()
     console.log('[syncLocalToCloud] 同步完成')
+
+    if (successCount > 0) {
+      toast.success(`${successCount} 条记录同步成功`)
+    }
+    if (failCount > 0) {
+      toast.error(`${failCount} 条记录同步失败，请稍后重试`)
+    }
   },
 
   loadFromLocalStorage: () => {

@@ -53,6 +53,11 @@ export function HistoryTab() {
                     本地
                   </span>
                 )}
+                {review._source === 'cloud' && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                    已同步
+                  </span>
+                )}
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(review.id) }}
                   className="p-1 text-slate-400 hover:text-red-500 cursor-pointer"

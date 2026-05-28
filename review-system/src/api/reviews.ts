@@ -65,7 +65,14 @@ export async function deleteReview(id: string): Promise<{ success: boolean; mess
 }
 
 export async function saveReview(review: { id?: string; date: string; content: ReviewContent; summary: string }, mode: ReviewMode = 'auto'): Promise<ReviewCreateResponse> {
-  // 统一使用 POST，后端根据 id 和 date 判断创建还是更新
+  // 如果有ID且不是新建模式，使用PUT更新
+  if (review.id && mode !== 'new') {
+    return apiRequest<ReviewCreateResponse>(`/api/reviews/${review.id}`, {
+      method: 'PUT',
+      body: toApiPayload(review),
+    })
+  }
+  // 没有ID或新建模式，使用POST创建
   return apiRequest<ReviewCreateResponse>('/api/reviews', {
     method: 'POST',
     body: toApiPayload(review),

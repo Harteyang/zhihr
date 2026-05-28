@@ -2,18 +2,22 @@ import { useEffect } from 'react'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
 import { useReviewsStore } from '@/stores/reviews'
+import { useToastStore } from '@/stores/toast'
 import { Navbar } from '@/components/layout/Navbar'
 import { TabBar } from '@/components/layout/TabBar'
 import { RecordTab } from '@/components/review/RecordTab'
 import { HistoryTab } from '@/components/history/HistoryTab'
 import { ReportTab } from '@/components/report/ReportTab'
 import { LoginPrompt } from '@/components/auth/LoginPrompt'
+import { ToastContainer } from '@/components/ui/Toast'
 
 export default function App() {
   const activeTab = useSettingsStore(s => s.activeTab)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const loadFromCloud = useReviewsStore(s => s.loadFromCloud)
   const syncLocalToCloud = useReviewsStore(s => s.syncLocalToCloud)
+  const toastMessages = useToastStore(s => s.messages)
+  const removeToast = useToastStore(s => s.remove)
 
   // 登录后自动同步
   useEffect(() => {
@@ -36,6 +40,7 @@ export default function App() {
         </div>
       </main>
       <LoginPrompt />
+      <ToastContainer messages={toastMessages} onClose={removeToast} />
     </div>
   )
 }
