@@ -1,6 +1,25 @@
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { BarChart3, TrendingUp, Calendar, FileText } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+
+// ECharts is loaded via CDN in index.html
+declare global {
+  interface Window {
+    echarts: any
+  }
+}
+
+const DIMENSION_LABELS: Record<string, string> = {
+  health: '健康',
+  work: '工作',
+  study: '学习',
+  social: '社交',
+  finance: '财务',
+  life: '生活',
+  spirit: '精神',
+  leisure: '休闲',
+}
 
 export function ReportTab() {
   const reviews = useReviewsStore(s => s.reviews)
@@ -30,25 +49,10 @@ export function ReportTab() {
         <StatCard icon={<FileText className="w-5 h-5" />} label="同步状态" value={isAuthenticated ? '已同步' : '离线'} color={isAuthenticated ? 'green' : 'slate'} />
       </div>
 
-      {/* 维度活跃度 */}
+      {/* 维度活跃度雷达图 */}
       <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-5">
         <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">维度活跃度</h3>
-        <div className="space-y-3">
-          {dimensionStats.map(({ key, count, percentage }) => (
-            <div key={key}>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-slate-600 dark:text-slate-400 capitalize">{key}</span>
-                <span className="text-slate-500">{count} 次 ({percentage}%)</span>
-              </div>
-              <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        <RadarChart data={dimensionStats} />
       </div>
 
       {/* 最近7天日历 */}
@@ -76,6 +80,97 @@ export function ReportTab() {
       </div>
     </div>
   )
+}
+
+function RadarChart({ data }: { data: { key: string; count: number; percentage: number }[] }) {
+  const chartRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!chartRef.current || !window.echarts) return
+
+    const chart = window.echarts.init(chartRef.current)
+
+    const indicator = data.map(({ key }) => ({
+      name: DIMENSION_LABELS[key] || key,
+      max: 100,
+    }))
+
+    const value = data.map(({ percentage }) => percentage)
+
+    const option: any = {
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => {
+          if (params.componentSubType === 'radar') {
+            return `${params.name}: ${params.value}%`
+          }
+          return `${params.name}: ${params.value}%`
+        },
+      },
+      radar: {
+        indicator,
+        shape: 'circle',
+        splitNumber: 5,
+        axisName: {
+          color: '#64748b',
+          fontSize: 12,
+        },
+        splitLine: {
+          lineStyle: {
+            color: 'rgba(148, 163, 184, 0.3)',
+          },
+        },
+        splitArea: {
+          areaStyle: {
+            color: ['rgba(59, 130, 246, 0.05)', 'rgba(59, 130, 246, 0.1)'],
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(148, 163, 184, 0.3)',
+          },
+        },
+      },
+      series: [
+        {
+          type: 'radar',
+          data: [
+            {
+              value,
+              name: '维度活跃度',
+              areaStyle: {
+                color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: 'rgba(59, 130, 246, 0.6)' },
+                  { offset: 1, color: 'rgba(59, 130, 246, 0.1)' },
+                ]),
+              },
+              lineStyle: {
+                color: '#3b82f6',
+                width: 2,
+              },
+              itemStyle: {
+                color: '#3b82f6',
+              },
+              symbol: 'circle',
+              symbolSize: 6,
+            },
+          ],
+        },
+      ],
+    }
+
+    chart.setOption(option)
+
+    const handleResize = () => chart.resize()
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      chart.dispose()
+    }
+  }, [data])
+
+  return <div ref={chartRef} className="w-full h-[300px]" />
 }
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
