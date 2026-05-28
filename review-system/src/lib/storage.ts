@@ -83,22 +83,65 @@ export function migrateLegacyData(data: any[]): Review[] {
   }))
 }
 
-export function mergeReviews(local: Review[], cloud: Review[]): Review[] {
-  const map = new Map<string, Review>()
+function areContentsEqual(a: Review['content'], b: Review['content']): boolean {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
 
-  local.forEach(r => map.set(r.id, r))
+function areReviewsEqual(a: Review, b: Review): boolean {
+  if (a.summary !== b.summary) return false
+  if (a.date !== b.date) return false
+  return areContentsEqual(a.content, b.content)
+}
 
-  cloud.forEach(cr => {
-    const existing = map.get(cr.id)
+export function deduplicateReviews(reviews: Review[]): Review[] {
+  const idMap = new Map<string, Review>()
+
+  for (const r of reviews) {
+    const existing = idMap.get(r.id)
     if (!existing) {
-      map.set(cr.id, cr)
+      idMap.set(r.id, r)
     } else {
-      const localIsNewer = new Date(existing.updatedAt).getTime() > new Date(cr.updatedAt).getTime()
-      if (!localIsNewer) map.set(cr.id, cr)
+      const existingTime = new Date(existing.updatedAt).getTime()
+      const currentTime = new Date(r.updatedAt).getTime()
+      if (currentTime > existingTime) {
+        idMap.set(r.id, r)
+      }
     }
-  })
+  }
 
-  return Array.from(map.values()).sort((a, b) => {
+  return Array.from(idMap.values()).sort((a, b) => {
+    if (a.date !== b.date) return b.date.localeCompare(a.date)
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  })
+}
+
+export function mergeReviews(local: Review[], cloud: Review[]): Review[] {
+  const idMap = new Map<string, Review>()
+
+  const allReviews = [...local, ...cloud]
+  
+  for (const r of allReviews) {
+    const existing = idMap.get(r.id)
+
+    if (!existing) {
+      idMap.set(r.id, r)
+    } else {
+      const existingTime = new Date(existing.updatedAt).getTime()
+      const currentTime = new Date(r.updatedAt).getTime()
+      
+      if (currentTime > existingTime) {
+        idMap.set(r.id, r)
+      }
+    }
+  }
+
+  const cloudIds = new Set(cloud.map(c => c.id))
+  const result = Array.from(idMap.values()).map(r => ({
+    ...r,
+    _source: (cloudIds.has(r.id) ? 'cloud' : 'local') as 'cloud' | 'local'
+  }))
+
+  return result.sort((a, b) => {
     if (a.date !== b.date) return b.date.localeCompare(a.date)
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   })
