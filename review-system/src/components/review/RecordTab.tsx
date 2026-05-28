@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { saveAutosave, loadAutosave, clearAutosave } from '@/lib/storage'
@@ -48,17 +48,20 @@ export function RecordTab() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed())
   const [isSaving, setIsSaving] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  // 标记是否已从 todayRecord 加载过，避免 HistoryTab 编辑时联动覆盖
-  const [loadedFromRecord, setLoadedFromRecord] = useState(false)
+  // 使用 ref 持久化标记，即使组件卸载再挂载也不会重置
+  const hasLoadedTodayRecord = useRef(false)
+  // 记录上次加载的 todayRecord 的 id，避免同一记录重复加载
+  const lastLoadedRecordId = useRef<string | null>(null)
 
-  // 只在首次加载且 todayRecord 存在时填充，之后不再自动同步
+  // 只在 todayRecord 变化且尚未加载过该记录时才填充
   useEffect(() => {
-    if (!loadedFromRecord && todayRecord) {
+    if (todayRecord && todayRecord.id !== lastLoadedRecordId.current) {
       setContent(todayRecord.content)
       setSummary(todayRecord.summary)
-      setLoadedFromRecord(true)
+      lastLoadedRecordId.current = todayRecord.id
+      hasLoadedTodayRecord.current = true
     }
-  }, [todayRecord, loadedFromRecord])
+  }, [todayRecord])
 
   // 自动保存
   useEffect(() => {
@@ -110,7 +113,9 @@ export function RecordTab() {
       // 保存成功后重置数据
       setContent(emptyContent)
       setSummary('')
-      setLoadedFromRecord(false)
+      // 重置 lastLoadedRecordId，下次进入可重新加载今日记录
+      lastLoadedRecordId.current = null
+      hasLoadedTodayRecord.current = false
       clearAutosave()
     } catch (err) {
       // 保存失败，保持数据不变，保留自动保存
@@ -123,7 +128,8 @@ export function RecordTab() {
   const handleReset = () => {
     setContent(emptyContent)
     setSummary('')
-    setLoadedFromRecord(false)
+    lastLoadedRecordId.current = null
+    hasLoadedTodayRecord.current = false
     clearAutosave()
   }
 
