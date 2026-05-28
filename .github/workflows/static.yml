@@ -33,13 +33,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: review-system/pnpm-lock.yaml
 
-      - name: Build review-system
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
         run: |
           cd review-system
-          pnpm install
+          pnpm install --frozen-lockfile
           VITE_BASE=/review-system/ pnpm build
 
       - name: Prepare deployment
