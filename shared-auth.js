@@ -37,6 +37,7 @@
     USER_ID_KEY: 'zhihr_user_id',
     USERNAME_KEY: 'zhihr_username',
     TOKEN_REFRESH_BUFFER: 60, // 提前60秒刷新token
+    TOKEN_CHECK_INTERVAL: 10 * 60 * 1000, // 每10分钟检查一次token是否快过期
   };
 
   // ==================== 内部状态 ====================
@@ -164,14 +165,41 @@
     }
   }
 
+  // ==================== JWT 工具 ====================
+  function parseJwtPayload(token) {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = parts[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isTokenExpired(token) {
+    const payload = parseJwtPayload(token);
+    if (!payload || !payload.exp) return false;
+    // 给 30 秒缓冲，避免边界情况
+    return Date.now() >= (payload.exp * 1000 - CONFIG.TOKEN_REFRESH_BUFFER * 1000);
+  }
+
+  function getTokenExpiryTime(token) {
+    const payload = parseJwtPayload(token);
+    if (!payload || !payload.exp) return null;
+    return payload.exp * 1000;
+  }
+
   // ==================== Token 刷新 ====================
   async function refreshToken() {
     const currentRefreshToken = getFromStorage(CONFIG.REFRESH_TOKEN_KEY);
     if (!currentRefreshToken) {
-      // Token 已过期，清除状态
-      clearStorage();
-      updateStateFromStorage();
-      emit('auth:expired');
+      if (state.isAuthenticated) {
+        clearStorage();
+        updateStateFromStorage();
+        emit('auth:expired');
+      }
       return null;
     }
 
@@ -182,13 +210,28 @@
         body: JSON.stringify({ refreshToken: currentRefreshToken }),
       });
 
+      if (response.status === 401 || response.status === 403) {
+        // refreshToken 已失效，需重新登录
+        clearStorage();
+        updateStateFromStorage();
+        emit('auth:expired');
+        return null;
+      }
+
       if (!response.ok) {
-        throw new Error(`Refresh failed: ${response.status}`);
+        // 网络错误或其他服务器错误，不销毁已有登录态，下次再试
+        console.warn('[SharedAuth] Token refresh failed (will retry later):', response.status);
+        scheduleTokenRefresh();
+        return null;
       }
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.message || 'Refresh failed');
+        // refreshToken 被服务端拒绝，需重新登录
+        clearStorage();
+        updateStateFromStorage();
+        emit('auth:expired');
+        return null;
       }
 
       const { token, refreshToken: newRefreshToken } = result.data;
@@ -196,15 +239,13 @@
       setToStorage(CONFIG.TOKEN_KEY, token);
       setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
       
-      // 通知所有页面
-      // storage 事件会自动触发跨标签页同步
+      updateStateFromStorage();
 
       return token;
     } catch (error) {
-      console.error('[SharedAuth] Token refresh failed:', error);
-      clearStorage();
-      updateStateFromStorage();
-      emit('auth:expired');
+      // 网络异常（断网、超时等）不销毁登录态，安排重试
+      console.warn('[SharedAuth] Token refresh network error (will retry later):', error);
+      scheduleTokenRefresh();
       return null;
     }
   }
@@ -217,11 +258,55 @@
 
     if (!state.token) return;
 
-    // 简单策略：每小时检查一次
-    // 更精确的实现可以解析 JWT 的 exp 字段
-    refreshTimer = setTimeout(async () => {
-      await refreshToken();
-    }, CONFIG.TOKEN_REFRESH_BUFFER * 1000);
+    // 解析 JWT 获取过期时间
+    const expiryTime = getTokenExpiryTime(state.token);
+
+    if (expiryTime) {
+      // 有明确过期时间：在过期前 TOKEN_REFRESH_BUFFER 秒刷新
+      const timeUntilExpiry = expiryTime - Date.now();
+      const timeUntilRefresh = Math.max(timeUntilExpiry - CONFIG.TOKEN_REFRESH_BUFFER * 1000, 0);
+
+      // 如果已经过期或即将过期，立即刷新
+      if (timeUntilRefresh <= 0) {
+        refreshToken();
+        return;
+      }
+
+      refreshTimer = setTimeout(async () => {
+        await refreshToken();
+      }, timeUntilRefresh);
+    } else {
+      // 无法解析 JWT（如旧的 token 格式），退化为定期检查策略
+      refreshTimer = setTimeout(async () => {
+        // 检查 token 是否还在（用户没手动清除）
+        const currentToken = getFromStorage(CONFIG.TOKEN_KEY);
+        if (!currentToken) return;
+
+        // 尝试刷新，失败也不销毁登录态，下次继续检查
+        try {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: getFromStorage(CONFIG.REFRESH_TOKEN_KEY) }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              const { token, refreshToken: newRefreshToken } = result.data;
+              setToStorage(CONFIG.TOKEN_KEY, token);
+              setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
+              updateStateFromStorage();
+            }
+          }
+        } catch (e) {
+          // 忽略，下次继续
+        }
+
+        // 继续安排下一次检查
+        scheduleTokenRefresh();
+      }, CONFIG.TOKEN_CHECK_INTERVAL);
+    }
   }
 
   // ==================== API 请求封装 ====================
