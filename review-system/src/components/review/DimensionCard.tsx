@@ -5,6 +5,8 @@ import { parseDimensionValue, formatDimensionValue } from '@/types/review'
 import { cn } from '@/lib/utils'
 import * as Icons from 'lucide-react'
 import { ChevronDown, ChevronUp, Plus, X } from 'lucide-react'
+import { loadCustomItems, saveCustomItems, loadRemovedItemIds, saveRemovedItemIds } from '@/lib/user-dimension-items'
+import type { UserCustomItem } from '@/lib/user-dimension-items'
 
 interface DimensionCardProps {
   config: DimensionConfig
@@ -32,7 +34,8 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
   const parsedValue = parseDimensionValue(value)
   const [structuredData, setStructuredData] = useState<Record<string, string>>(parsedValue.structured)
   const [freeformData, setFreeformData] = useState(parsedValue.freeform)
-  const [customItems, setCustomItems] = useState<{ id: string; label: string; placeholder: string }[]>([])
+  const [customItems, setCustomItems] = useState<UserCustomItem[]>([])
+  const [removedIds, setRemovedIds] = useState<string[]>([])
   const [localValues, setLocalValues] = useState<Record<string, string>>({})
   const [isComposing, setIsComposing] = useState(false)
 
@@ -45,6 +48,11 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
     }
   }, [value, isComposing])
 
+  useEffect(() => {
+    setCustomItems(loadCustomItems(config.key))
+    setRemovedIds(loadRemovedItemIds(config.key))
+  }, [config.key])
+
   const updateStructuredItem = (itemId: string, itemValue: string) => {
     setLocalValues(prev => ({ ...prev, [itemId]: itemValue }))
     if (!isComposing) {
@@ -54,6 +62,9 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
   }
 
   const removeStructuredItem = (itemId: string) => {
+    const updated = [...removedIds, itemId]
+    setRemovedIds(updated)
+    saveRemovedItemIds(config.key, updated)
     const newStructured = { ...structuredData, ...localValues }
     delete newStructured[itemId]
     delete localValues[itemId]
@@ -62,13 +73,17 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
 
   const addCustomItem = (label: string) => {
     const id = `custom_${Date.now()}`
-    const newItem = { id, label, placeholder: label }
-    setCustomItems([...customItems, newItem])
+    const newItem: UserCustomItem = { id, label, placeholder: label }
+    const updated = [...customItems, newItem]
+    setCustomItems(updated)
+    saveCustomItems(config.key, updated)
     emitChange({ ...structuredData, ...localValues }, freeformData)
   }
 
   const removeCustomItem = (itemId: string) => {
-    setCustomItems(customItems.filter(item => item.id !== itemId))
+    const updated = customItems.filter(item => item.id !== itemId)
+    setCustomItems(updated)
+    saveCustomItems(config.key, updated)
     const newStructured = { ...structuredData, ...localValues }
     delete newStructured[itemId]
     emitChange(newStructured, freeformData)
@@ -108,8 +123,10 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
   }
 
   const allItems = [
-    ...config.structuredItems.map(item => ({ ...item, isCustom: false })),
-    ...customItems.map(item => ({ ...item, isCustom: true })),
+    ...config.structuredItems
+      .filter(item => !removedIds.includes(item.id))
+      .map(item => ({ ...item, isCustom: false as const })),
+    ...customItems.map(item => ({ ...item, isCustom: true as const })),
   ]
 
   const hasAnyContent = Object.values(structuredData).some(v => v) || freeformData
@@ -139,7 +156,6 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
 
       {!collapsed && (
         <div className="mt-3 space-y-4">
-          {/* 结构化项目区域 */}
           {allItems.length > 0 && (
             <div className="space-y-2">
               {allItems.map(item => (
@@ -163,12 +179,10 @@ export function DimensionCard({ config, value, onChange, collapsed, onToggle }: 
                   />
                 </div>
               ))}
-              {/* 添加自定义项目 */}
               <AddItemButton onAdd={addCustomItem} />
             </div>
           )}
 
-          {/* 自由填写区域 */}
           <div>
             <textarea
               value={freeformData}
