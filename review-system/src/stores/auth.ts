@@ -28,13 +28,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token: user.token,
       isAuthenticated: true,
     })
-    // 同步到 localStorage
-    localStorage.setItem('zhihr_access_token', user.token)
-    if (user.refreshToken) {
-      localStorage.setItem('zhihr_refresh_token', user.refreshToken)
-    }
-    localStorage.setItem('zhihr_user_id', user.userId)
-    localStorage.setItem('zhihr_username', user.username)
   },
 
   clearAuth: () => {
@@ -44,10 +37,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token: null,
       isAuthenticated: false,
     })
-    localStorage.removeItem('zhihr_access_token')
-    localStorage.removeItem('zhihr_refresh_token')
-    localStorage.removeItem('zhihr_user_id')
-    localStorage.removeItem('zhihr_username')
   },
 
   openModal: (tab = 'login') => {
@@ -91,6 +80,23 @@ export function initAuthFromSharedAuth() {
 
   onAuthEvent('auth:logout', () => {
     useAuthStore.getState().clearAuth()
+  })
+
+  // 监听 auth:change（跨标签页同步时由 storage 事件触发）
+  onAuthEvent('auth:change', (state) => {
+    if (state.isAuthenticated) {
+      const token = getSharedAuthToken()
+      const user = getSharedAuthUser()
+      if (token && user) {
+        useAuthStore.getState().setAuth({
+          userId: user.userId,
+          username: user.username,
+          token,
+        })
+      }
+    } else {
+      useAuthStore.getState().clearAuth()
+    }
   })
 }
 
