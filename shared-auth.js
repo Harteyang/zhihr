@@ -192,9 +192,32 @@
   }
 
   // ==================== Token 刷新 ====================
+  let refreshRetryCount = 0;
+  const MAX_REFRESH_RETRIES = 3;
+
   async function refreshToken() {
     const currentRefreshToken = getFromStorage(CONFIG.REFRESH_TOKEN_KEY);
+
+    // 没有 refreshToken：判断 access_token 是否真的过期
     if (!currentRefreshToken) {
+      const currentAccessToken = getFromStorage(CONFIG.TOKEN_KEY);
+      if (currentAccessToken && !isTokenExpired(currentAccessToken)) {
+        // access_token 仍然有效，只是缺少 refresh_token，不销毁登录态
+        console.warn('[SharedAuth] No refreshToken found but access token is still valid, keeping session');
+        // 在没有 refreshToken 的情况下，改用较短间隔检查 access_token 是否过期
+        refreshTimer = setTimeout(async () => {
+          const token = getFromStorage(CONFIG.TOKEN_KEY);
+          if (!token || isTokenExpired(token)) {
+            clearStorage();
+            updateStateFromStorage();
+            emit('auth:expired');
+          } else {
+            scheduleTokenRefresh();
+          }
+        }, 60 * 1000); // 每分钟检查一次
+        return null;
+      }
+      // access_token 确实过期了，清除登录态
       if (state.isAuthenticated) {
         clearStorage();
         updateStateFromStorage();
@@ -202,6 +225,9 @@
       }
       return null;
     }
+
+    // 重置重试计数（成功获取到 refreshToken 后）
+    refreshRetryCount = 0;
 
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/refresh`, {
@@ -211,7 +237,6 @@
       });
 
       if (response.status === 401 || response.status === 403) {
-        // refreshToken 已失效，需重新登录
         clearStorage();
         updateStateFromStorage();
         emit('auth:expired');
@@ -219,7 +244,6 @@
       }
 
       if (!response.ok) {
-        // 网络错误或其他服务器错误，不销毁已有登录态，下次再试
         console.warn('[SharedAuth] Token refresh failed (will retry later):', response.status);
         scheduleTokenRefresh();
         return null;
@@ -227,7 +251,6 @@
 
       const result = await response.json();
       if (!result.success) {
-        // refreshToken 被服务端拒绝，需重新登录
         clearStorage();
         updateStateFromStorage();
         emit('auth:expired');
@@ -235,16 +258,25 @@
       }
 
       const { token, refreshToken: newRefreshToken } = result.data;
-      
-      setToStorage(CONFIG.TOKEN_KEY, token);
-      setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
-      
+
+      if (token) {
+        setToStorage(CONFIG.TOKEN_KEY, token);
+      }
+      if (newRefreshToken) {
+        setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
+      }
+
       updateStateFromStorage();
 
       return token;
     } catch (error) {
-      // 网络异常（断网、超时等）不销毁登录态，安排重试
       console.warn('[SharedAuth] Token refresh network error (will retry later):', error);
+      refreshRetryCount++;
+      if (refreshRetryCount >= MAX_REFRESH_RETRIES) {
+        console.warn('[SharedAuth] Max refresh retries reached, will retry on next page load');
+        refreshRetryCount = 0;
+        return null;
+      }
       scheduleTokenRefresh();
       return null;
     }
@@ -258,17 +290,16 @@
 
     if (!state.token) return;
 
-    // 解析 JWT 获取过期时间
     const expiryTime = getTokenExpiryTime(state.token);
 
     if (expiryTime) {
-      // 有明确过期时间：在过期前 TOKEN_REFRESH_BUFFER 秒刷新
       const timeUntilExpiry = expiryTime - Date.now();
       const timeUntilRefresh = Math.max(timeUntilExpiry - CONFIG.TOKEN_REFRESH_BUFFER * 1000, 0);
 
-      // 如果已经过期或即将过期，立即刷新
       if (timeUntilRefresh <= 0) {
-        refreshToken();
+        refreshTimer = setTimeout(() => {
+          refreshToken();
+        }, 1000);
         return;
       }
 
@@ -276,13 +307,10 @@
         await refreshToken();
       }, timeUntilRefresh);
     } else {
-      // 无法解析 JWT（如旧的 token 格式），退化为定期检查策略
       refreshTimer = setTimeout(async () => {
-        // 检查 token 是否还在（用户没手动清除）
         const currentToken = getFromStorage(CONFIG.TOKEN_KEY);
         if (!currentToken) return;
 
-        // 尝试刷新，失败也不销毁登录态，下次继续检查
         try {
           const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/refresh`, {
             method: 'POST',
@@ -294,8 +322,8 @@
             const result = await response.json();
             if (result.success && result.data) {
               const { token, refreshToken: newRefreshToken } = result.data;
-              setToStorage(CONFIG.TOKEN_KEY, token);
-              setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
+              if (token) setToStorage(CONFIG.TOKEN_KEY, token);
+              if (newRefreshToken) setToStorage(CONFIG.REFRESH_TOKEN_KEY, newRefreshToken);
               updateStateFromStorage();
             }
           }
@@ -303,7 +331,6 @@
           // 忽略，下次继续
         }
 
-        // 继续安排下一次检查
         scheduleTokenRefresh();
       }, CONFIG.TOKEN_CHECK_INTERVAL);
     }
@@ -375,10 +402,10 @@
 
       const { userId, username: name, token, refreshToken } = result.data;
 
-      setToStorage(CONFIG.USER_ID_KEY, userId);
-      setToStorage(CONFIG.USERNAME_KEY, name);
-      setToStorage(CONFIG.TOKEN_KEY, token);
-      setToStorage(CONFIG.REFRESH_TOKEN_KEY, refreshToken);
+      if (userId) setToStorage(CONFIG.USER_ID_KEY, userId);
+      if (name) setToStorage(CONFIG.USERNAME_KEY, name);
+      if (token) setToStorage(CONFIG.TOKEN_KEY, token);
+      if (refreshToken) setToStorage(CONFIG.REFRESH_TOKEN_KEY, refreshToken);
 
       updateStateFromStorage();
       emit('auth:login', { userId, username: name });
@@ -418,10 +445,10 @@
 
       const { userId, username: name, token, refreshToken } = result.data;
 
-      setToStorage(CONFIG.USER_ID_KEY, userId);
-      setToStorage(CONFIG.USERNAME_KEY, name);
-      setToStorage(CONFIG.TOKEN_KEY, token);
-      setToStorage(CONFIG.REFRESH_TOKEN_KEY, refreshToken);
+      if (userId) setToStorage(CONFIG.USER_ID_KEY, userId);
+      if (name) setToStorage(CONFIG.USERNAME_KEY, name);
+      if (token) setToStorage(CONFIG.TOKEN_KEY, token);
+      if (refreshToken) setToStorage(CONFIG.REFRESH_TOKEN_KEY, refreshToken);
 
       updateStateFromStorage();
       emit('auth:register', { userId, username: name });
