@@ -2,6 +2,7 @@ import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
 import { BarChart3, TrendingUp, Calendar, FileText } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { parseDimensionValue } from '@/types/review'
 
 // ECharts is loaded via CDN in index.html
 declare global {
@@ -195,21 +196,27 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
 
 function calculateStreak(dates: string[]): number {
   if (dates.length === 0) return 0
-  const sorted = [...dates].sort().reverse()
-  const today = new Date().toISOString().split('T')[0]
-  let streak = 0
-  let checkDate = today
 
-  for (const date of sorted) {
-    if (date === checkDate) {
+  // 去重并按日期降序排列
+  const uniqueDates = [...new Set(dates)].sort().reverse()
+
+  // 从最近一条记录的日期开始往前计算连续天数
+  let streak = 1
+  let checkDate = uniqueDates[0]
+
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const d = new Date(checkDate)
+    d.setDate(d.getDate() - 1)
+    const expectedPrev = d.toISOString().split('T')[0]
+
+    if (uniqueDates[i] === expectedPrev) {
       streak++
-      const d = new Date(checkDate)
-      d.setDate(d.getDate() - 1)
-      checkDate = d.toISOString().split('T')[0]
-    } else if (date < checkDate) {
+      checkDate = uniqueDates[i]
+    } else {
       break
     }
   }
+
   return streak
 }
 
@@ -218,7 +225,15 @@ function calculateDimensionStats(reviews: any[]) {
   const total = reviews.length || 1
 
   return keys.map(key => {
-    const count = reviews.filter(r => r.content && r.content[key] && r.content[key].trim()).length
+    const count = reviews.filter(r => {
+      if (!r.content || !r.content[key]) return false
+      const parsed = parseDimensionValue(r.content[key])
+      // 检查 structured 中是否有非空值
+      const hasStructured = Object.values(parsed.structured).some(v => v && v.trim().length > 0)
+      // 检查 freeform 是否有非空文本
+      const hasFreeform = parsed.freeform && parsed.freeform.trim().length > 0
+      return hasStructured || hasFreeform
+    }).length
     return { key, count, percentage: Math.round((count / total) * 100) }
   }).sort((a, b) => b.count - a.count)
 }
