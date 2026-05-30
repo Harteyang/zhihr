@@ -4,11 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>花名册生成员工数据看板</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" id="theme-color" content="#ffffff" />
+
+    <!-- 在页面渲染前同步主题，防止闪烁 -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (!t) {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+        var meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', t === 'dark' ? '#1e293b' : '#ffffff');
+      })();
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {

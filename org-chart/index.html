@@ -10,6 +10,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- 页面标题 -->
     <title>组织架构图 - 知HR工具集</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" id="theme-color" content="#ffffff" />
+
+    <!-- 在页面渲染前同步主题，防止闪烁 -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (!t) {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        if (t === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+        var meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', t === 'dark' ? '#1e293b' : '#ffffff');
+      })();
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1796,6 +1813,23 @@
 
             // 更新主题图标
             updateThemeIcon();
+            const meta = document.getElementById('theme-color');
+            if (meta) meta.setAttribute('content', isDark ? '#1e293b' : '#ffffff');
+        });
+
+        // 监听系统主题变化（仅在用户没有手动设置时自动切换）
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const saved = localStorage.getItem('theme');
+            if (!saved) {
+                if (e.matches) {
+                    html.classList.add('dark');
+                } else {
+                    html.classList.remove('dark');
+                }
+                updateThemeIcon();
+                const meta = document.getElementById('theme-color');
+                if (meta) meta.setAttribute('content', e.matches ? '#1e293b' : '#ffffff');
+            }
         });
 
         // 根据主题状态更新图标
