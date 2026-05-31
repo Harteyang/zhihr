@@ -1,5 +1,6 @@
 import type { Review, ReviewContent } from '@/types/review'
 import { parseDimensionValue } from '@/types/review'
+import { getLocalDateString } from './utils'
 
 export function hasContentChanged(newContent: ReviewContent, existingContent: ReviewContent, newSummary?: string, existingSummary?: string): boolean {
   const keys = ['health', 'work', 'study', 'social', 'finance', 'life', 'spirit', 'leisure'] as const
@@ -31,7 +32,9 @@ const MAX_SIZE = 4 * 1024 * 1024
 const MAX_RECORDS = 500
 
 function daysAgo(n: number): string {
-  return new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const d = new Date()
+  d.setDate(d.getDate() - n)
+  return getLocalDateString(d)
 }
 
 export function saveToLocalStorage(reviews: Review[]): void {

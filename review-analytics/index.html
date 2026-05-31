@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>复盘分析 - 知HR工具集</title>
   <link rel="icon" type="image/svg+xml" href="../review-system/favicon.svg" />
-  <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" id="theme-color" content="#ffffff" />
 
   <!-- 在页面渲染前同步主题，防止闪烁 -->
@@ -35,9 +34,26 @@
   <script src="../shared-auth.js"></script>
   <script src="../shared-auth-modal.js"></script>
   <style>
+    :root { color-scheme: light; }
+    html.dark { color-scheme: dark; }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+      -webkit-text-fill-color: inherit;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      transition: background-color 5000s ease-in-out 0s;
+      caret-color: inherit;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif; }
-    .dark body { color-scheme: dark; }
     .chart-container { width: 100%; height: 100%; min-height: 300px; }
     .tab-btn.active { background: white; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .dark .tab-btn.active { background: #334155; color: #f1f5f9; }
@@ -378,13 +394,27 @@ function parseDimensionValue(value) {
   return { structured: {}, freeform: '' };
 }
 
+function hasDimensionContent(value) {
+  const parsed = parseDimensionValue(value)
+  const hasStructured = Object.values(parsed.structured).some(v => v && v.trim().length > 0)
+  const hasFreeform = parsed.freeform && parsed.freeform.trim().length > 0
+  return hasStructured || hasFreeform
+}
+
 function extractNumber(str) {
   if (!str) return null;
   const m = str.match(/(\d+(\.\d+)?)/);
   return m ? parseFloat(m[1]) : null;
 }
 
-function getToday() { return new Date().toISOString().split('T')[0]; }
+function getLocalDateString(d) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getToday() { return getLocalDateString(new Date()); }
 
 function formatDate(d) {
   try { return new Date(d).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }); } catch { return d; }
@@ -392,7 +422,7 @@ function formatDate(d) {
 
 function daysAgo(n) {
   const d = new Date(); d.setDate(d.getDate() - n);
-  return d.toISOString().split('T')[0];
+  return getLocalDateString(d);
 }
 
 function getMonthStr(date) { return date.substring(0, 7); }
@@ -515,7 +545,7 @@ function renderDashboard() {
   let streak = 0;
   const d = new Date(todayStr);
   while (true) {
-    const ds = d.toISOString().split('T')[0];
+    const ds = getLocalDateString(d);
     if (reviews.some(r => r.date === ds)) { streak++; d.setDate(d.getDate() - 1); }
     else break;
   }
@@ -526,7 +556,7 @@ function renderDashboard() {
   reviews.forEach(r => {
     if (r.content && typeof r.content === 'object') {
       Object.keys(r.content).forEach(k => {
-        if (dimCounts[k] !== undefined) { dimCounts[k]++; totalRecords++; }
+        if (dimCounts[k] !== undefined && hasDimensionContent(r.content[k])) { dimCounts[k]++; totalRecords++; }
       });
     }
   });
@@ -576,7 +606,7 @@ function renderCalendarHeatmap() {
     if (dayReviews.length > 0) {
       dayReviews.forEach(r => {
         if (r.content && typeof r.content === 'object') {
-          count += Object.keys(r.content).filter(k => DIMENSIONS.some(dk => dk.key === k) && r.content[k]).length;
+          count += Object.keys(r.content).filter(k => DIMENSIONS.some(dk => dk.key === k) && hasDimensionContent(r.content[k])).length;
         }
       });
     }
@@ -633,7 +663,7 @@ function renderRadarChart() {
   recent.forEach(r => {
     if (r.content && typeof r.content === 'object') {
       Object.keys(r.content).forEach(k => {
-        if (dimCounts[k] !== undefined && r.content[k]) dimCounts[k]++;
+        if (dimCounts[k] !== undefined && hasDimensionContent(r.content[k])) dimCounts[k]++;
       });
     }
   });
@@ -1082,7 +1112,7 @@ function renderMonthlyReport() {
 
   const prevMonthDate = new Date(selectedMonth + '-01');
   prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-  const prevMonthStr = getMonthStr(prevMonthDate.toISOString().split('T')[0]);
+  const prevMonthStr = getMonthStr(getLocalDateString(prevMonthDate));
   const prevMonthReviews = reviews.filter(r => getMonthStr(r.date) === prevMonthStr);
 
   const overview = document.getElementById('monthly-overview');
@@ -1337,7 +1367,7 @@ function generateAlerts() {
   const d = new Date(sortedReviews[0].date);
   const end = new Date(todayStr);
   while (d <= end) {
-    allDates.push(d.toISOString().split('T')[0]);
+    allDates.push(getLocalDateString(d));
     d.setDate(d.getDate() + 1);
   }
   allDates.sort();

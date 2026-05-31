@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useReviewsStore } from '@/stores/reviews'
 import { useAuthStore } from '@/stores/auth'
-import { saveAutosave, clearAutosave } from '@/lib/storage'
+import { saveAutosave, loadAutosave, clearAutosave } from '@/lib/storage'
 import { DEFAULT_DIMENSIONS } from '@/lib/dimensions'
 import type { ReviewContent, ReviewMode } from '@/types/review'
 import { getEmptyDimensionData, formatDimensionValue } from '@/types/review'
@@ -56,6 +56,15 @@ export function RecordTab() {
     }, 1500)
     return () => clearTimeout(timer)
   }, [content, summary])
+
+  // 加载缓存的自动保存数据
+  useEffect(() => {
+    const saved = loadAutosave()
+    if (saved && saved.date === getToday()) {
+      setContent(saved.content as ReviewContent)
+      setSummary(saved.summary)
+    }
+  }, [setContent, setSummary, getToday])
 
   // 响应式
   useEffect(() => {

@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import { BarChart3, TrendingUp, Calendar, FileText } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { parseDimensionValue } from '@/types/review'
+import { getLocalDateString } from '@/lib/utils'
 
 // ECharts is loaded via CDN in index.html
 declare global {
@@ -207,7 +208,7 @@ function calculateStreak(dates: string[]): number {
   for (let i = 1; i < uniqueDates.length; i++) {
     const d = new Date(checkDate)
     d.setDate(d.getDate() - 1)
-    const expectedPrev = d.toISOString().split('T')[0]
+    const expectedPrev = getLocalDateString(d)
 
     if (uniqueDates[i] === expectedPrev) {
       streak++
@@ -243,7 +244,7 @@ function getLast7Days(): string[] {
   for (let i = 6; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    days.push(d.toISOString().split('T')[0])
+    days.push(getLocalDateString(d))
   }
   return days
 }
