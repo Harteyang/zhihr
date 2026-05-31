@@ -26,3 +26,8 @@ dist/
 *.env
 *.env.local
 *.secret
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
