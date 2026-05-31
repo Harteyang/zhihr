@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>花名册生成员工数据看板</title>
-    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" id="theme-color" content="#ffffff" />
 
     <!-- 在页面渲染前同步主题，防止闪烁 -->
@@ -78,6 +77,24 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <style>
+        :root { color-scheme: light; }
+        html.dark { color-scheme: dark; }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus {
+          -webkit-text-fill-color: inherit;
+          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+          transition: background-color 5000s ease-in-out 0s;
+          caret-color: inherit;
+        }
+
         /* ========================================
            员工数据看板 - 样式文件
            ======================================== */
@@ -880,6 +897,13 @@
         // 日期处理
         // ============================================
 
+function getLocalDateString(d) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
         /**
          * 增强的日期解析函数
          */
@@ -887,7 +911,7 @@
             // Excel日期数字处理
             if (!isNaN(dateValue) && dateValue > 25569) {
                 const date = new Date((dateValue - 25569) * 86400000);
-                return date.toISOString().split('T')[0];
+                return getLocalDateString(date);
             }
 
             // 字符串日期处理
@@ -899,7 +923,7 @@
 
                 const parsed = new Date(cleaned);
                 if (!isNaN(parsed.getTime())) {
-                    return parsed.toISOString().split('T')[0];
+                    return getLocalDateString(parsed);
                 }
 
                 // 多种格式尝试
@@ -922,7 +946,7 @@
 
                         const date = new Date(year + '-' + month + '-' + day);
                         if (!isNaN(date.getTime())) {
-                            return date.toISOString().split('T')[0];
+                            return getLocalDateString(date);
                         }
                     }
                 }
