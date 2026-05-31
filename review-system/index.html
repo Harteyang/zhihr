@@ -20,18 +20,20 @@
         }
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
-          document.getElementById('theme-color').setAttribute('content', '#1e293b');
+          var meta = document.getElementById('theme-color');
+          if (meta) meta.setAttribute('content', '#1e293b');
         }
         // 监听系统主题变化
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
           var saved = localStorage.getItem('theme');
           if (!saved) {
+            var meta = document.getElementById('theme-color');
             if (e.matches) {
               document.documentElement.classList.add('dark');
-              document.getElementById('theme-color').setAttribute('content', '#1e293b');
+              if (meta) meta.setAttribute('content', '#1e293b');
             } else {
               document.documentElement.classList.remove('dark');
-              document.getElementById('theme-color').setAttribute('content', '#ffffff');
+              if (meta) meta.setAttribute('content', '#ffffff');
             }
           }
         });
