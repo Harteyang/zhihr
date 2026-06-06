@@ -5,11 +5,6 @@ import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
   base: '/moodist',
-  vite: {
-    define: {
-      'import.meta.env.SOUNDS_CDN_URL': JSON.stringify(process.env.SOUNDS_CDN_URL || ''),
-    },
-  },
   devToolbar: {
     enabled: false,
   },
@@ -36,7 +31,7 @@ export default defineConfig({
       },
       registerType: 'prompt',
       workbox: {
-        globPatterns: ['**/*', '!sounds/**/*'],
+        globPatterns: ['**/*'],
         maximumFileSizeToCacheInBytes: Number.MAX_SAFE_INTEGER,
         navigateFallback: '/moodist',
       },

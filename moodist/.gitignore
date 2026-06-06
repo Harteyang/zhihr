@@ -17,8 +17,5 @@ pnpm-debug.log*
 .env
 .env.production
 
-# sound files (hosted on CDN)
-public/sounds/
-
 # macOS-specific files
 .DS_Store
