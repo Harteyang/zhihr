@@ -44,7 +44,7 @@ export const Sound = forwardRef<HTMLDivElement, SoundProps>(function Sound(
 
   const isLoading = useLoadingStore(state => state.loaders[src]);
 
-  const sound = useSound(src, { loop: true, volume: adjustedVolume });
+  const sound = useSound(src, { loop: true, volume: adjustedVolume }, true);
 
   useEffect(() => {
     if (locked) return;
