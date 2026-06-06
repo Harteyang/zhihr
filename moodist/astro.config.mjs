@@ -4,6 +4,7 @@ import react from '@astrojs/react';
 import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
+  base: '/moodist',
   devToolbar: {
     enabled: false,
   },
@@ -23,16 +24,16 @@ export default defineConfig({
         ],
         name: 'Moodist',
         orientation: 'any',
-        scope: '/',
+        scope: '/moodist',
         short_name: 'Moodist',
-        start_url: '/',
+        start_url: '/moodist',
         theme_color: '#09090b',
       },
       registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*', '!sounds/**/*'],
         maximumFileSizeToCacheInBytes: Number.MAX_SAFE_INTEGER,
-        navigateFallback: '/',
+        navigateFallback: '/moodist',
       },
     }),
   ],
