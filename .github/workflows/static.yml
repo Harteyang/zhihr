@@ -52,14 +52,13 @@ jobs:
         run: |
           cd moodist
           pnpm install
-          # When SOUNDS_CDN_URL is set, exclude local sounds from build output
-          if [ -n "${{ secrets.SOUNDS_CDN_URL }}" ]; then
-            mv public/sounds /tmp/sounds-backup
+          # Use jsdelivr CDN for sounds (from original moodist repo)
+          # Override with SOUNDS_CDN_URL secret if set
+          CDN_URL="${{ secrets.SOUNDS_CDN_URL }}"
+          if [ -z "$CDN_URL" ]; then
+            CDN_URL="https://cdn.jsdelivr.net/gh/remvze/moodist@main/public/sounds"
           fi
-          SOUNDS_CDN_URL=${{ secrets.SOUNDS_CDN_URL }} pnpm build
-          if [ -d /tmp/sounds-backup ]; then
-            mv /tmp/sounds-backup public/sounds
-          fi
+          SOUNDS_CDN_URL="$CDN_URL" pnpm build
 
       - name: Prepare deployment
         run: |
