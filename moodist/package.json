@@ -35,6 +35,7 @@
     "@types/react-dom": "^18.2.10",
     "autoprefixer": "10.4.16",
     "postcss-nesting": "12.0.1",
+    "vite-plugin-pwa": "0.21.2",
     "workbox-window": "7.4.0"
   }
 }

@@ -92,6 +92,7 @@ export function MediaSessionTrack() {
     <audio
       id="media-session-track"
       loop
+      preload="none"
       ref={masterAudioSoundRef}
       src={getAssetPath('/sounds/silence.wav')}
     />

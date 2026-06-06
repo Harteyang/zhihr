@@ -31,7 +31,7 @@
   scroll-padding-bottom: 12px;
 
   &:focus-visible {
-    outline: 2px solid var(--color-neutral-400);
+    outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
 }

@@ -142,7 +142,12 @@ export const useSoundStore = create<SoundStore>()(
           sounds[id].volume = random(0.2, 1);
         });
 
-        set({ history: null, isPlaying: true, sounds });
+        // Set selection first without playing, then play after a short delay
+        // to avoid blocking the UI when loading multiple sounds simultaneously
+        set({ history: null, isPlaying: false, sounds });
+        requestAnimationFrame(() => {
+          set({ isPlaying: true });
+        });
       },
 
       sounds: createInitialSounds(),

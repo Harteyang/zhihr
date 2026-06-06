@@ -84,6 +84,9 @@ importers:
       postcss-nesting:
         specifier: 12.0.1
         version: 12.0.1(postcss@8.5.15)
+      vite-plugin-pwa:
+        specifier: 0.21.2
+        version: 0.21.2(vite@5.4.21(terser@5.48.0))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       workbox-window:
         specifier: 7.4.0
         version: 7.4.0

@@ -22,6 +22,6 @@ body {
 }
 
 ::selection {
-  color: var(--color-foreground);
-  background-color: var(--color-neutral-300);
+  color: var(--color-primary-foreground);
+  background-color: var(--color-primary);
 }

@@ -13,7 +13,7 @@
   transition: 0.2s;
 
   &:focus-visible {
-    outline: 2px solid var(--color-neutral-400);
+    outline: 2px solid var(--color-ring);
     outline-offset: 2px;
   }
 
@@ -95,10 +95,10 @@
 
   &.selected {
     border-color: transparent;
-    box-shadow: 0 0 0 2px var(--color-neutral-800);
+    box-shadow: 0 0 0 2px var(--color-primary);
 
     & .icon {
-      color: var(--color-foreground);
+      color: var(--color-primary);
     }
   }
 

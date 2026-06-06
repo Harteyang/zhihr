@@ -20,6 +20,7 @@ export function SettingsModal({ onClose, show }: SettingsModalProps) {
       <header className={styles.header}>
         <h2 className={styles.title}>设置</h2>
         <p className={styles.desc}>控制全局音量和闹钟音量。</p>
+      </header>
 
       <div className={styles.group}>
         <p className={styles.label}>全局音量</p>

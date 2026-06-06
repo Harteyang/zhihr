@@ -26,7 +26,7 @@
     padding-top: 40px;
     margin: 0 auto;
     pointer-events: fill;
-    background-color: var(--color-neutral-100);
+    background-color: var(--color-card);
     border-radius: 8px;
 
     &.wide {
@@ -54,7 +54,7 @@
       outline: none;
 
       &:focus-visible {
-        outline: 2px solid var(--color-neutral-400);
+        outline: 2px solid var(--color-ring);
         outline-offset: 2px;
       }
     }
