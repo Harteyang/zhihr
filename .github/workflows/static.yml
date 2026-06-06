@@ -38,7 +38,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/package.json') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml', 'moodist/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
@@ -48,16 +48,31 @@ jobs:
           pnpm install
           VITE_BASE=/review-system/ pnpm build
 
+      - name: Build moodist
+        run: |
+          cd moodist
+          pnpm install
+          # When SOUNDS_CDN_URL is set, exclude local sounds from build output
+          if [ -n "${{ secrets.SOUNDS_CDN_URL }}" ]; then
+            mv public/sounds /tmp/sounds-backup
+          fi
+          SOUNDS_CDN_URL=${{ secrets.SOUNDS_CDN_URL }} pnpm build
+          if [ -d /tmp/sounds-backup ]; then
+            mv /tmp/sounds-backup public/sounds
+          fi
+
       - name: Prepare deployment
         run: |
           # Create a staging directory with the correct structure
           mkdir -p /tmp/deploy
-          # Copy everything except review-system source code
-          for item in $(ls -A | grep -v review-system); do
+          # Copy everything except source code directories
+          for item in $(ls -A | grep -v -E '^(review-system|moodist)$'); do
             cp -r "$item" /tmp/deploy/
           done
           # Copy review-system build output (dist) as the review-system directory
           cp -r review-system/dist /tmp/deploy/review-system
+          # Copy moodist build output as the moodist directory
+          cp -r moodist/dist /tmp/deploy/moodist
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

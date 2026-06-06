@@ -1,0 +1,156 @@
+---
+import { Container } from '@/components/container';
+
+import { count as soundCount } from '@/lib/sounds';
+
+const count = soundCount();
+
+const paragraphs = [
+  {
+    body: '渴望从日常琐事中获得平静的放松？需要完美的音景来提升专注力或帮助安然入睡？别再寻找了，Moodist 就是您的免费开源环境音效生成器！无需订阅，无需注册——使用 Moodist，您可以免费解锁一个舒缓而沉浸式的音频体验世界。',
+    title: '免费环境音效',
+  },
+  {
+    body: `深入探索 ${count} 种精心策划的音效。自然爱好者可以在溪流的轻柔低语、海浪的节奏拍打或篝火的噼啪温暖中找到慰藉。城市景观随着咖啡馆的柔和嗡嗡声、火车的有节奏咔嗒声或交通的舒缓白噪音而生动起来。对于那些寻求更深层次专注或放松的人，Moodist 提供旨在增强您心境的双耳节拍和彩色噪音。`,
+    title: '精心策划的音效',
+  },
+  {
+    body: 'Moodist 的美妙之处在于其简洁性和可定制性。没有复杂的菜单或令人困惑的选项——只需选择您想要的声音，调整音量平衡，然后播放。想将鸟儿的轻柔啁啾与舒缓的雨声混合在一起？没问题！随意叠加任意数量的声音，打造您个性化的音景绿洲。',
+    title: '创建您的音景',
+  },
+  {
+    body: "无论您是想在漫长的一天后放松身心、在工作时提高专注力，还是让自己安然入睡，Moodist 都有适合您的完美音景。最重要的是？它完全免费且开源，因此您可以毫无顾虑地享受其好处。今天就开始使用 Moodist，发现您新的宁静和专注天堂！",
+    title: '随时随地的音效',
+  },
+];
+---
+
+<section class="about">
+  <div class="effect"></div>
+
+  <Container tight>
+    {
+      paragraphs.map((paragraph, index) => (
+        <div class="paragraph">
+          <div class="counter">
+            <span>0{index + 1}</span> / 0{paragraphs.length}
+          </div>
+
+          <h2 class="title">{paragraph.title}</h2>
+          <p class="body">{paragraph.body}</p>
+        </div>
+      ))
+    }
+
+    <button class="button" id="use-moodist"> 使用 Moodist</button>
+  </Container>
+</section>
+
+<script lang="ts">
+  const button = document.getElementById('use-moodist');
+
+  button.addEventListener('click', () => {
+    const app = document.getElementById('app');
+
+    app?.scrollIntoView();
+  });
+</script>
+
+<style>
+  .about {
+    padding-top: 10px;
+
+    & .effect {
+      position: sticky;
+      top: 0;
+      height: 80px;
+      background: linear-gradient(var(--color-neutral-50), transparent);
+    }
+
+    & .paragraph {
+      padding: 30px 0;
+      background: linear-gradient(
+        transparent,
+        var(--color-neutral-50) 10%,
+        var(--color-neutral-50) 90%,
+        transparent
+      );
+
+      &:last-of-type {
+        padding-bottom: 0;
+      }
+
+      & .counter {
+        width: max-content;
+        padding: 6px 16px;
+        margin-bottom: 16px;
+        font-size: var(--font-xsm);
+        color: var(--color-foreground-subtle);
+        background: linear-gradient(var(--color-neutral-100), transparent);
+        border: 1px solid var(--color-neutral-300);
+        border-radius: 20px 20px 20px 8px;
+
+        & span {
+          font-weight: 500;
+          color: var(--color-foreground);
+        }
+      }
+
+      & .title {
+        margin-bottom: 8px;
+        font-family: var(--font-heading);
+        font-size: var(--font-md);
+        font-weight: 600;
+      }
+
+      & .body {
+        line-height: 1.6;
+        color: var(--color-foreground-subtle);
+      }
+    }
+
+    .button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      margin-top: 20px;
+      font-size: var(--font-xsm);
+      font-weight: 500;
+      color: var(--color-foreground);
+      cursor: pointer;
+      background-color: transparent;
+      border: 1px solid var(--color-neutral-200);
+      border-radius: 50px;
+      outline: none;
+      transition: 0.2s;
+
+      &::before {
+        position: absolute;
+        top: -1px;
+        left: 50%;
+        width: 70%;
+        height: 1px;
+        content: '';
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--color-neutral-300),
+          transparent
+        );
+        transform: translateX(-50%);
+      }
+
+      &:hover,
+      &:focus-visible {
+        background-color: var(--color-neutral-100);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-neutral-400);
+        outline-offset: 2px;
+      }
+    }
+  }
+</style>
