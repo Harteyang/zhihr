@@ -5,6 +5,11 @@ import AstroPWA from '@vite-pwa/astro';
 
 export default defineConfig({
   base: '/moodist',
+  vite: {
+    define: {
+      'import.meta.env.SOUNDS_CDN_URL': JSON.stringify(process.env.SOUNDS_CDN_URL || ''),
+    },
+  },
   devToolbar: {
     enabled: false,
   },
@@ -18,7 +23,7 @@ export default defineConfig({
         icons: [
           ...[72, 128, 144, 152, 192, 256, 512].map(size => ({
             sizes: `${size}x${size}`,
-            src: `/assets/pwa/${size}.png`,
+            src: `/moodist/assets/pwa/${size}.png`,
             type: 'image/png',
           })),
         ],
