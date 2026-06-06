@@ -20,7 +20,7 @@ export function MediaSessionTrack() {
   const play = useSoundStore(state => state.play);
   const pause = useSoundStore(state => state.pause);
   const masterAudioSoundRef = useRef<HTMLAudioElement>(null);
-  const artworkURL = isDarkTheme ? '/logo-dark.png' : '/logo-light.png';
+  const artworkURL = isDarkTheme ? getAssetPath('/logo-dark.png') : getAssetPath('/logo-light.png');
 
   useEffect(() => {
     if (!isBrowser || !isPlaying) return;
