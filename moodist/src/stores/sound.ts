@@ -127,27 +127,37 @@ export const useSoundStore = create<SoundStore>()(
       },
 
       shuffle() {
-        const sounds = get().sounds;
-        const ids = Object.keys(sounds);
+        const { sounds } = get();
 
-        ids.forEach(id => {
-          sounds[id].isSelected = false;
-          sounds[id].volume = 0.5;
-        });
+        // Build a new sounds object instead of mutating the existing one
+        const ids = Object.keys(sounds);
+        const nextSounds: Record<string, SoundValue> = {};
+
+        for (const id of ids) {
+          nextSounds[id] = {
+            ...sounds[id],
+            isSelected: false,
+            volume: 0.5,
+          };
+        }
 
         const randomIDs = pickMany(ids, 4);
 
-        randomIDs.forEach(id => {
-          sounds[id].isSelected = true;
-          sounds[id].volume = random(0.2, 1);
-        });
+        for (const id of randomIDs) {
+          nextSounds[id] = {
+            ...nextSounds[id],
+            isSelected: true,
+            volume: random(0.2, 1),
+          };
+        }
 
-        // Set selection first without playing, then play after a short delay
-        // to avoid blocking the UI when loading multiple sounds simultaneously
-        set({ history: null, isPlaying: false, sounds });
-        requestAnimationFrame(() => {
-          set({ isPlaying: true });
-        });
+        // Lock during shuffle to prevent re-entrance
+        set({ locked: true, history: null, isPlaying: false, sounds: nextSounds });
+
+        // Delay play to let UI settle and avoid loading all audio files at once
+        setTimeout(() => {
+          set({ isPlaying: true, locked: false });
+        }, 100);
       },
 
       sounds: createInitialSounds(),
