@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { cn } from '@/helpers/styles';
 import { useSoundStore } from '@/stores/sound';
 import { usePresetStore } from '@/stores/preset';
+import { useSnackbar } from '@/contexts/snackbar';
 
 import styles from './new.module.css';
 
@@ -12,11 +13,20 @@ export function New() {
   const noSelected = useSoundStore(state => state.noSelected());
   const sounds = useSoundStore(state => state.sounds);
   const addPreset = usePresetStore(state => state.addPreset);
+  const showSnackbar = useSnackbar();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name || noSelected) return;
+    if (!name) {
+      showSnackbar('请输入预设名称');
+      return;
+    }
+
+    if (noSelected) {
+      showSnackbar('请先选择一些声音再保存预设');
+      return;
+    }
 
     const _sounds: Record<string, number> = {};
 
@@ -27,7 +37,7 @@ export function New() {
       });
 
     addPreset(name, _sounds);
-
+    showSnackbar(`预设「${name}」已保存`);
     setName('');
   };
 
