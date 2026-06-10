@@ -7,6 +7,7 @@ import { useSSR } from './use-ssr';
 import { FADE_OUT } from '@/constants/events';
 
 const DEFAULT_FADE_DURATION = 250;
+const KEEP_ALIVE_INTERVAL = 3000;
 
 /**
  * A custom React hook to manage sound playback using Howler.js with additional features.
@@ -38,6 +39,9 @@ export function useSound(
   const fadeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const targetVolume = useRef(options.volume ?? 0.5);
   const isFadingOut = useRef(false);
+  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const soundRef = useRef<Howl | null>(null);
+  const loopRef = useRef(options.loop ?? false);
 
   const { isBrowser } = useSSR();
   const sound = useMemo<Howl | null>(() => {
@@ -76,6 +80,35 @@ export function useSound(
     }
   }, [sound, options.volume]);
 
+  // Sync refs for keep-alive interval (avoids stale closures)
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
+
+  useEffect(() => {
+    loopRef.current = options.loop ?? false;
+  }, [options.loop]);
+
+  const stopKeepAlive = useCallback(() => {
+    if (keepAliveRef.current) {
+      clearInterval(keepAliveRef.current);
+      keepAliveRef.current = null;
+    }
+  }, []);
+
+  const startKeepAlive = useCallback(() => {
+    stopKeepAlive();
+
+    // Periodically check if the sound has stopped unexpectedly (e.g., mobile
+    // screen-off pausing HTML5 audio) and restart it when loop is enabled.
+    keepAliveRef.current = setInterval(() => {
+      const s = soundRef.current;
+      if (s && loopRef.current && !s.playing()) {
+        s.play();
+      }
+    }, KEEP_ALIVE_INTERVAL);
+  }, [stopKeepAlive]);
+
   const clearFadeTimeout = useCallback(() => {
     if (fadeTimeout.current) {
       clearTimeout(fadeTimeout.current);
@@ -108,11 +141,15 @@ export function useSound(
 
         if (typeof cb === 'function') sound.once('end', cb);
       }
+
+      startKeepAlive();
     },
-    [src, setIsLoading, sound, hasLoaded, isLoading, clearFadeTimeout],
+    [src, setIsLoading, sound, hasLoaded, isLoading, clearFadeTimeout, startKeepAlive],
   );
 
   const stop = useCallback(() => {
+    stopKeepAlive();
+
     transitionToken.current += 1;
     isFadingOut.current = false;
     clearFadeTimeout();
@@ -121,11 +158,13 @@ export function useSound(
       sound.stop();
       sound.volume(targetVolume.current);
     }
-  }, [sound, clearFadeTimeout]);
+  }, [sound, clearFadeTimeout, stopKeepAlive]);
 
   const pause = useCallback(
     (duration: number = DEFAULT_FADE_DURATION) => {
       if (!sound) return;
+
+      stopKeepAlive();
 
       transitionToken.current += 1;
       const token = transitionToken.current;
@@ -157,7 +196,7 @@ export function useSound(
         sound.volume(targetVolume.current);
       }, duration);
     },
-    [sound, clearFadeTimeout],
+    [sound, clearFadeTimeout, stopKeepAlive],
   );
 
   const fadeOut = useCallback(
@@ -176,6 +215,15 @@ export function useSound(
   useEffect(() => {
     return () => clearFadeTimeout();
   }, [clearFadeTimeout]);
+
+  useEffect(() => {
+    return () => {
+      if (keepAliveRef.current) {
+        clearInterval(keepAliveRef.current);
+        keepAliveRef.current = null;
+      }
+    };
+  }, []);
 
   const control = useMemo(
     () => ({ fadeOut, isLoading, pause, play, stop }),
