@@ -75,7 +75,7 @@ export function SharedModal() {
 
     override(newSounds);
     setIsOpen(false);
-    showSnackbar('Done! You can now play the new selection.');
+    showSnackbar('已加载新的声音选择，点击播放按钮开始播放');
   };
 
   useCloseListener(() => setIsOpen(false));
