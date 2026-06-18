@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { BiSolidHeart } from 'react-icons/bi/index';
 import { Howler } from 'howler';
@@ -11,7 +11,7 @@ import { Buttons } from '@/components/buttons';
 import { Categories } from '@/components/categories';
 import { SharedModal } from '@/components/modals/shared';
 import { Toolbar } from '@/components/toolbar';
-import { SnackbarProvider } from '@/contexts/snackbar';
+import { SnackbarProvider, useSnackbar } from '@/contexts/snackbar';
 import { MediaControls } from '@/components/media-controls';
 
 import { sounds } from '@/data/sounds';
@@ -19,6 +19,37 @@ import { FADE_OUT } from '@/constants/events';
 
 import type { Sound } from '@/data/types';
 import { subscribe } from '@/lib/event';
+
+function ShareHandler() {
+  const show = useSnackbar();
+  const override = useSoundStore(state => state.override);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current || typeof window === 'undefined') return;
+    initialized.current = true;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const shareParam = searchParams.get('share');
+
+    if (shareParam) {
+      try {
+        const selectedSounds = JSON.parse(decodeURIComponent(shareParam)) as Record<string, number>;
+        if (selectedSounds && Object.keys(selectedSounds).length > 0) {
+          override(selectedSounds);
+          show('已加载分享的声音选择，点击播放按钮开始播放', 5000);
+          // Clean up the URL by removing the share parameter
+          const newUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, '', newUrl);
+        }
+      } catch (e) {
+        console.error('Failed to parse share link:', e);
+      }
+    }
+  }, [override, show]);
+
+  return null;
+}
 
 export function App() {
   const categories = useMemo(() => sounds.categories, []);
@@ -98,6 +129,7 @@ export function App() {
 
         <Toolbar />
         <SharedModal />
+        <ShareHandler />
       </StoreConsumer>
     </SnackbarProvider>
   );
