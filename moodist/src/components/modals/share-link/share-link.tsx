@@ -40,11 +40,13 @@ export function ShareLinkModal({ onClose, show }: ShareLinkModalProps) {
 
   const url = useMemo(() => {
     if (!isMounted)
-      return `https://moodist.app/?share=${encodeURIComponent(string)}`;
+      return `https://moodist.app/moodist/?share=${encodeURIComponent(string)}`;
 
+    // Use the base path from window.location.pathname (e.g., /moodist/)
+    const basePath = window.location.pathname.replace(/\/+$/, ''); // Remove trailing slashes
     return `${window.location.protocol}//${
       window.location.host
-    }/?share=${encodeURIComponent(string)}`;
+    }${basePath}/?share=${encodeURIComponent(string)}`;
   }, [string, isMounted]);
 
   useEffect(() => setIsMounted(true), []);
