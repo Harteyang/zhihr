@@ -4,9 +4,10 @@ import { Howl } from 'howler';
 import { useLoadingStore } from '@/stores/loading';
 import { subscribe } from '@/lib/event';
 import { useSSR } from './use-ssr';
-import { FADE_OUT } from '@/constants/events';
+import { FADE_OUT, STOP_ALL, STOP_SINGLE, STAGGERED_PLAY } from '@/constants/events';
 
 const DEFAULT_FADE_DURATION = 250;
+const FADE_IN_DURATION = 500; // 500ms fade-in for smooth entry
 const KEEP_ALIVE_INTERVAL = 3000;
 
 /**
@@ -159,6 +160,56 @@ export function useSound(
       sound.volume(targetVolume.current);
     }
   }, [sound, clearFadeTimeout, stopKeepAlive]);
+
+  // Handle STOP_ALL event - stop immediately without fade
+  useEffect(() => {
+    const handler = () => {
+      if (sound && sound.playing()) {
+        stopKeepAlive();
+        sound.stop();
+        sound.volume(targetVolume.current);
+      }
+    };
+
+    const unsubscribe = subscribe(STOP_ALL, handler);
+    return unsubscribe;
+  }, [sound, stopKeepAlive]);
+
+  // Handle STOP_SINGLE event - stop only if this sound's ID matches
+  useEffect(() => {
+    const handler = (e: { id: string }) => {
+      if (e.id === src && sound && sound.playing()) {
+        stopKeepAlive();
+        sound.stop();
+        sound.volume(targetVolume.current);
+      }
+    };
+
+    const unsubscribe = subscribe(STOP_SINGLE, handler);
+    return unsubscribe;
+  }, [sound, src, stopKeepAlive]);
+
+  // Handle STAGGERED_PLAY event - play only if this sound's ID matches
+  useEffect(() => {
+    const handler = (e: { id: string }) => {
+      if (e.id === src && sound && !sound.playing()) {
+        transitionToken.current += 1;
+        isFadingOut.current = false;
+        clearFadeTimeout();
+
+        // Start from 0 volume for fade-in effect
+        sound.volume(0);
+        sound.play();
+        startKeepAlive();
+
+        // Fade in to target volume
+        sound.fade(0, targetVolume.current, FADE_IN_DURATION);
+      }
+    };
+
+    const unsubscribe = subscribe(STAGGERED_PLAY, handler);
+    return unsubscribe;
+  }, [sound, src, startKeepAlive, clearFadeTimeout]);
 
   const pause = useCallback(
     (duration: number = DEFAULT_FADE_DURATION) => {

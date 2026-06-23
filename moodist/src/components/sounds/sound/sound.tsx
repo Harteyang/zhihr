@@ -50,7 +50,13 @@ export const Sound = forwardRef<HTMLDivElement, SoundProps>(function Sound(
     if (locked) return;
 
     if (isSelected && isPlaying && functional) {
-      sound?.play();
+      // Don't play directly here - staggered play is handled by the store
+      // via STAGGERED_PLAY events. This effect only handles pause.
+      sound?.pause();
+    } else if (isSelected && !isPlaying && functional) {
+      // When selected but not playing (e.g., after unselecting others),
+      // we don't auto-play - user needs to click play button
+      sound?.pause();
     } else {
       sound?.pause();
     }
@@ -64,8 +70,12 @@ export const Sound = forwardRef<HTMLDivElement, SoundProps>(function Sound(
   const select = useCallback(() => {
     if (locked) return;
     selectSound(id);
-    play();
-  }, [selectSound, play, id, locked]);
+    // If already playing, the select() method in store handles staggered play
+    // If not playing, just set isPlaying to true and let staggeredPlay handle it
+    if (!isPlaying) {
+      play();
+    }
+  }, [selectSound, play, id, locked, isPlaying]);
 
   const unselect = useCallback(() => {
     if (locked) return;
