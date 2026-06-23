@@ -57,11 +57,11 @@ const CATEGORIES = [
   {
     id: 'binaural', title: '双耳节拍', icon: 'headphones',
     sounds: [
-      { id: 'binaural-delta', label: 'Delta (1-4Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-delta.wav' },
-      { id: 'binaural-theta', label: 'Theta (4-8Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-theta.wav' },
-      { id: 'binaural-alpha', label: 'Alpha (8-12Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-alpha.wav' },
-      { id: 'binaural-beta', label: 'Beta (12-30Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-beta.wav' },
-      { id: 'binaural-gamma', label: 'Gamma (30-50Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-gamma.wav' },
+      { id: 'binaural-delta', label: 'Delta (1-4Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-delta.mp3' },
+      { id: 'binaural-theta', label: 'Theta (4-8Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-theta.mp3' },
+      { id: 'binaural-alpha', label: 'Alpha (8-12Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-alpha.mp3' },
+      { id: 'binaural-beta', label: 'Beta (12-30Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-beta.mp3' },
+      { id: 'binaural-gamma', label: 'Gamma (30-50Hz)', src: SOUND_BASE + '/sounds/binaural/binaural-gamma.mp3' },
     ]
   },
   {
@@ -132,9 +132,9 @@ const CATEGORIES = [
   {
     id: 'noise', title: '噪音', icon: 'audio-waveform',
     sounds: [
-      { id: 'white-noise', label: '白噪音', src: SOUND_BASE + '/sounds/noise/white-noise.wav' },
-      { id: 'pink-noise', label: '粉红噪音', src: SOUND_BASE + '/sounds/noise/pink-noise.wav' },
-      { id: 'brown-noise', label: '布朗噪音', src: SOUND_BASE + '/sounds/noise/brown-noise.wav' },
+      { id: 'white-noise', label: '白噪音', src: SOUND_BASE + '/sounds/noise/white-noise.mp3' },
+      { id: 'pink-noise', label: '粉红噪音', src: SOUND_BASE + '/sounds/noise/pink-noise.mp3' },
+      { id: 'brown-noise', label: '布朗噪音', src: SOUND_BASE + '/sounds/noise/brown-noise.mp3' },
     ]
   }
 ];

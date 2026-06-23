@@ -26,8 +26,6 @@ interface SoundStore {
   setVolume: (id: string, volume: number) => void;
   shuffle: () => void;
   sounds: Record<string, SoundValue>;
-  staggeredPlay: () => void;
-  stopAll: () => void;
   toggleFavorite: (id: string) => void;
   togglePlay: () => void;
   unlock: () => void;
@@ -94,11 +92,11 @@ export const useSoundStore = create<SoundStore>()(
       },
 
       pause() {
-        get().stopAll();
+        set({ isPlaying: false });
       },
 
       play() {
-        get().staggeredPlay();
+        set({ isPlaying: true });
       },
 
       restoreHistory() {
@@ -117,25 +115,6 @@ export const useSoundStore = create<SoundStore>()(
             [id]: { ...get().sounds[id], isSelected: true },
           },
         });
-
-        // If already playing, dispatch staggered play for this specific sound
-        // with a delay based on its position in the sequence
-        if (get().isPlaying) {
-          const { sounds } = get();
-          const selectedIds = Object.keys(sounds).filter(s => sounds[s].isSelected);
-          const index = selectedIds.indexOf(id);
-          if (index >= 0) {
-            const STAGGER_DELAY = 2000;
-            setTimeout(() => {
-              const currentSounds = get().sounds;
-              if (currentSounds[id]?.isSelected && !get().locked) {
-                document.dispatchEvent(
-                  new CustomEvent('STAGGERED_PLAY', { detail: { id } }),
-                );
-              }
-            }, index * STAGGER_DELAY);
-          }
-        }
       },
 
       setVolume(id, volume) {
@@ -175,46 +154,10 @@ export const useSoundStore = create<SoundStore>()(
         // Lock during shuffle to prevent re-entrance
         set({ locked: true, history: null, isPlaying: false, sounds: nextSounds });
 
-        // Use staggered play instead of immediate play
+        // Delay play to let UI settle and avoid loading all audio files at once
         setTimeout(() => {
-          get().staggeredPlay();
+          set({ isPlaying: true, locked: false });
         }, 100);
-      },
-
-      staggeredPlay() {
-        // Get all selected sounds
-        const { sounds } = get();
-        const selectedIds = Object.keys(sounds).filter(id => sounds[id].isSelected);
-
-        if (selectedIds.length === 0) {
-          set({ isPlaying: false });
-          return;
-        }
-
-        // Staggered play: each sound starts 2 seconds after the previous one
-        const STAGGER_DELAY = 2000; // 2 seconds between each sound
-
-        selectedIds.forEach((id, index) => {
-          setTimeout(() => {
-            // Only play if still selected and store is not locked
-            const currentSounds = get().sounds;
-            if (currentSounds[id]?.isSelected && !get().locked) {
-              // Dispatch a custom event to trigger play for this specific sound
-              const event = new CustomEvent('STAGGERED_PLAY', {
-                detail: { id, index },
-              });
-              document.dispatchEvent(event);
-            }
-          }, index * STAGGER_DELAY);
-        });
-
-        set({ isPlaying: true });
-      },
-
-      stopAll() {
-        // Dispatch a custom event to stop all sounds
-        document.dispatchEvent(new CustomEvent('STOP_ALL'));
-        set({ isPlaying: false });
       },
 
       sounds: createInitialSounds(),
@@ -233,12 +176,7 @@ export const useSoundStore = create<SoundStore>()(
       },
 
       togglePlay() {
-        const currentlyPlaying = get().isPlaying;
-        if (currentlyPlaying) {
-          get().stopAll();
-        } else {
-          get().staggeredPlay();
-        }
+        set({ isPlaying: !get().isPlaying });
       },
 
       unlock() {
@@ -246,10 +184,6 @@ export const useSoundStore = create<SoundStore>()(
       },
 
       unselect(id) {
-        // Stop this specific sound if playing
-        document.dispatchEvent(
-          new CustomEvent('STOP_SINGLE', { detail: { id } }),
-        );
         set({
           sounds: {
             ...get().sounds,
