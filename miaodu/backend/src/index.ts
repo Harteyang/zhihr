@@ -16,11 +16,17 @@ app.use('*', cors({
   origin: (origin, c) => {
     const allowed = c.env.ALLOWED_ORIGINS || ''
     const origins = allowed.split(',').map(o => o.trim()).filter(Boolean)
-    if (origins.includes(origin) || !origin) return origin
-    return origins[0] || ''
+    if (origins.includes(origin)) return origin
+    if (!origin) return '*'
+    return origins[0] || '*'
   },
-  credentials: true,
 }))
+
+// 全局错误处理
+app.onError((err, c) => {
+  console.error('Unhandled error:', err)
+  return c.json({ error: 'Internal Server Error', message: err.message }, 500)
+})
 
 // 健康检查
 app.get('/health', (c) => {
