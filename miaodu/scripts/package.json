@@ -1,0 +1,9 @@
+{
+  "name": "miaodu-scripts",
+  "version": "1.0.0",
+  "description": "妙读本地运维脚本",
+  "type": "module",
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
+}

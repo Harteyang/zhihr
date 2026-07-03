@@ -38,7 +38,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml', 'moodist/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml', 'moodist/pnpm-lock.yaml', 'miaodu/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
@@ -60,18 +60,28 @@ jobs:
           fi
           SOUNDS_CDN_URL="$CDN_URL" pnpm build
 
+      - name: Build miaodu
+        run: |
+          cd miaodu/frontend
+          npm ci
+          # 设置生产环境 API 地址（通过 GitHub Secrets 配置）
+          VITE_API_BASE="${{ secrets.MIAODU_API_BASE_URL }}"
+          VITE_BASE=/miaodu/ npm run build
+
       - name: Prepare deployment
         run: |
           # Create a staging directory with the correct structure
           mkdir -p /tmp/deploy
           # Copy everything except source code directories
-          for item in $(ls -A | grep -v -E '^(review-system|moodist)$'); do
+          for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu)$'); do
             cp -r "$item" /tmp/deploy/
           done
           # Copy review-system build output (dist) as the review-system directory
           cp -r review-system/dist /tmp/deploy/review-system
           # Copy moodist build output as the moodist directory
           cp -r moodist/dist /tmp/deploy/moodist
+          # Copy miaodu build output as the miaodu directory
+          cp -r miaodu/frontend/dist /tmp/deploy/miaodu
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
