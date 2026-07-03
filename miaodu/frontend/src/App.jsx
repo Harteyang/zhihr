@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react'
 import SearchBar from './components/SearchBar'
 import ResultsPanel from './components/ResultsPanel'
+import KnowledgeResultCard from './components/KnowledgeResultCard'
 import MlookResults from './components/MlookResults'
 import SubmitForm from './components/SubmitForm'
 import * as api from './api'
 
 export default function App() {
-  const [phase, setPhase] = useState('search') // search | mlook | submit | none
-  const [searchType, setSearchType] = useState('book') // book | knowledge
+  const [phase, setPhase] = useState('search')
+  const [searchType, setSearchType] = useState('book')
   const [results, setResults] = useState(null)
   const [mlookBooks, setMlookBooks] = useState([])
   const [selectedBook, setSelectedBook] = useState(null)
@@ -25,7 +26,6 @@ export default function App() {
     setSelectedBook(null)
 
     try {
-      // Step 1: 搜索本地数据库
       const searchFn = type === 'knowledge' ? api.searchKnowledge : api.searchBooks
       const data = await searchFn(query)
 
@@ -36,13 +36,17 @@ export default function App() {
         return
       }
 
-      // Step 2: 未命中，自动搜索 mlook
-      setPhase('mlook')
-      const mlookData = await api.searchMlook(query)
-      if (mlookData.found && mlookData.data?.length > 0) {
-        setMlookBooks(mlookData.data)
+      // 按书名未命中 → 搜索 mlook
+      if (type === 'book') {
+        setPhase('mlook')
+        const mlookData = await api.searchMlook(query)
+        if (mlookData.found && mlookData.data?.length > 0) {
+          setMlookBooks(mlookData.data)
+        } else {
+          setPhase('submit')
+        }
       } else {
-        // 无结果，直接进入提交阶段
+        // 按知识点未命中 → 直接提交
         setPhase('submit')
       }
     } catch (err) {
@@ -112,22 +116,36 @@ export default function App() {
           </div>
         )}
 
-        {/* 搜索结果 */}
-        {!loading && phase === 'search' && results?.length > 0 && (
+        {/* 按书名搜索结果 */}
+        {!loading && phase === 'search' && searchType === 'book' && results?.length > 0 && (
           <div className="fade-in">
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-gray-500">
                 找到 {results.length} 本相关书籍
               </p>
-              <button
-                onClick={handleReset}
-                className="text-sm text-primary hover:underline"
-              >
+              <button onClick={handleReset} className="text-sm text-primary hover:underline">
                 重新搜索
               </button>
             </div>
             {results.map((book) => (
               <ResultsPanel key={book.id} book={book} />
+            ))}
+          </div>
+        )}
+
+        {/* 按知识点搜索结果 */}
+        {!loading && phase === 'search' && searchType === 'knowledge' && results?.length > 0 && (
+          <div className="fade-in">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500">
+                找到 {results.length} 条相关知识点
+              </p>
+              <button onClick={handleReset} className="text-sm text-primary hover:underline">
+                重新搜索
+              </button>
+            </div>
+            {results.map((item, i) => (
+              <KnowledgeResultCard key={item.id || i} item={item} />
             ))}
           </div>
         )}
@@ -156,10 +174,7 @@ export default function App() {
           <div className="text-center py-12 fade-in">
             <div className="text-2xl mb-3">✅</div>
             <p className="text-gray-700 mb-2">已提交拆解请求，正在处理中...</p>
-            <button
-              onClick={handleReset}
-              className="text-primary hover:underline text-sm"
-            >
+            <button onClick={handleReset} className="text-primary hover:underline text-sm">
               继续搜索
             </button>
           </div>

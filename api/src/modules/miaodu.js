@@ -3,7 +3,8 @@ import { debugLog, jsonResponse } from '../utils/router.js'
 // ========= 数据库函数 =========
 
 async function searchBookByTitle(db, query) {
-  const sql = `SELECT * FROM miaodu_books WHERE title LIKE '%${query.replace(/'/g, "''")}%' ORDER BY created_at DESC`
+  const q = query.replace(/'/g, "''")
+  const sql = `SELECT * FROM miaodu_books WHERE title LIKE '%${q}%' ORDER BY created_at DESC LIMIT 20`
   const books = await db.prepare(sql).all()
   if (!books.results.length) return []
 
@@ -18,7 +19,15 @@ async function searchBookByTitle(db, query) {
 
 async function searchKnowledgeByKeyword(db, keyword) {
   const kw = keyword.replace(/'/g, "''")
-  const sql = `SELECT * FROM miaodu_knowledge_points WHERE title LIKE '%${kw}%' OR content LIKE '%${kw}%' ORDER BY book_id, sort_order`
+  const sql = `
+    SELECT kp.*, b.title AS book_title, b.author AS book_author,
+           b.baidu_pan_url, b.baidu_pan_code, b.mlook_link
+    FROM miaodu_knowledge_points kp
+    JOIN miaodu_books b ON kp.book_id = b.id
+    WHERE kp.title LIKE '%${kw}%' OR kp.content LIKE '%${kw}%'
+    ORDER BY b.title, kp.sort_order
+    LIMIT 30
+  `
   const kps = await db.prepare(sql).all()
   return kps.results
 }

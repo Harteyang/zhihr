@@ -1,12 +1,27 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 export default function SearchBar({ onSearch, loading, searchType, onTypeChange }) {
   const [query, setQuery] = useState('')
+  const debounceRef = useRef(null)
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     const q = query.trim()
     if (q) onSearch(q, searchType)
+  }
+
+  const handleChange = (e) => {
+    setQuery(e.target.value)
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      const q = query.trim()
+      if (q) onSearch(q, searchType)
+    }
   }
 
   return (
@@ -15,7 +30,8 @@ export default function SearchBar({ onSearch, loading, searchType, onTypeChange 
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder={searchType === 'knowledge' ? '搜索知识点关键词...' : '输入书名搜索...'}
           className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
           disabled={loading}
