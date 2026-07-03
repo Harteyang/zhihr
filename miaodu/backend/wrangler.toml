@@ -1,6 +1,6 @@
 name = "miaodu-backend"
 main = "src/index.ts"
-compatibility_date = "2024-01-01"
+compatibility_date = "2025-01-01"
 
 # 使用与 zhihr-api 相同的 D1 数据库
 # 注意：表名前缀 miaodu_ 避免与现有表冲突
@@ -11,7 +11,7 @@ database_id = "cd693196-036e-4fd9-9d0c-e077683ce6f3"
 
 # 允许的前端域名（CORS）
 [vars]
-ALLOWED_ORIGINS = "https://zhihr.vip,https://www.zhihr.vip,http://localhost:5173,http://localhost:5174"
+ALLOWED_ORIGINS = "https://zhihr.vip,https://www.zhihr.vip,https://api2.zhihr.vip,http://localhost:5173,http://localhost:5174"
 
 # 以下通过 wrangler secret 注入:
 # MLOOK_USERNAME
