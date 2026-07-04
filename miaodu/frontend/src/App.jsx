@@ -89,7 +89,7 @@ export default function App() {
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3 mb-4">
             <h1 className="text-xl font-bold text-gray-900">妙读</h1>
-            <span className="text-sm text-gray-400">电子书拆解平台</span>
+            <span className="text-sm text-gray-400">拆好书，读好书</span>
           </div>
           <SearchBar
             onSearch={handleSearch}
