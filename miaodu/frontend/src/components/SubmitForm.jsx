@@ -59,8 +59,15 @@ export default function SubmitForm({ query, selectedBook, onSuccess }) {
           )}
 
           <div>
-            <label className="text-xs text-gray-400 block mb-1">搜索关键词</label>
-            <p className="text-sm text-gray-500">{query}</p>
+            <label className="text-xs text-gray-400 block mb-1">豆瓣读书链接</label>
+            <a
+              href={`https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline break-all"
+            >
+              https://book.douban.com/
+            </a>
           </div>
         </div>
 
