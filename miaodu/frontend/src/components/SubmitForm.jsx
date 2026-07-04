@@ -4,6 +4,7 @@ import { submitDeconstruct } from '../api'
 export default function SubmitForm({ query, selectedBook, onSuccess }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [doubanLink, setDoubanLink] = useState('')
 
   const title = selectedBook?.title || query || ''
   const mlookLink = selectedBook?.link || ''
@@ -19,6 +20,7 @@ export default function SubmitForm({ query, selectedBook, onSuccess }) {
         type,
         searchQuery: query,
         mlookLink: mlookLink || undefined,
+        doubanLink: doubanLink.trim() || undefined,
       })
 
       if (result.success) {
@@ -61,13 +63,20 @@ export default function SubmitForm({ query, selectedBook, onSuccess }) {
           <div>
             <label className="text-xs text-gray-400 block mb-1">豆瓣读书链接</label>
             <a
-              href={`https://search.douban.com/book/subject_search?search_text=${encodeURIComponent(title)}`}
+              href="https://book.douban.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline break-all"
+              className="text-sm text-primary hover:underline"
             >
-              https://book.douban.com/
+              去豆瓣搜索这本书 →
             </a>
+            <input
+              type="text"
+              value={doubanLink}
+              onChange={(e) => setDoubanLink(e.target.value)}
+              placeholder="找到书籍后复制豆瓣链接粘贴到这里"
+              className="w-full mt-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
           </div>
         </div>
 

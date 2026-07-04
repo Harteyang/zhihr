@@ -37,7 +37,8 @@ async function createSubmission(db, data) {
   const type = data.type.replace(/'/g, "''")
   const searchQuery = (data.searchQuery || '').replace(/'/g, "''")
   const mlookLink = data.mlookLink ? data.mlookLink.replace(/'/g, "''") : null
-  const sql = `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link) VALUES ('${title}', '${type}', '${searchQuery}', 'queued', ${mlookLink ? "'" + mlookLink + "'" : 'NULL'}) RETURNING id`
+  const doubanLink = data.doubanLink ? data.doubanLink.replace(/'/g, "''") : null
+  const sql = `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link, douban_link) VALUES ('${title}', '${type}', '${searchQuery}', 'queued', ${mlookLink ? "'" + mlookLink + "'" : 'NULL'}, ${doubanLink ? "'" + doubanLink + "'" : 'NULL'}) RETURNING id`
   const result = await db.prepare(sql).first()
   return result
 }

@@ -1,0 +1,1 @@
+ALTER TABLE miaodu_submissions ADD COLUMN douban_link TEXT;

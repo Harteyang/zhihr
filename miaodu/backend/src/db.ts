@@ -72,13 +72,13 @@ export async function searchKnowledgeByKeyword(db: D1Database, keyword: string) 
 // 创建提交记录
 export async function createSubmission(
   db: D1Database,
-  data: { title: string; type: string; searchQuery: string; mlookLink?: string }
+  data: { title: string; type: string; searchQuery: string; mlookLink?: string; doubanLink?: string }
 ) {
   const result = await db
     .prepare(
-      `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link) VALUES (?, ?, ?, 'queued', ?) RETURNING id`
+      `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link, douban_link) VALUES (?, ?, ?, 'queued', ?, ?) RETURNING id`
     )
-    .bind(data.title, data.type, data.searchQuery, data.mlookLink || null)
+    .bind(data.title, data.type, data.searchQuery, data.mlookLink || null, data.doubanLink || null)
     .first()
 
   return result
