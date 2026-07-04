@@ -235,6 +235,79 @@ async function handleAddBook(request, env, corsHeaders) {
   }
 }
 
+/**
+ * 批量提交审核后的数据
+ * POST /api/admin/submit-batch
+ * body: { books: [...], knowledge_points: [...], submission_ids: [...] }
+ */
+async function handleBatchSubmit(request, env, corsHeaders) {
+  try {
+    const body = await request.json()
+    const books = body.books || []
+    const kps = body.knowledge_points || []
+    const submissionIds = body.submission_ids || []
+
+    if (!books.length) {
+      return jsonResponse({ success: false, message: '没有书籍数据' }, 200, corsHeaders)
+    }
+
+    const insertedIds = []
+
+    for (const book of books) {
+      const title = book.title.replace(/'/g, "''")
+      const author = book.author ? `'${book.author.replace(/'/g, "''")}'` : 'NULL'
+      const isbn = book.isbn ? `'${book.isbn.replace(/'/g, "''")}'` : 'NULL'
+      const doubanRate = book.douban_rate || null
+      const panUrl = book.baidu_pan_url ? `'${book.baidu_pan_url.replace(/'/g, "''")}'` : 'NULL'
+      const panCode = book.baidu_pan_code ? `'${book.baidu_pan_code.replace(/'/g, "''")}'` : 'NULL'
+      const mlookLink = book.mlook_link ? `'${book.mlook_link.replace(/'/g, "''")}'` : 'NULL'
+
+      const sql = `INSERT INTO miaodu_books (title, author, isbn, douban_rate, baidu_pan_url, baidu_pan_code, mlook_link, status) VALUES ('${title}', ${author}, ${isbn}, ${doubanRate}, ${panUrl}, ${panCode}, ${mlookLink}, 'completed') RETURNING id`
+      const result = await env.DB.prepare(sql).first()
+      insertedIds.push((result && result.id) || 0)
+    }
+
+    // 查找知识库中已有的 book_id 映射（同一书名）
+    const bookTitleMap = {}
+    for (let i = 0; i < books.length; i++) {
+      bookTitleMap[books[i].title] = insertedIds[i]
+    }
+
+    // 插入知识点
+    for (const kp of kps) {
+      const bookTitle = kp.book_title || kp.title
+      const bookId = bookTitleMap[bookTitle]
+      if (!bookId) continue
+
+      const chapter = (kp.chapter || '').replace(/'/g, "''")
+      const kpTitle = (kp.title || '').replace(/'/g, "''")
+      const content = (kp.content || '').replace(/'/g, "''")
+      await env.DB.prepare(
+        `INSERT INTO miaodu_knowledge_points (book_id, chapter, level, title, content, sort_order) VALUES (${bookId}, '${chapter}', ${kp.level || 3}, '${kpTitle}', '${content}', ${kp.sort_order || 0})`
+      ).run()
+    }
+
+    // 标记提交为完成
+    if (submissionIds.length) {
+      for (const id of submissionIds) {
+        await env.DB.prepare(
+          `UPDATE miaodu_submissions SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+        ).run()
+      }
+    }
+
+    return jsonResponse({
+      success: true,
+      message: `已上传 ${books.length} 本书、${kps.length} 个知识点`,
+      bookCount: books.length,
+      knowledgePointCount: kps.length,
+    }, 200, corsHeaders)
+  } catch (err) {
+    console.error('handleBatchSubmit error:', err)
+    return jsonResponse({ success: false, message: '批量上传失败: ' + (err?.message || String(err)) }, 500, corsHeaders)
+  }
+}
+
 // ========= mlook 爬虫函数 =========
 
 async function loginToMlook(username, password) {
@@ -320,4 +393,5 @@ export const routes = [
   { method: 'PUT', path: '/api/submission/:id', handler: handleUpdateSubmission },
   { method: 'GET', path: '/api/submissions', handler: handleGetAllSubmissions },
   { method: 'POST', path: '/api/admin/books', handler: handleAddBook },
+  { method: 'POST', path: '/api/admin/submit-batch', handler: handleBatchSubmit },
 ]

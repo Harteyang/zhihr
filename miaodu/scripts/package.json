@@ -4,11 +4,17 @@
   "description": "妙读本地拆解处理工具",
   "type": "module",
   "scripts": {
-    "process": "node process_submissions.js",
-    "watch": "node process_submissions.js --watch",
-    "parse": "node parse_epub.js"
+    "cli": "node cli.js",
+    "fetch": "node cli.js fetch",
+    "download": "node cli.js download",
+    "extract": "node cli.js extract",
+    "export": "node cli.js export",
+    "submit": "node cli.js submit",
+    "status": "node cli.js status",
+    "clear": "node cli.js clear"
   },
   "dependencies": {
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "xlsx": "^0.18.5"
   }
 }

@@ -51,10 +51,17 @@ export async function updateSubmissionStatus(id, status, errorMessage = null) {
 }
 
 /**
- * 回写拆解结果
+ * 回写拆解结果（单本）
  */
 export async function addBook(bookData) {
   return request('POST', '/api/admin/books', bookData)
+}
+
+/**
+ * 批量上传审核后的数据
+ */
+export async function batchSubmit(data) {
+  return request('POST', '/api/admin/submit-batch', data)
 }
 
 /**
