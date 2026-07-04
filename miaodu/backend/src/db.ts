@@ -105,10 +105,14 @@ export async function getSubmissionById(db: D1Database, id: number) {
 }
 
 // 获取所有提交记录
-export async function getAllSubmissions(db: D1Database) {
-  const result = await db
-    .prepare(`SELECT * FROM miaodu_submissions ORDER BY created_at DESC`)
-    .all()
+export async function getAllSubmissions(db: D1Database, status?: string) {
+  let sql = `SELECT * FROM miaodu_submissions ORDER BY created_at DESC`
+  if (status) {
+    sql = `SELECT * FROM miaodu_submissions WHERE status = ? ORDER BY created_at DESC`
+    const result = await db.prepare(sql).bind(status).all()
+    return result.results
+  }
+  const result = await db.prepare(sql).all()
   return result.results
 }
 

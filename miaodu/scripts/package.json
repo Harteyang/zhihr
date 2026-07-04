@@ -1,8 +1,13 @@
 {
   "name": "miaodu-scripts",
-  "version": "1.0.0",
-  "description": "妙读本地运维脚本",
+  "version": "2.0.0",
+  "description": "妙读本地拆解处理工具",
   "type": "module",
+  "scripts": {
+    "process": "node process_submissions.js",
+    "watch": "node process_submissions.js --watch",
+    "parse": "node parse_epub.js"
+  },
   "dependencies": {
     "jszip": "^3.10.1"
   }

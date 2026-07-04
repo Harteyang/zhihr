@@ -1,6 +1,6 @@
 import { Context } from 'hono'
 import type { Env } from './index'
-import { searchBookByTitle, searchKnowledgeByKeyword, createSubmission, getSubmissionById, getAllSubmissions, addBookWithKnowledge } from './db'
+import { searchBookByTitle, searchKnowledgeByKeyword, createSubmission, getSubmissionById, updateSubmissionStatus, getAllSubmissions, addBookWithKnowledge } from './db'
 import { searchMlook, searchMlookRSSFeed, loginToMlook, processMlookBook } from './scraper'
 
 // GET /api/books/search
@@ -121,10 +121,39 @@ export async function handleGetSubmissionStatus(c: Context<{ Bindings: Env }>) {
   }
 }
 
+// PUT /api/submission/:id
+export async function handleUpdateSubmission(c: Context<{ Bindings: Env }>) {
+  try {
+    const id = parseInt(c.req.param('id'), 10)
+    if (isNaN(id)) {
+      return c.json({ success: false, message: '无效的 ID' })
+    }
+
+    const body = await c.req.json()
+    const { status, error_message } = body
+
+    if (!status) {
+      return c.json({ success: false, message: '缺少必要参数 status' })
+    }
+
+    const validStatuses = ['queued', 'processing', 'completed', 'failed']
+    if (!validStatuses.includes(status)) {
+      return c.json({ success: false, message: '无效的状态值' })
+    }
+
+    await updateSubmissionStatus(c.env.DB, id, status, error_message)
+    return c.json({ success: true, message: '状态已更新' })
+  } catch (err: any) {
+    console.error('handleUpdateSubmission error:', err)
+    return c.json({ success: false, message: '更新失败: ' + (err?.message || String(err)) }, 500)
+  }
+}
+
 // GET /api/submissions
 export async function handleGetAllSubmissions(c: Context<{ Bindings: Env }>) {
   try {
-    const submissions = await getAllSubmissions(c.env.DB)
+    const status = c.req.query('status') || ''
+    const submissions = await getAllSubmissions(c.env.DB, status)
     return c.json({ submissions })
   } catch (err: any) {
     console.error('handleGetAllSubmissions error:', err)

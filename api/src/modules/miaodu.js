@@ -160,11 +160,47 @@ async function handleGetSubmissionStatus(request, env, corsHeaders, params) {
 
 async function handleGetAllSubmissions(request, env, corsHeaders) {
   try {
-    const result = await env.DB.prepare(`SELECT * FROM miaodu_submissions ORDER BY created_at DESC`).all()
+    const url = new URL(request.url)
+    const status = url.searchParams.get('status') || ''
+    let sql = `SELECT * FROM miaodu_submissions ORDER BY created_at DESC`
+    if (status) {
+      sql = `SELECT * FROM miaodu_submissions WHERE status = '${status.replace(/'/g, "''")}' ORDER BY created_at DESC`
+    }
+    const result = await env.DB.prepare(sql).all()
     return jsonResponse({ submissions: result.results }, 200, corsHeaders)
   } catch (err) {
     console.error('handleGetAllSubmissions error:', err)
     return jsonResponse({ success: false, message: '查询失败: ' + (err?.message || String(err)) }, 500, corsHeaders)
+  }
+}
+
+async function handleUpdateSubmission(request, env, corsHeaders, params) {
+  try {
+    const id = parseInt(params.id, 10)
+    if (isNaN(id)) {
+      return jsonResponse({ success: false, message: '无效的 ID' }, 200, corsHeaders)
+    }
+
+    const body = await request.json()
+    const { status, error_message } = body
+
+    if (!status) {
+      return jsonResponse({ success: false, message: '缺少必要参数 status' }, 200, corsHeaders)
+    }
+
+    const validStatuses = ['queued', 'processing', 'completed', 'failed']
+    if (!validStatuses.includes(status)) {
+      return jsonResponse({ success: false, message: '无效的状态值' }, 200, corsHeaders)
+    }
+
+    const errMsg = error_message ? error_message.replace(/'/g, "''") : null
+    const sql = `UPDATE miaodu_submissions SET status = '${status}', error_message = ${errMsg ? "'" + errMsg + "'" : 'NULL'}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+    await env.DB.prepare(sql).run()
+
+    return jsonResponse({ success: true, message: '状态已更新' }, 200, corsHeaders)
+  } catch (err) {
+    console.error('handleUpdateSubmission error:', err)
+    return jsonResponse({ success: false, message: '更新失败: ' + (err?.message || String(err)) }, 500, corsHeaders)
   }
 }
 
@@ -281,6 +317,7 @@ export const routes = [
   { method: 'GET', path: '/api/mlook/search', handler: handleSearchMlook },
   { method: 'POST', path: '/api/submit', handler: handleSubmitDeconstruct },
   { method: 'GET', path: '/api/submission/:id', handler: handleGetSubmissionStatus },
+  { method: 'PUT', path: '/api/submission/:id', handler: handleUpdateSubmission },
   { method: 'GET', path: '/api/submissions', handler: handleGetAllSubmissions },
   { method: 'POST', path: '/api/admin/books', handler: handleAddBook },
 ]

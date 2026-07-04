@@ -39,6 +39,7 @@ app.get('/api/knowledge/search', handleSearchKnowledge)
 app.get('/api/mlook/search', handleSearchMlook)
 app.post('/api/submit', handleSubmitDeconstruct)
 app.get('/api/submission/:id', handleGetSubmissionStatus)
+app.put('/api/submission/:id', handleUpdateSubmission)
 app.get('/api/submissions', handleGetAllSubmissions)
 app.post('/api/admin/books', handleAddBook)
 
