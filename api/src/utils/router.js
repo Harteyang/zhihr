@@ -52,22 +52,47 @@ async function verifyPassword(password, storedHash) {
   const PBKDF2_ITERATIONS = 100000
   const SALT_LENGTH = 16
   const HASH_LENGTH = 32
-  const combined = new Uint8Array(storedHash.match(/.{2}/g).map(byte => parseInt(byte, 16)))
-  const salt = combined.slice(0, SALT_LENGTH)
-  const originalHash = combined.slice(SALT_LENGTH)
+  const bytes = new Uint8Array(storedHash.match(/.{2}/g).map(byte => parseInt(byte, 16)))
+
+  // 新格式：salt(16) + hash(32) = 48 字节 (96 位十六进制)
+  if (bytes.length === SALT_LENGTH + HASH_LENGTH) {
+    const salt = bytes.slice(0, SALT_LENGTH)
+    const originalHash = bytes.slice(SALT_LENGTH)
+    const derived = await deriveKey(password, salt, PBKDF2_ITERATIONS, HASH_LENGTH)
+    return timingSafeEqual(originalHash, derived)
+  }
+
+  // 旧格式：纯 hash(32) = 32 字节 (64 位十六进制)，使用 SHA-256 直接哈希
+  if (bytes.length === HASH_LENGTH) {
+    const encoder = new TextEncoder()
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(password)))
+    if (timingSafeEqual(bytes, digest)) {
+      // 迁移到新格式
+      return true
+    }
+    return false
+  }
+
+  return false
+}
+
+async function deriveKey(password, salt, iterations, length) {
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
   )
   const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' },
-    keyMaterial, HASH_LENGTH * 8
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+    keyMaterial, length * 8
   )
-  const newHash = new Uint8Array(derivedBits)
-  if (originalHash.length !== newHash.length) return false
+  return new Uint8Array(derivedBits)
+}
+
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false
   let diff = 0
-  for (let i = 0; i < originalHash.length; i++) {
-    diff |= originalHash[i] ^ newHash[i]
+  for (let i = 0; i < a.length; i++) {
+    diff |= a[i] ^ b[i]
   }
   return diff === 0
 }
