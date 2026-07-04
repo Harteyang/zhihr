@@ -184,7 +184,7 @@ export default function App() {
         {!loading && phase === 'search' && !results && !error && (
           <div className="text-center py-16 text-gray-400">
             <p className="text-lg mb-2">输入书名或知识点开始搜索</p>
-            <p className="text-sm">支持搜索已有拆解内容，也可提交需求</p>
+            <p className="text-sm">支持搜索已有拆解内容，也可提交拆解需求</p>
           </div>
         )}
       </main>
