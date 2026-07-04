@@ -54,21 +54,19 @@ export function readXlsx(filePath) {
   const data = readFileSync(filePath)
   const wb = XLSX.read(data, { type: 'buffer' })
 
-  // 读 books sheet
+  // 读 books sheet（不传 header 则自动用第一行作列名）
   const ws1 = wb.Sheets['books']
-  if (!ws1) {
-    return { books: [], knowledgePoints: [] }
+  let books = []
+  if (ws1) {
+    books = XLSX.utils.sheet_to_json(ws1)
   }
-  const bookHeaders = ['title', 'author', 'isbn', 'douban_rate', 'baidu_pan_url', 'baidu_pan_code', 'mlook_link']
-  const books = XLSX.utils.sheet_to_json(ws1, { header: bookHeaders })
 
   // 读 knowledge_points sheet
   const ws2 = wb.Sheets['knowledge_points']
-  if (!ws2) {
-    return { books, knowledgePoints: [] }
+  let knowledgePoints = []
+  if (ws2) {
+    knowledgePoints = XLSX.utils.sheet_to_json(ws2)
   }
-  const kpHeaders = ['book_title', 'chapter', 'level', 'title', 'content', 'sort_order']
-  const knowledgePoints = XLSX.utils.sheet_to_json(ws2, { header: kpHeaders })
 
   return { books, knowledgePoints }
 }
