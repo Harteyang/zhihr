@@ -404,7 +404,7 @@ function cmdClear(targetId) {
 
 // ============ CLI 入口 ============
 
-function main() {
+async function main() {
   const args = process.argv.slice(2)
   const command = args[0] || 'help'
 
@@ -413,20 +413,20 @@ function main() {
       showHelp()
       break
     case 'fetch':
-      cmdFetch()
+      await cmdFetch()
       break
     case 'download':
       const ids = args[1] ? args[1].split(',').map(Number) : null
-      cmdDownload(ids)
+      await cmdDownload(ids)
       break
     case 'extract':
-      cmdExtract()
+      await cmdExtract()
       break
     case 'export':
       cmdExport()
       break
     case 'submit':
-      cmdSubmit(args[1])
+      await cmdSubmit(args[1])
       break
     case 'status':
       cmdStatus()

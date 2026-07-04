@@ -22,6 +22,10 @@ node_modules/
 # Build
 dist/
 
+# Miaodu scripts local data
+miaodu/scripts/data/
+miaodu/scripts/downloads/
+
 # Secrets (never commit)
 *.env
 *.env.local
