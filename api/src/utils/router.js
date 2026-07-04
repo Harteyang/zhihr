@@ -51,6 +51,7 @@ async function hashPassword(password) {
 async function verifyPassword(password, storedHash) {
   const PBKDF2_ITERATIONS = 100000
   const SALT_LENGTH = 16
+  const HASH_LENGTH = 32
   const combined = new Uint8Array(storedHash.match(/.{2}/g).map(byte => parseInt(byte, 16)))
   const salt = combined.slice(0, SALT_LENGTH)
   const originalHash = combined.slice(SALT_LENGTH)

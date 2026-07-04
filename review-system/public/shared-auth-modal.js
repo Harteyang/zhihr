@@ -171,6 +171,7 @@
     } else {
       loginErrorCount++;
       if (loginErrorCount >= MAX_ERROR_COUNT) {
+        showCaptchaSection();
         showError(CONFIG.LOGIN_ERROR_ID, result.message || '登录失败，请输入验证码继续');
       } else {
         showError(CONFIG.LOGIN_ERROR_ID, `${result.message || '登录失败'}（第${loginErrorCount}次错误，再错${MAX_ERROR_COUNT - loginErrorCount}次将启用验证码）`);
@@ -222,6 +223,7 @@
     } else {
       registerErrorCount++;
       if (registerErrorCount >= MAX_ERROR_COUNT) {
+        showCaptchaSection();
         showError(CONFIG.REGISTER_ERROR_ID, result.message || '注册失败，请输入验证码继续');
       } else {
         showError(CONFIG.REGISTER_ERROR_ID, `${result.message || '注册失败'}（第${registerErrorCount}次错误，再错${MAX_ERROR_COUNT - registerErrorCount}次将启用验证码）`);
@@ -229,17 +231,27 @@
     }
   }
 
+  // ==================== 显示验证码区域 ====================
+  function showCaptchaSection() {
+    const sectionId = currentMode === 'login' ? 'zhihr-captcha-section' : 'zhihr-captcha-section-reg';
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.classList.remove('hidden');
+    }
+    refreshCaptcha();
+  }
+
   // ==================== 验证码刷新 ====================
   function refreshCaptcha() {
     captchaData = generateCaptcha();
-    const el = document.getElementById('zhihr-captcha-question');
-    if (el) {
-      el.textContent = captchaData.question;
-    }
-    const input = document.getElementById('zhihr-captcha-input');
-    if (input) {
-      input.value = '';
-    }
+    ['zhihr-captcha-question', 'zhihr-captcha-question-reg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = captchaData.question;
+    });
+    ['zhihr-captcha-input', 'zhihr-captcha-input-reg'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
   }
 
   // ==================== 模式切换 ====================
