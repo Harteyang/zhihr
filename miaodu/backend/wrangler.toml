@@ -2,6 +2,9 @@ name = "miaodu-backend"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
+# 排除不需要上传到 Cloudflare 的文件/目录
+exclude = [".git", "node_modules", ".wrangler", "dist", ".vscode", ".idea"]
+
 # 使用与 zhihr-api 相同的 D1 数据库
 # 注意：表名前缀 miaodu_ 避免与现有表冲突
 [[d1_databases]]

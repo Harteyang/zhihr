@@ -2,6 +2,9 @@ name = "zhihr-api"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
+# 排除不需要上传到 Cloudflare 的文件/目录
+exclude = [".git", "node_modules", ".wrangler", "dist", ".vscode", ".idea"]
+
 # D1 数据库配置
 # 创建数据库命令: wrangler d1 create zhihr_db
 # 然后将数据库 ID 填入下方
