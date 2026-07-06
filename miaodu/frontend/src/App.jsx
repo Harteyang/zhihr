@@ -16,7 +16,6 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [lastQuery, setLastQuery] = useState('')
-  const [view, setView] = useState('search') // 'search' | 'library'
 
   const handleSearch = useCallback(async (query, type = 'book') => {
     setLoading(true)
@@ -86,63 +85,29 @@ export default function App() {
   }, [])
 
   const handleSearchBook = useCallback((title) => {
-    setView('search')
     handleSearch(title, 'book')
   }, [handleSearch])
+
+  const isSearchActive = loading || error || results || phase !== 'search'
 
   return (
     <div className="min-h-screen bg-surface">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">妙读</h1>
-              <span className="text-sm text-gray-400">拆好书，读好书</span>
-            </div>
-            {/* 视图切换 */}
-            <nav className="flex items-center gap-1 bg-gray-50 rounded-lg p-0.5">
-              <button
-                onClick={() => setView('search')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                  view === 'search'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                搜索
-              </button>
-              <button
-                onClick={() => setView('library')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                  view === 'library'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                书库
-              </button>
-            </nav>
+          <div className="flex items-center gap-3 mb-4">
+            <h1 className="text-xl font-bold text-gray-900">妙读</h1>
+            <span className="text-sm text-gray-400">拆好书，读好书</span>
           </div>
-          {view === 'search' && (
-            <SearchBar
-              onSearch={handleSearch}
-              loading={loading}
-              searchType={searchType}
-              onTypeChange={setSearchType}
-            />
-          )}
+          <SearchBar
+            onSearch={handleSearch}
+            loading={loading}
+            searchType={searchType}
+            onTypeChange={setSearchType}
+          />
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        {/* 书库视图 */}
-        {view === 'library' && (
-          <BookList onSearchBook={handleSearchBook} />
-        )}
-
-        {/* 搜索视图 */}
-        {view === 'search' && (
-          <>
         {/* 加载状态 */}
         {loading && (
           <div className="flex items-center gap-3 text-gray-500 py-8 justify-center">
@@ -222,14 +187,9 @@ export default function App() {
           </div>
         )}
 
-        {/* 空状态 */}
-        {!loading && phase === 'search' && !results && !error && (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-lg mb-2">输入书名或知识点开始搜索</p>
-            <p className="text-sm">支持搜索已有拆解内容，也可提交拆解需求</p>
-          </div>
-        )}
-          </>
+        {/* 默认状态：显示电子书库 */}
+        {!isSearchActive && (
+          <BookList onSearchBook={handleSearchBook} />
         )}
       </main>
     </div>
