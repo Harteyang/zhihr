@@ -1,26 +1,28 @@
-import { useState, useRef } from 'react'
-
-export default function SearchBar({ onSearch, loading, searchType, onTypeChange }) {
-  const [query, setQuery] = useState('')
-  const debounceRef = useRef(null)
-
+export default function SearchBar({ query, onQueryChange, onSearch, loading, searchType, onTypeChange }) {
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (debounceRef.current) clearTimeout(debounceRef.current)
     const q = query.trim()
     if (q) onSearch(q, searchType)
   }
 
   const handleChange = (e) => {
-    setQuery(e.target.value)
+    onQueryChange(e.target.value)
   }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      if (debounceRef.current) clearTimeout(debounceRef.current)
       const q = query.trim()
       if (q) onSearch(q, searchType)
+    }
+  }
+
+  const handleTypeChange = (newType) => {
+    const q = query.trim()
+    if (q) {
+      onSearch(q, newType)
+    } else {
+      onTypeChange(newType)
     }
   }
 
@@ -47,7 +49,7 @@ export default function SearchBar({ onSearch, loading, searchType, onTypeChange 
       <div className="flex gap-1 w-full md:w-auto">
         <button
           type="button"
-          onClick={() => onTypeChange('book')}
+          onClick={() => handleTypeChange('book')}
           className={`flex-1 md:flex-none px-3 py-2.5 rounded-lg text-sm transition-colors ${
             searchType === 'book'
               ? 'bg-primary text-white'
@@ -58,7 +60,7 @@ export default function SearchBar({ onSearch, loading, searchType, onTypeChange 
         </button>
         <button
           type="button"
-          onClick={() => onTypeChange('knowledge')}
+          onClick={() => handleTypeChange('knowledge')}
           className={`flex-1 md:flex-none px-3 py-2.5 rounded-lg text-sm transition-colors ${
             searchType === 'knowledge'
               ? 'bg-primary text-white'

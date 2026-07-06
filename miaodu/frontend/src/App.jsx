@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import SearchBar from './components/SearchBar'
 import ResultsPanel from './components/ResultsPanel'
 import KnowledgeResultCard from './components/KnowledgeResultCard'
 import MlookResults from './components/MlookResults'
 import SubmitForm from './components/SubmitForm'
 import BookList from './components/BookList'
+import Breadcrumb from './components/Breadcrumb'
 import * as api from './api'
 
 export default function App() {
@@ -15,12 +16,18 @@ export default function App() {
   const [selectedBook, setSelectedBook] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [query, setQuery] = useState('')
   const [lastQuery, setLastQuery] = useState('')
+  // 保留从知识点搜索跳转书籍搜索时的原知识点搜索上下文
+  const [knowledgeSearchContext, setKnowledgeSearchContext] = useState(null)
+  // 用于取消过期搜索响应（面包屑返回时使进行中的搜索失效）
+  const searchIdRef = useRef(0)
 
-  const handleSearch = useCallback(async (query, type = 'book') => {
+  const handleSearch = useCallback(async (q, type = 'book') => {
+    const currentId = ++searchIdRef.current
     setLoading(true)
     setError(null)
-    setLastQuery(query)
+    setLastQuery(q)
     setSearchType(type)
     setResults(null)
     setMlookBooks([])
@@ -28,7 +35,9 @@ export default function App() {
 
     try {
       const searchFn = type === 'knowledge' ? api.searchKnowledge : api.searchBooks
-      const data = await searchFn(query)
+      const data = await searchFn(q)
+
+      if (currentId !== searchIdRef.current) return
 
       if (data.found && data.data?.length > 0) {
         setResults(data.data)
@@ -37,25 +46,54 @@ export default function App() {
         return
       }
 
-      // 按书名未命中 → 搜索 mlook
       if (type === 'book') {
         setPhase('mlook')
-        const mlookData = await api.searchMlook(query)
+        const mlookData = await api.searchMlook(q)
+        if (currentId !== searchIdRef.current) return
         if (mlookData.found && mlookData.data?.length > 0) {
           setMlookBooks(mlookData.data)
         } else {
           setPhase('submit')
         }
       } else {
-        // 按知识点未命中 → 直接提交
         setPhase('submit')
       }
     } catch (err) {
+      if (currentId !== searchIdRef.current) return
       setError(err.message || '搜索失败，请稍后重试')
     } finally {
-      setLoading(false)
+      if (currentId === searchIdRef.current) setLoading(false)
     }
   }, [])
+
+  // 从 SearchBar 发起搜索（清除知识点导航上下文）
+  const handleSearchFromBar = useCallback((q, type) => {
+    setKnowledgeSearchContext(null)
+    handleSearch(q, type)
+  }, [handleSearch])
+
+  // 从知识点搜索结果点击"查看"跳转书籍搜索，保留原知识点搜索状态
+  const handleViewBookFromKnowledge = useCallback((bookTitle) => {
+    setKnowledgeSearchContext({ query: lastQuery, results })
+    setQuery(bookTitle)
+    handleSearch(bookTitle, 'book')
+  }, [lastQuery, results, handleSearch])
+
+  // 通过面包屑返回原知识点搜索结果页
+  const handleBackToKnowledgeSearch = useCallback(() => {
+    if (!knowledgeSearchContext) return
+    searchIdRef.current++  // 使进行中的搜索失效
+    setSearchType('knowledge')
+    setQuery(knowledgeSearchContext.query)
+    setLastQuery(knowledgeSearchContext.query)
+    setResults(knowledgeSearchContext.results)
+    setPhase('search')
+    setMlookBooks([])
+    setSelectedBook(null)
+    setError(null)
+    setLoading(false)
+    setKnowledgeSearchContext(null)
+  }, [knowledgeSearchContext])
 
   const handleMlookSelect = useCallback((book) => {
     setSelectedBook(book)
@@ -73,22 +111,60 @@ export default function App() {
     setMlookBooks([])
     setSelectedBook(null)
     setLastQuery('')
+    setQuery('')
+    setKnowledgeSearchContext(null)
   }, [])
 
   const handleReset = useCallback(() => {
+    searchIdRef.current++
     setPhase('search')
     setResults(null)
     setMlookBooks([])
     setSelectedBook(null)
     setError(null)
     setLastQuery('')
+    setQuery('')
+    setKnowledgeSearchContext(null)
   }, [])
 
   const handleSearchBook = useCallback((title) => {
+    setKnowledgeSearchContext(null)
+    setQuery(title)
     handleSearch(title, 'book')
   }, [handleSearch])
 
   const isSearchActive = loading || error || results || phase !== 'search'
+
+  // 计算面包屑节点
+  const breadcrumbItems = useMemo(() => {
+    const items = [{ label: '妙读', onClick: handleReset }]
+
+    if (!lastQuery && !error) return null
+
+    const isKnowledge = searchType === 'knowledge'
+    const fromKnowledge = !isKnowledge && knowledgeSearchContext
+
+    if (fromKnowledge) {
+      items.push({
+        label: `知识点搜索: ${knowledgeSearchContext.query}`,
+        onClick: handleBackToKnowledgeSearch,
+      })
+      items.push({ label: `书籍详情: ${lastQuery}`, active: true })
+      return items
+    }
+
+    if (isKnowledge) {
+      items.push({ label: `知识点搜索: ${lastQuery}`, active: true })
+    } else if (phase === 'submit') {
+      items.push({ label: `提交拆解: ${lastQuery}`, active: true })
+    } else {
+      items.push({ label: `书籍搜索: ${lastQuery}`, active: true })
+    }
+
+    return items
+  }, [lastQuery, error, phase, searchType, knowledgeSearchContext, handleReset, handleBackToKnowledgeSearch])
+
+  const showBreadcrumb = isSearchActive && breadcrumbItems
 
   return (
     <div className="min-h-screen bg-surface">
@@ -99,7 +175,9 @@ export default function App() {
             <span className="text-sm text-gray-400">拆好书，读好书</span>
           </div>
           <SearchBar
-            onSearch={handleSearch}
+            query={query}
+            onQueryChange={setQuery}
+            onSearch={handleSearchFromBar}
             loading={loading}
             searchType={searchType}
             onTypeChange={setSearchType}
@@ -108,6 +186,8 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {showBreadcrumb && <Breadcrumb items={breadcrumbItems} />}
+
         {/* 加载状态 */}
         {loading && (
           <div className="flex items-center gap-3 text-gray-500 py-8 justify-center">
@@ -152,7 +232,11 @@ export default function App() {
               </button>
             </div>
             {results.map((item, i) => (
-              <KnowledgeResultCard key={item.id || i} item={item} />
+              <KnowledgeResultCard
+                key={item.id || i}
+                item={item}
+                onViewBook={handleViewBookFromKnowledge}
+              />
             ))}
           </div>
         )}
