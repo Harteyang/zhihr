@@ -13,6 +13,10 @@ export function searchBooks(query) {
   return request(`/api/books/search?q=${encodeURIComponent(query)}`)
 }
 
+export function fetchBookList(page = 1, pageSize = 100) {
+  return request(`/api/books/list?page=${page}&pageSize=${pageSize}`)
+}
+
 export function searchKnowledge(query) {
   return request(`/api/knowledge/search?q=${encodeURIComponent(query)}`)
 }

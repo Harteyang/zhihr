@@ -383,6 +383,41 @@ async function searchMlookRSS(query) {
   } catch { return [] }
 }
 
+// ========= 电子书列表 (首页展示) =========
+
+async function handleListBooks(request, env, corsHeaders) {
+  try {
+    const url = new URL(request.url)
+    const page = Math.max(1, parseInt(url.searchParams.get('page')) || 1)
+    const pageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get('pageSize')) || 20))
+    const offset = (page - 1) * pageSize
+
+    // 先查总数
+    const countResult = await env.DB.prepare('SELECT COUNT(*) as total FROM miaodu_books WHERE status = ?').bind('completed').first()
+    const total = countResult?.total || 0
+
+    // 按 id 升序（入库顺序）分页查询，限制每页最多 100 条
+    const books = await env.DB.prepare(
+      'SELECT id, title, author, douban_rate, douban_link FROM miaodu_books WHERE status = ? ORDER BY id ASC LIMIT ? OFFSET ?'
+    ).bind('completed', pageSize, offset).all()
+
+    return jsonResponse({
+      success: true,
+      data: books.results || [],
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+        hasMore: offset + pageSize < total,
+      },
+    }, 200, corsHeaders)
+  } catch (err) {
+    console.error('handleListBooks error:', err)
+    return jsonResponse({ success: false, message: '获取列表失败: ' + (err?.message || String(err)) }, 500, corsHeaders)
+  }
+}
+
 // ========= 路由导出 =========
 
 export const routes = [
@@ -395,4 +430,5 @@ export const routes = [
   { method: 'GET', path: '/api/submissions', handler: handleGetAllSubmissions },
   { method: 'POST', path: '/api/admin/books', handler: handleAddBook },
   { method: 'POST', path: '/api/admin/submit-batch', handler: handleBatchSubmit },
+  { method: 'GET', path: '/api/books/list', handler: handleListBooks },
 ]
