@@ -4,6 +4,14 @@ import * as api from '../api'
 const FIRST_PAGE_SIZE = 100
 const NEXT_PAGE_SIZE = 24
 
+/** 从豆瓣链接中提取 subject ID，构造封面图 URL */
+function getDoubanCoverUrl(doubanLink) {
+  if (!doubanLink) return null
+  const match = doubanLink.match(/\/subject\/(\d+)\/?/)
+  if (!match) return null
+  return `https://img2.doubanio.com/view/subject/m/public/${match[1]}.jpg`
+}
+
 export default function BookList({ onSearchBook }) {
   const [allBooks, setAllBooks] = useState([])
   const [displayedBooks, setDisplayedBooks] = useState([])
@@ -42,7 +50,7 @@ export default function BookList({ onSearchBook }) {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [api])
+  }, [])
 
   useEffect(() => {
     loadBooks(1)
@@ -99,62 +107,81 @@ export default function BookList({ onSearchBook }) {
 
       {/* 书籍网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedBooks.map((book) => (
+        {displayedBooks.map((book) => {
+          const coverUrl = getDoubanCoverUrl(book.douban_link)
+          return (
           <div
             key={book.id}
-            className="result-card group flex flex-col"
+            className="result-card group flex gap-4"
           >
-            {/* 评分徽标 */}
-            {book.douban_rate != null && (
-              <div className="flex items-center gap-1 text-amber-500 mb-2">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span className="text-sm font-semibold">{book.douban_rate}</span>
+            {/* 封面缩略图 */}
+            {coverUrl && (
+              <div className="shrink-0">
+                <img
+                  src={coverUrl}
+                  alt={book.title}
+                  className="w-14 h-20 object-cover rounded-sm shadow-sm bg-gray-50"
+                  onError={(e) => { e.target.style.display = 'none' }}
+                  loading="lazy"
+                />
               </div>
             )}
 
-            {/* 书名 */}
-            <h3 className="text-base font-semibold text-gray-900 leading-snug mb-1 line-clamp-2 group-hover:text-primary transition-colors">
-              {book.title}
-            </h3>
+            {/* 书籍信息 */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              {/* 评分与书名 */}
+              <div className="flex items-start gap-2 mb-1">
+                {book.douban_rate != null && (
+                  <span className="shrink-0 flex items-center gap-0.5 text-amber-500 text-xs font-semibold leading-5">
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    {book.douban_rate}
+                  </span>
+                )}
+                <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                  {book.title}
+                </h3>
+              </div>
 
-            {/* 作者 */}
-            {book.author && (
-              <p className="text-sm text-gray-500 mb-3 line-clamp-1">{book.author}</p>
-            )}
-
-            {/* Spacer */}
-            <div className="flex-1" />
-
-            {/* 操作区 */}
-            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-              {book.douban_link && (
-                <a
-                  href={book.douban_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-amber-600 transition-colors"
-                  title="查看豆瓣页面"
-                >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.5 10.5h3v6h-3zm5-3h3v9h-3zm5 2h3v7h-3zm-15 7h.5l.6.4 1.2.8 1.9.8 2.7.8 3.5.8 4.2.6 4.7.4h4.5V9l-3.5-.6-3-.8-2.5-1-2.2-1-2-.6-1.6-.4h-2L5 7l-2 1.5L2 10v9.5z"/>
-                  </svg>
-                  豆瓣
-                </a>
+              {/* 作者 */}
+              {book.author && (
+                <p className="text-xs text-gray-500 mb-2 line-clamp-1">{book.author}</p>
               )}
-              <button
-                onClick={() => onSearchBook && onSearchBook(book.title)}
-                className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                查看详情
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* 操作区 */}
+              <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                {book.douban_link && (
+                  <a
+                    href={book.douban_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-amber-600 transition-colors"
+                    title="查看豆瓣页面"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6.5 10.5h3v6h-3zm5-3h3v9h-3zm5 2h3v7h-3zm-15 7h.5l.6.4 1.2.8 1.9.8 2.7.8 3.5.8 4.2.6 4.7.4h4.5V9l-3.5-.6-3-.8-2.5-1-2.2-1-2-.6-1.6-.4h-2L5 7l-2 1.5L2 10v9.5z"/>
+                    </svg>
+                    豆瓣
+                  </a>
+                )}
+                <button
+                  onClick={() => onSearchBook && onSearchBook(book.title)}
+                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  查看详情
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* 加载更多 */}
