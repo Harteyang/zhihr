@@ -42,7 +42,7 @@ export default function BookList({ onSearchBook }) {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [])
+  }, [api])
 
   useEffect(() => {
     loadBooks(1)

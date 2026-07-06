@@ -1,13 +1,16 @@
 export interface Book {
   id: number
   title: string
+  subtitle: string | null
   author: string | null
   isbn: string | null
   douban_rate: number | null
+  douban_link: string | null
   description: string | null
   cover_url: string | null
   baidu_pan_url: string | null
   baidu_pan_code: string | null
+  ebook_name: string | null
   mlook_book_id: number | null
   mlook_link: string | null
   status: string
