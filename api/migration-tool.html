@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据迁移工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 min-h-screen p-8">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-slate-800 mb-8 flex items-center gap-3">
+            <i data-lucide="database-import" class="text-blue-600"></i>
+            数据迁移工具
+        </h1>
+
+        <!-- API 配置 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
+                API 配置
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">API 地址</label>
+                    <input type="text" id="apiBaseUrl" value="https://api.zhihr.vip" 
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">用户名</label>
+                        <input type="text" id="username" placeholder="输入用户名"
+                               class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">密码</label>
+                        <input type="password" id="password" placeholder="输入密码"
+                               class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <button id="loginBtn" onclick="handleLogin()" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    登录 / 注册
+                </button>
+                <div id="loginStatus" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- 数据输入 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+                旧数据 JSON
+            </h2>
+            <textarea id="jsonInput" rows="15" 
+                      class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                      placeholder="粘贴旧数据 JSON 到这里..."></textarea>
+            <button onclick="loadSampleData()" class="mt-3 text-sm text-blue-600 hover:text-blue-800">
+                加载示例数据
+            </button>
+        </div>
+
+        <!-- 迁移操作 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="upload" class="w-5 h-5 text-blue-600"></i>
+                迁移操作
+            </h2>
+            <div class="space-y-4">
+                <button id="migrateBtn" onclick="handleMigration()" disabled
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2">
+                    <i data-lucide="database-zap" class="w-5 h-5"></i>
+                    开始迁移
+                </button>
+            </div>
+            <div id="migrationLog" class="mt-4 p-4 bg-slate-100 rounded-lg hidden">
+                <h3 class="font-semibold text-slate-800 mb-2">迁移日志</h3>
+                <div id="logContent" class="text-sm text-slate-600 space-y-1 max-h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        let authToken = null;
+        let userId = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('migrationLog');
+            const logContent = document.getElementById('logContent');
+            logDiv.classList.remove('hidden');
+            
+            const colors = {
+                info: 'text-blue-600',
+                success: 'text-green-600',
+                error: 'text-red-600'
+            };
+            
+            const entry = document.createElement('div');
+            entry.className = colors[type] || colors.info;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function loadSampleData() {
+            document.getElementById('jsonInput').value = JSON.stringify({
+                "reviews": [
+                    {
+                        "date": "2026-05-13",
+                        "content": {
+                            "health": "身体健康",
+                            "work": "工作事业",
+                            "study": "",
+                            "social": "",
+                            "finance": "",
+                            "life": "",
+                            "spirit": "精神好",
+                            "leisure": ""
+                        },
+                        "summary": "测试复盘系统"
+                    }
+                ],
+                "users": {
+                    "cb239839816e0cd74e720f873448aed972a1b983923f2ce26d6d3a174813babb": {
+                        "tasks": [
+                            { "id": 1778225290811, "title": "区域对齐城市活动的态度", "description": "HR会上孙琪提到城市差异大家互通体感差，建议区域统一。", "category": "工作", "status": "已完成", "priority": "高", "due_date": "2026-05-15", "created_at": "2026-05-08", "updated_at": "2026-05-12T08:25:43.128Z" },
+                            { "id": 1778225427895, "title": "五险一金区域申请数据", "description": "跟黄舒群沟通，啸姐审批，区域拿到整体的数据，核算。--最后没有审批", "category": "工作", "status": "已完成", "priority": "高", "due_date": "2026-05-09", "created_at": "2026-05-08", "updated_at": "2026-05-12T08:25:38.043Z" },
+                            { "id": 1778225937212, "title": "薪酬审计林栩请假", "description": "西区梦珍也要去，林栩的工作安排很饱和，需要请假。", "category": "工作", "status": "已完成", "priority": "中", "due_date": "2026-05-09", "created_at": "2026-05-08", "updated_at": "2026-05-08T09:05:20.500Z" },
+                            { "id": 1778288730192, "title": "反馈猎聘候选人情况", "description": "跟粟总同步近期猎聘找人的进展", "category": "工作", "status": "已完成", "priority": "高", "due_date": "2026-05-08", "created_at": "2026-05-09", "updated_at": "2026-05-09T01:05:35.470Z" },
+                            { "id": 1778291776267, "title": "铁三角进度跟进", "description": "区域各城市铁三角岗位招聘进度。", "category": "工作", "status": "待办", "priority": "中", "due_date": "2026-05-15", "created_at": "2026-05-09", "updated_at": "2026-05-15T01:41:31.744Z" },
+                            { "id": 1778292876662, "title": "自我复盘系统", "description": "打通数据库后，开发一个自我复盘系统。", "category": "生活", "status": "待办", "priority": "低", "due_date": "2026-05-31", "created_at": "2026-05-09", "updated_at": "2026-05-09T02:14:36.663Z" },
+                            { "id": 1778297747811, "title": "学习Claude Code", "description": "地址：`https://mp.weixin.qq.com/s/0Se4i8RHrtQc-wgGmUkfvw`", "category": "学习", "status": "已完成", "priority": "中", "due_date": "2026-05-10", "created_at": "2026-05-09", "updated_at": "2026-05-18T01:33:44.679Z" },
+                            { "id": 1778307563802, "title": "研究收藏工具", "description": "链接直接可以收藏，分类，缓存，永久存储。", "category": "学习", "status": "待办", "priority": "中", "due_date": "2026-05-30", "created_at": "2026-05-09", "updated_at": "2026-05-09T06:19:23.803Z" },
+                            { "id": 1778457341183, "title": "Hermes学习", "description": "抖音地址：2.02 复制打开抖音，看看【一蛙AI的作品】掌握Hermes Agent的7个等级 David...", "category": "学习", "status": "待办", "priority": "中", "due_date": "2026-05-31", "created_at": "2026-05-10", "updated_at": "2026-05-10T23:55:41.184Z" },
+                            { "id": 1778460503550, "title": "猎聘候选人联系", "description": "反馈时间和本周约个时间面谈", "category": "工作", "status": "已完成", "priority": "中", "due_date": "2026-05-11", "created_at": "2026-05-11", "updated_at": "2026-05-12T08:25:13.594Z" },
+                            { "id": 1778462626429, "title": "售前成本沟通", "description": "结合武汉候选人offer跟颖洁沟通售前成本问题。", "category": "工作", "status": "已完成", "priority": "高", "due_date": "2026-05-11", "created_at": "2026-05-11", "updated_at": "2026-05-12T08:26:00.511Z" },
+                            { "id": 1778470722245, "title": "端午节福利", "description": "李丽华沟通下口径。", "category": "工作", "status": "待办", "priority": "中", "due_date": "2026-05-15", "created_at": "2026-05-11", "updated_at": "2026-05-11T03:38:42.245Z" },
+                            { "id": 1778574527368, "title": "M0课程运营", "description": "M0历史积分和接下来的动作。", "category": "工作", "status": "已完成", "priority": "中", "due_date": "2026-05-13", "created_at": "2026-05-12", "updated_at": "2026-05-18T01:33:12.847Z" },
+                            { "id": 1778580850038, "title": "确认预算调整", "description": "确认大媛调整完了预算。", "category": "工作", "status": "已完成", "priority": "高", "due_date": "2026-05-13", "created_at": "2026-05-12", "updated_at": "2026-05-14T01:13:48.244Z" },
+                            { "id": 1778643096718, "title": "HR考核反馈", "description": "收集大区和城市HR最新考核反馈", "category": "工作", "status": "已完成", "priority": "中", "due_date": "2026-05-15", "created_at": "2026-05-13", "updated_at": "2026-05-18T01:33:39.192Z" },
+                            { "id": 1778668568954, "title": "西安豫鑫的成本", "description": "豫鑫离职后的成本划归。", "category": "工作", "status": "待办", "priority": "中", "due_date": "2026-06-01", "created_at": "2026-05-13", "updated_at": "2026-05-13T10:36:08.955Z" },
+                            { "id": 1778668612790, "title": "重庆人员优化思路", "description": "KAM和KA运营岗位的人员优化思路", "category": "工作", "status": "待办", "priority": "中", "due_date": "2026-05-22", "created_at": "2026-05-13", "updated_at": "2026-05-13T10:36:52.790Z" },
+                            { "id": 1778720061958, "title": "贵阳调基", "description": "贵阳五险一金调整基数", "category": "工作", "status": "待办", "priority": "高", "due_date": "2026-05-22", "created_at": "2026-05-14", "updated_at": "2026-05-14T00:54:21.958Z" },
+                            { "id": 1778720151001, "title": "学习github提交代码逻辑", "description": "学习github提交代码的逻辑", "category": "学习", "status": "已完成", "priority": "中", "due_date": "2026-05-17", "created_at": "2026-05-14", "updated_at": "2026-05-18T01:33:45.584Z" },
+                            { "id": 1779068071482, "title": "统一数据库", "description": "搭建一个小的服务器数据库，以后所有数据统一管理，账户间做隔离。", "category": "学习", "status": "待办", "priority": "中", "due_date": "2026-05-22", "created_at": "2026-05-18", "updated_at": "2026-05-18T01:34:31.482Z" },
+                            { "id": 1779102408298, "title": "人效、钱效分析", "description": "4月的数据分析区域各城市人效钱效预警和排名", "category": "工作", "status": "待办", "priority": "中", "due_date": "2026-05-20", "created_at": "2026-05-18", "updated_at": "2026-05-18T11:06:48.300Z" }
+                        ],
+                        "categories": [ "工作", "生活", "学习", "测试" ]
+                    }
+                }
+            }, null, 2);
+        }
+
+        async function handleLogin() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginStatus = document.getElementById('loginStatus');
+
+            if (!username || !password) {
+                loginStatus.className = 'mt-2 p-3 bg-red-100 text-red-700 rounded-lg';
+                loginStatus.textContent = '请输入用户名和密码';
+                loginStatus.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                log('尝试登录...');
+                
+                let response = await fetch(`${apiBaseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    log('用户不存在，尝试注册...', 'info');
+                    response = await fetch(`${apiBaseUrl}/api/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    authToken = result.data.token;
+                    userId = result.data.userId;
+                    
+                    loginStatus.className = 'mt-2 p-3 bg-green-100 text-green-700 rounded-lg';
+                    loginStatus.textContent = `登录成功！用户ID: ${userId}`;
+                    loginStatus.classList.remove('hidden');
+                    
+                    document.getElementById('migrateBtn').disabled = false;
+                    log('登录成功，可以开始迁移', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                loginStatus.className = 'mt-2 p-3 bg-red-100 text-red-700 rounded-lg';
+                loginStatus.textContent = `登录失败: ${error.message}`;
+                loginStatus.classList.remove('hidden');
+                log(`登录失败: ${error.message}`, 'error');
+            }
+        }
+
+        function generateId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        async function handleMigration() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const jsonInput = document.getElementById('jsonInput').value;
+            const migrateBtn = document.getElementById('migrateBtn');
+
+            if (!jsonInput) {
+                log('请输入 JSON 数据', 'error');
+                return;
+            }
+
+            migrateBtn.disabled = true;
+            migrateBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> 迁移中...';
+            lucide.createIcons();
+
+            try {
+                const data = JSON.parse(jsonInput);
+                log('数据解析成功');
+
+                const userData = Object.values(data.users)[0];
+                if (!userData) {
+                    throw new Error('未找到用户数据');
+                }
+
+                log(`找到 ${userData.categories?.length || 0} 个分类，${userData.tasks?.length || 0} 个任务，${data.reviews?.length || 0} 个复盘`);
+
+                let successCount = 0;
+                let failCount = 0;
+
+                if (userData.categories && userData.categories.length > 0) {
+                    log('开始迁移分类...');
+                    const existingCats = await (await fetch(`${apiBaseUrl}/api/categories`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })).json();
+                    const existingCatNames = (existingCats.data || []).map(c => c.name);
+
+                    for (const cat of userData.categories) {
+                        if (existingCatNames.includes(cat)) {
+                            log(`分类 "${cat}" 已存在，跳过`, 'info');
+                            continue;
+                        }
+                        
+                        try {
+                            const response = await fetch(`${apiBaseUrl}/api/categories`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({ name: cat })
+                            });
+
+                            if (response.ok) {
+                                successCount++;
+                                log(`✓ 分类 "${cat}" 迁移成功`, 'success');
+                            } else {
+                                failCount++;
+                                log(`✗ 分类 "${cat}" 迁移失败`, 'error');
+                            }
+                        } catch (e) {
+                            failCount++;
+                            log(`✗ 分类 "${cat}" 迁移失败: ${e.message}`, 'error');
+                        }
+                    }
+                }
+
+                if (userData.tasks && userData.tasks.length > 0) {
+                    log('开始迁移任务...');
+                    
+                    for (const task of userData.tasks) {
+                        try {
+                            const response = await fetch(`${apiBaseUrl}/api/tasks`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({
+                                    title: task.title,
+                                    description: task.description,
+                                    category: task.category,
+                                    priority: task.priority,
+                                    due_date: task.due_date,
+                                    status: task.status
+                                })
+                            });
+
+                            if (response.ok) {
+                                successCount++;
+                                log(`✓ 任务 "${task.title}" 迁移成功`, 'success');
+                            } else {
+                                failCount++;
+                                log(`✗ 任务 "${task.title}" 迁移失败`, 'error');
+                            }
+                        } catch (e) {
+                            failCount++;
+                            log(`✗ 任务 "${task.title}" 迁移失败: ${e.message}`, 'error');
+                        }
+                    }
+                }
+
+                if (data.reviews && data.reviews.length > 0) {
+                    log('开始迁移复盘...');
+                    
+                    for (const review of data.reviews) {
+                        try {
+                            const response = await fetch(`${apiBaseUrl}/api/reviews`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({
+                                    title: review.summary || '复盘',
+                                    content: review.content,
+                                    review_date: review.date
+                                })
+                            });
+
+                            if (response.ok) {
+                                successCount++;
+                                log(`✓ 复盘 "${review.summary || '复盘'}" 迁移成功`, 'success');
+                            } else {
+                                failCount++;
+                                log(`✗ 复盘 "${review.summary || '复盘'}" 迁移失败`, 'error');
+                            }
+                        } catch (e) {
+                            failCount++;
+                            log(`✗ 复盘迁移失败: ${e.message}`, 'error');
+                        }
+                    }
+                }
+
+                log(`迁移完成！成功: ${successCount}, 失败: ${failCount}`, successCount > 0 ? 'success' : 'error');
+
+            } catch (error) {
+                log(`迁移失败: ${error.message}`, 'error');
+            }
+
+            migrateBtn.disabled = false;
+            migrateBtn.innerHTML = '<i data-lucide="database-zap" class="w-5 h-5"></i> 开始迁移';
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

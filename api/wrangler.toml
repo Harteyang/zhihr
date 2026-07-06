@@ -1,0 +1,22 @@
+name = "zhihr-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# 排除不需要上传到 Cloudflare 的文件/目录
+exclude = [".git", "node_modules", ".wrangler", "dist", ".vscode", ".idea"]
+
+# D1 数据库配置
+# 创建数据库命令: wrangler d1 create zhihr_db
+# 然后将数据库 ID 填入下方
+[[d1_databases]]
+binding = "DB"
+database_name = "zhihr_db"
+database_id = "cd693196-036e-4fd9-9d0c-e077683ce6f3"
+
+# 允许的前端域名（CORS）
+[vars]
+ALLOWED_ORIGINS = "https://zhihr.vip,https://www.zhihr.vip,http://localhost:5173,http://localhost:5174"
+
+# JWT_SECRET 必须通过 wrangler secret put JWT_SECRET 设置
+# ADMIN_SECRET 必须通过 wrangler secret put ADMIN_SECRET 设置
+# 切勿在此文件中写入密钥

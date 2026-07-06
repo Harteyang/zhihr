@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Wrangler
+.wrangler/
+.dev.vars
+
+# Cloudflare sensitive config (keep wrangler.toml but not .dev.vars)
+# Use `wrangler secret put` for sensitive values like JWT_SECRET
+# Do NOT commit: account_id, d1_database_id, kv_namespace_id in wrangler.toml
+*.toml.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build
+dist/
+
+# Miaodu scripts local data
+miaodu/scripts/data/
+miaodu/scripts/downloads/
+
+# Secrets (never commit)
+*.env
+*.env.local
+*.secret

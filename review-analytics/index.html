@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>复盘分析 - 知HR工具集</title>
+  <link rel="icon" type="image/svg+xml" href="../review-system/favicon.svg" />
+  <meta name="theme-color" id="theme-color" content="#ffffff" />
+
+  <!-- 在页面渲染前同步主题，防止闪烁 -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme');
+      if (!t) {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      if (t === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+      var meta = document.getElementById('theme-color');
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#1e293b' : '#ffffff');
+    })();
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  tailwind.config = {
+    darkMode: 'class',
+  }
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2/dist/echarts-wordcloud.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="../shared-auth.js"></script>
+  <script src="../shared-auth-modal.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    html.dark { color-scheme: dark; }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus {
+      -webkit-text-fill-color: inherit;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      transition: background-color 5000s ease-in-out 0s;
+      caret-color: inherit;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif; }
+    .chart-container { width: 100%; height: 100%; min-height: 300px; }
+    .tab-btn.active { background: white; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .dark .tab-btn.active { background: #334155; color: #f1f5f9; }
+    .dimension-badge { transition: all 0.2s; }
+    .dimension-badge.active { ring: 2px solid currentColor; }
+    .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .dark .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .spinner { border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .dark .spinner { border-color: #334155; border-top-color: #60a5fa; }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    .dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .alert-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 50%; background: #ef4444; color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .dimension-color-health { color: #10b981; }
+    .dimension-color-work { color: #3b82f6; }
+    .dimension-color-study { color: #8b5cf6; }
+    .dimension-color-social { color: #ec4899; }
+    .dimension-color-finance { color: #f59e0b; }
+    .dimension-color-life { color: #14b8a6; }
+    .dimension-color-spirit { color: #6366f1; }
+    .dimension-color-leisure { color: #f97316; }
+    .bg-dimension-health { background: #10b981; }
+    .bg-dimension-work { background: #3b82f6; }
+    .bg-dimension-study { background: #8b5cf6; }
+    .bg-dimension-social { background: #ec4899; }
+    .bg-dimension-finance { background: #f59e0b; }
+    .bg-dimension-life { background: #14b8a6; }
+    .bg-dimension-spirit { background: #6366f1; }
+    .bg-dimension-leisure { background: #f97316; }
+    .word-cloud-item { cursor: pointer; transition: all 0.2s; }
+    .word-cloud-item:hover { opacity: 0.8; transform: scale(1.05); }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+
+    .dimension-selector { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dimension-selector button { padding: 4px 12px; border-radius: 9999px; font-size: 13px; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .range-selector { display: flex; gap: 4px; }
+    .range-selector button { padding: 4px 12px; border-radius: 6px; font-size: 13px; transition: all 0.2s; cursor: pointer; }
+    .cross-analysis-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .cross-analysis-layout { grid-template-columns: 1fr 1fr; } }
+    .alert-card { border-left: 4px solid; transition: all 0.2s; }
+    .alert-card:hover { transform: translateX(4px); }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-200">
+  <nav class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="window.open('https://www.zhihr.vip', '_blank')">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400">
+        <circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>
+      </svg>
+      <div>
+        <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100"> 知HR-复盘分析</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Vibe Coding，为HR制作效率工具</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- 登录按钮（未登录状态） -->
+      <button id="btnLogin" onclick="AuthModal.open('login')" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span class="hidden sm:inline">登录</span>
+      </button>
+      <!-- 已登录状态 -->
+      <div id="loggedInArea" class="hidden relative">
+        <button id="btnUser" onclick="toggleUserMenu()" class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="userDisplay" class="hidden sm:inline">账号</span>
+        </button>
+        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
+          <div class="px-4 py-2 text-sm text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+            <span id="menuUserDisplay"></span>
+          </div>
+          <button onclick="handleLogout()" class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            退出登录
+          </button>
+        </div>
+      </div>
+      <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer" title="切换主题">
+        <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+    <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-6 overflow-x-auto">
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 active" data-tab="dashboard" onclick="switchTab('dashboard')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        <span class="hidden sm:inline">概览</span>
+      </button>
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300" data-tab="trends" onclick="switchTab('trends')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <span class="hidden sm:inline">趋势</span>
+      </button>
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300" data-tab="cross" onclick="switchTab('cross')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="hidden sm:inline">交叉</span>
+      </button>
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300" data-tab="monthly" onclick="switchTab('monthly')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="hidden sm:inline">月报</span>
+      </button>
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 relative" data-tab="alerts" onclick="switchTab('alerts')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span class="hidden sm:inline">预警</span>
+        <span id="alert-badge" class="alert-badge hidden">0</span>
+      </button>
+      <button class="tab-btn flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300" data-tab="data" onclick="switchTab('data')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <span class="hidden sm:inline">数据</span>
+      </button>
+    </div>
+
+    <div id="loading-state" class="hidden">
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="spinner mb-4"></div>
+        <p class="text-sm text-slate-500 dark:text-slate-400">正在加载复盘数据...</p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">从云端拉取你的复盘记录</p>
+      </div>
+    </div>
+
+    <div id="empty-state" class="hidden">
+      <div class="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 opacity-50"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <p class="text-base font-medium mb-2">尚无复盘数据</p>
+        <p class="text-sm text-center">请先在复盘系统中记录每日复盘</p>
+        <a href="../review-system/" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">前往复盘系统</a>
+      </div>
+    </div>
+
+    <div id="login-prompt" class="hidden">
+      <div class="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 opacity-50"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p class="text-base font-medium mb-2">请先登录</p>
+        <p class="text-sm text-center">登录后即可查看你的复盘数据分析</p>
+        <button onclick="AuthModal.open('login')" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer">立即登录</button>
+      </div>
+    </div>
+
+    <div id="error-state" class="hidden">
+      <div class="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 opacity-50"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p class="text-base font-medium mb-2 text-red-500">数据加载失败</p>
+        <p id="error-message" class="text-sm text-center mb-4">请检查网络连接后重试</p>
+        <button onclick="loadData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer">重新加载</button>
+      </div>
+    </div>
+
+    <div id="app-content" class="hidden">
+      <div id="tab-dashboard" class="tab-content">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="stat-cards"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">月度复盘日历</h3>
+            <div id="calendar-chart" class="chart-container" style="min-height:200px"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">维度活跃度雷达（近30天）</h3>
+            <div id="radar-chart" class="chart-container" style="min-height:300px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-trends" class="tab-content hidden">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 mb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+            <div class="dimension-selector flex-1" id="trend-dimension-selector"></div>
+            <div class="range-selector" id="trend-range-selector"></div>
+          </div>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <h4 class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2" id="trend-line-title">结构化字段趋势</h4>
+              <div id="trend-line-chart" class="chart-container" style="min-height:320px"></div>
+            </div>
+            <div>
+              <h4 class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">维度活跃度堆叠图</h4>
+              <div id="trend-stacked-chart" class="chart-container" style="min-height:300px"></div>
+            </div>
+            <div id="word-cloud-section" class="hidden">
+              <h4 class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">文本词云</h4>
+              <div id="word-cloud-chart" class="chart-container" style="min-height:300px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-cross" class="tab-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">维度相关性矩阵</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">基于同一天同时被记录的频率计算相关系数</p>
+            <div id="correlation-chart" class="chart-container" style="min-height:400px"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">维度联动分析</h3>
+            <div class="flex flex-wrap gap-2 mb-3" id="dual-dimension-selectors"></div>
+            <div id="dual-line-chart" class="chart-container" style="min-height:350px"></div>
+            <div id="correlation-value" class="text-center text-xs text-slate-500 dark:text-slate-400 mt-2 hidden"></div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+          <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">工作日 vs 周末对比</h3>
+          <div id="workday-chart" class="chart-container" style="min-height:320px"></div>
+        </div>
+      </div>
+
+      <div id="tab-monthly" class="tab-content hidden">
+        <div class="flex flex-wrap items-center gap-3 mb-4">
+          <select id="month-selector" class="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="renderMonthlyReport()"></select>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">月度概览</h3>
+            <div id="monthly-overview" class="grid grid-cols-2 gap-3"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">维度评分雷达</h3>
+            <div id="monthly-radar-chart" class="chart-container" style="min-height:320px"></div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 mb-4">
+          <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">进步与退步</h3>
+          <div id="monthly-progress"></div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+          <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">月度关键词</h3>
+          <div id="monthly-wordcloud-chart" class="chart-container" style="min-height:300px"></div>
+        </div>
+      </div>
+
+      <div id="tab-alerts" class="tab-content hidden">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">预警看板</h3>
+            <button onclick="generateAlerts()" class="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">刷新检测</button>
+          </div>
+          <div id="alert-list" class="space-y-3"></div>
+          <div id="alert-empty" class="hidden text-center py-8 text-slate-400 dark:text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2 opacity-50"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <p class="text-sm">暂无预警，继续保持！</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-data" class="tab-content hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">数据状态</h3>
+            <div id="data-status" class="space-y-2 text-sm"></div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">数据导出</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">导出复盘数据用于外部分析或备份</p>
+            <div class="flex flex-wrap gap-3">
+              <button onclick="exportCSV()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer">导出 CSV</button>
+              <button onclick="exportJSON()" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">导出 JSON</button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+          <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">加载记录</h3>
+          <div id="data-records" class="overflow-x-auto"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 自定义确认对话框 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal bg-white dark:bg-slate-800 p-6 w-full max-w-sm mx-4 rounded-xl">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">退出登录</h3>
+        <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-400 mb-6">确定要退出登录吗？</p>
+        <div class="flex gap-3">
+          <button id="confirmBtn" onclick="confirmCallback(true)" class="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+            确定
+          </button>
+          <button id="cancelBtn" onclick="confirmCallback(false)" class="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center py-3 text-xs text-slate-400 dark:text-slate-600 border-t border-slate-200 dark:border-slate-700">
+    <span id="data-source-info">数据来源：云端 | 共 0 条记录</span>
+  </footer>
+
+<script>
+const DIMENSIONS = [
+  { key: 'health', name: '健康', color: '#10b981', bgClass: 'bg-dimension-health' },
+  { key: 'work', name: '工作', color: '#3b82f6', bgClass: 'bg-dimension-work' },
+  { key: 'study', name: '学习', color: '#8b5cf6', bgClass: 'bg-dimension-study' },
+  { key: 'social', name: '社交', color: '#ec4899', bgClass: 'bg-dimension-social' },
+  { key: 'finance', name: '财务', color: '#f59e0b', bgClass: 'bg-dimension-finance' },
+  { key: 'life', name: '生活', color: '#14b8a6', bgClass: 'bg-dimension-life' },
+  { key: 'spirit', name: '精神', color: '#6366f1', bgClass: 'bg-dimension-spirit' },
+  { key: 'leisure', name: '休闲', color: '#f97316', bgClass: 'bg-dimension-leisure' },
+];
+
+const DIMENSION_LABELS = { health: '健康', work: '工作', study: '学习', social: '社交', finance: '财务', life: '生活', spirit: '精神', leisure: '休闲' };
+
+const STRUCTURED_META = {
+  health: { numeric: ['sleep', 'exercise'], text: ['diet'], unit: { sleep: '小时', exercise: '分钟' } },
+  work: { numeric: ['hours'], text: ['task'] },
+  study: { numeric: ['hours'], text: ['subject'] },
+  social: { numeric: [], text: ['activity', 'mood'] },
+  finance: { numeric: ['income', 'expense'], text: [] },
+  life: { numeric: [], text: ['activity', 'mood'] },
+  spirit: { numeric: [], text: ['reading', 'reflection'] },
+  leisure: { numeric: [], text: ['activity', 'duration'] },
+};
+
+let reviews = [];
+let isLoading = false;
+let currentTab = 'dashboard';
+let isDark = false;
+let echartsInstances = [];
+let activeAlerts = [];
+
+function parseDimensionValue(value) {
+  if (!value) return { structured: {}, freeform: '' };
+  if (typeof value === 'object' && value.structured !== undefined) return value;
+  if (typeof value === 'string') {
+    try { const p = JSON.parse(value); if (p && p.structured) return p; } catch {}
+    return { structured: {}, freeform: value };
+  }
+  return { structured: {}, freeform: '' };
+}
+
+function hasDimensionContent(value) {
+  const parsed = parseDimensionValue(value)
+  const hasStructured = Object.values(parsed.structured).some(v => v && v.trim().length > 0)
+  const hasFreeform = parsed.freeform && parsed.freeform.trim().length > 0
+  return hasStructured || hasFreeform
+}
+
+function extractNumber(str) {
+  if (!str) return null;
+  const m = str.match(/(\d+(\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+function getLocalDateString(d) {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function getToday() { return getLocalDateString(new Date()); }
+
+function formatDate(d) {
+  try { return new Date(d).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }); } catch { return d; }
+}
+
+function daysAgo(n) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return getLocalDateString(d);
+}
+
+function getMonthStr(date) { return date.substring(0, 7); }
+
+function showLoading() {
+  document.getElementById('loading-state').classList.remove('hidden');
+  document.getElementById('empty-state').classList.add('hidden');
+  document.getElementById('login-prompt').classList.add('hidden');
+  document.getElementById('error-state').classList.add('hidden');
+  document.getElementById('app-content').classList.add('hidden');
+}
+
+function hideAllStates() {
+  document.getElementById('loading-state').classList.add('hidden');
+  document.getElementById('empty-state').classList.add('hidden');
+  document.getElementById('login-prompt').classList.add('hidden');
+  document.getElementById('error-state').classList.add('hidden');
+}
+
+async function loadData() {
+  if (!SharedAuth.isAuthenticated()) {
+    hideAllStates();
+    document.getElementById('login-prompt').classList.remove('hidden');
+    document.getElementById('app-content').classList.add('hidden');
+    updateFooter();
+    return;
+  }
+
+  showLoading();
+  try {
+    const result = await SharedAuth.apiRequest('/api/reviews?pageSize=1000');
+    if (!result.success) throw new Error(result.message || '加载失败');
+    reviews = (result.data || []).map(r => ({
+      id: r.id,
+      date: r.review_date || r.date || '',
+      summary: r.title || r.summary || '',
+      content: r.content || {},
+      createdAt: r.created_at || r.createdAt,
+      updatedAt: r.updated_at || r.updatedAt,
+    }));
+    reviews.sort((a, b) => a.date.localeCompare(b.date));
+    hideAllStates();
+    if (reviews.length === 0) {
+      document.getElementById('empty-state').classList.remove('hidden');
+      document.getElementById('app-content').classList.add('hidden');
+    } else {
+      document.getElementById('app-content').classList.remove('hidden');
+      renderCurrentTab();
+    }
+    updateFooter();
+  } catch (err) {
+    console.error('[Analytics] Load error:', err);
+    hideAllStates();
+    document.getElementById('error-message').textContent = err.message || '加载失败，请检查网络连接';
+    document.getElementById('error-state').classList.remove('hidden');
+    document.getElementById('app-content').classList.add('hidden');
+  }
+}
+
+function updateFooter() {
+  const el = document.getElementById('data-source-info');
+  if (reviews.length > 0) {
+    const first = reviews[0].date, last = reviews[reviews.length - 1].date;
+    el.textContent = `数据来源：云端 | 共 ${reviews.length} 条记录 | ${first} ~ ${last}`;
+  } else {
+    el.textContent = `数据来源：云端 | 共 0 条记录`;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById('tab-' + tab);
+  if (target) target.classList.remove('hidden');
+  if (reviews.length > 0) renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  disposeCharts();
+  switch (currentTab) {
+    case 'dashboard': renderDashboard(); break;
+    case 'trends': renderTrends(); break;
+    case 'cross': renderCross(); break;
+    case 'monthly': renderMonthlyReport(); break;
+    case 'alerts': generateAlerts(); break;
+    case 'data': renderDataTab(); break;
+  }
+}
+
+function disposeCharts() {
+  echartsInstances.forEach(instance => { try { instance.dispose(); } catch {} });
+  echartsInstances = [];
+}
+
+function initChart(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const chart = echarts.init(el, isDark ? 'dark' : undefined);
+  echartsInstances.push(chart);
+  return chart;
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const todayStr = getToday();
+
+  const totalDays = reviews.length;
+
+  const thisMonthReviews = reviews.filter(r => {
+    const d = new Date(r.date);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  });
+
+  let streak = 0;
+  const d = new Date(todayStr);
+  while (true) {
+    const ds = getLocalDateString(d);
+    if (reviews.some(r => r.date === ds)) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+
+  let totalRecords = 0;
+  const dimCounts = {};
+  DIMENSIONS.forEach(d => dimCounts[d.key] = 0);
+  reviews.forEach(r => {
+    if (r.content && typeof r.content === 'object') {
+      Object.keys(r.content).forEach(k => {
+        if (dimCounts[k] !== undefined && hasDimensionContent(r.content[k])) { dimCounts[k]++; totalRecords++; }
+      });
+    }
+  });
+
+  let maxDim = '-', minDim = '-', maxCount = 0, minCount = Infinity;
+  DIMENSIONS.forEach(d => {
+    if (dimCounts[d.key] > maxCount) { maxCount = dimCounts[d.key]; maxDim = d.name; }
+    if (dimCounts[d.key] < minCount) { minCount = dimCounts[d.key]; minDim = d.name; }
+  });
+
+  const cards = [
+    { label: '总复盘天数', value: totalDays, unit: '天', icon: 'calendar' },
+    { label: '本月复盘天数', value: thisMonthReviews.length, unit: '天', icon: 'calendar' },
+    { label: '连续复盘', value: streak, unit: '天', icon: 'trending-up' },
+    { label: '总维度记录数', value: totalRecords, unit: '次', icon: 'activity' },
+    { label: '最活跃维度', value: maxDim, unit: `${maxCount}次`, icon: 'zap' },
+    { label: '最不活跃维度', value: minDim, unit: `${minCount}次`, icon: 'target' },
+  ];
+
+  const cardContainer = document.getElementById('stat-cards');
+  cardContainer.innerHTML = cards.map(c => `
+    <div class="stat-card bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">${c.label}</p>
+      <p class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">${c.value}</p>
+      <p class="text-xs text-slate-400 dark:text-slate-500">${c.unit}</p>
+    </div>
+  `).join('');
+
+  renderCalendarHeatmap();
+  renderRadarChart();
+}
+
+function renderCalendarHeatmap() {
+  const chart = initChart('calendar-chart');
+  if (!chart) return;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const daysInMonth = new Date(year, now.getMonth() + 1, 0).getDate();
+
+  const data = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${month}-${String(d).padStart(2, '0')}`;
+    const dayReviews = reviews.filter(r => r.date === ds);
+    let count = 0;
+    if (dayReviews.length > 0) {
+      dayReviews.forEach(r => {
+        if (r.content && typeof r.content === 'object') {
+          count += Object.keys(r.content).filter(k => DIMENSIONS.some(dk => dk.key === k) && hasDimensionContent(r.content[k])).length;
+        }
+      });
+    }
+    data.push([ds, count]);
+  }
+
+  const maxVal = Math.max(...data.map(d => d[1]), 1);
+
+  chart.setOption({
+    tooltip: {
+      formatter: p => {
+        const val = p.data[1];
+        return `${p.data[0]}<br/>${val > 0 ? `记录维度：${val}个` : '无记录'}`;
+      }
+    },
+    visualMap: {
+      min: 0, max: maxVal,
+      type: 'piecewise',
+      orient: 'horizontal',
+      left: 'center', top: 0,
+      pieces: [
+        { min: 0, max: 0, color: isDark ? '#334155' : '#f1f5f9', label: '无' },
+        { min: 1, max: Math.ceil(maxVal * 0.33), color: '#bbf7d0', label: '少' },
+        { min: Math.ceil(maxVal * 0.33) + 1, max: Math.ceil(maxVal * 0.66), color: '#4ade80', label: '中' },
+        { min: Math.ceil(maxVal * 0.66) + 1, max: maxVal, color: '#16a34a', label: '多' },
+      ]
+    },
+    calendar: {
+      top: 50, left: 20, right: 20, bottom: 10,
+      cellSize: ['auto', 18],
+      range: `${year}-${month}`,
+      itemStyle: { borderWidth: 2, borderColor: isDark ? '#1e293b' : '#ffffff' },
+      splitLine: { show: false },
+      dayLabel: { color: isDark ? '#94a3b8' : '#64748b' },
+      monthLabel: { color: isDark ? '#cbd5e1' : '#334155' },
+    },
+    series: [{
+      type: 'heatmap', coordinateSystem: 'calendar',
+      data: data,
+      label: { show: false },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } }
+    }]
+  });
+}
+
+function renderRadarChart() {
+  const chart = initChart('radar-chart');
+  if (!chart) return;
+
+  const last30 = daysAgo(30);
+  const recent = reviews.filter(r => r.date >= last30);
+  const dimCounts = {};
+  DIMENSIONS.forEach(d => dimCounts[d.key] = 0);
+  recent.forEach(r => {
+    if (r.content && typeof r.content === 'object') {
+      Object.keys(r.content).forEach(k => {
+        if (dimCounts[k] !== undefined && hasDimensionContent(r.content[k])) dimCounts[k]++;
+      });
+    }
+  });
+
+  const maxVal = Math.max(...Object.values(dimCounts), 1);
+
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    radar: {
+      indicator: DIMENSIONS.map(d => ({ name: d.name, max: maxVal })),
+      axisName: { color: isDark ? '#94a3b8' : '#64748b' },
+      splitArea: { areaStyle: { color: isDark ? ['rgba(51,65,85,0.3)', 'rgba(51,65,85,0.1)'] : ['rgba(241,245,249,0.5)', 'rgba(241,245,249,0.2)'] } },
+      axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
+    },
+    series: [{
+      type: 'radar',
+      data: [{ value: DIMENSIONS.map(d => dimCounts[d.key]), name: '维度活跃度', areaStyle: { opacity: 0.3 } }],
+      lineStyle: { color: '#3b82f6', width: 2 },
+      itemStyle: { color: DIMENSIONS.map(d => d.color) },
+      symbol: 'circle', symbolSize: 6,
+    }]
+  });
+}
+
+// ==================== TRENDS ====================
+let trendSelectedDims = ['health', 'work', 'study'];
+let trendRange = 30;
+
+function renderTrends() {
+  const selector = document.getElementById('trend-dimension-selector');
+  selector.innerHTML = DIMENSIONS.map(d => `
+    <button class="dimension-badge ${trendSelectedDims.includes(d.key) ? 'active' : ''}"
+      style="${trendSelectedDims.includes(d.key) ? 'background:' + d.color + '20;color:' + d.color + ';border:1px solid ' + d.color : 'background:transparent;color:' + (isDark ? '#94a3b8' : '#64748b') + ';border:1px solid ' + (isDark ? '#475569' : '#cbd5e1')}"
+      onclick="toggleTrendDim('${d.key}')">${d.name}</button>
+  `).join('');
+
+  const rangeSel = document.getElementById('trend-range-selector');
+  const ranges = [7, 30, 90];
+  rangeSel.innerHTML = ranges.map(r => `
+    <button class="${trendRange === r ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}"
+      onclick="trendRange=${r};renderTrends()">${r}天</button>
+  `).join('');
+
+  renderTrendLine();
+  renderTrendStacked();
+  renderWordCloud();
+}
+
+function toggleTrendDim(key) {
+  const idx = trendSelectedDims.indexOf(key);
+  if (idx > -1) {
+    if (trendSelectedDims.length <= 1) return;
+    trendSelectedDims.splice(idx, 1);
+  } else {
+    trendSelectedDims.push(key);
+  }
+  renderTrends();
+}
+
+function renderTrendLine() {
+  const chart = initChart('trend-line-chart');
+  if (!chart) return;
+
+  const startDate = daysAgo(trendRange);
+  const filtered = reviews.filter(r => r.date >= startDate);
+  const dateMap = {};
+  filtered.forEach(r => { dateMap[r.date] = dateMap[r.date] || []; dateMap[r.date].push(r); });
+
+  const dates = Object.keys(dateMap).sort();
+  if (dates.length === 0) { chart.setOption({ title: { text: '暂无数据', left: 'center', top: 'center' } }); return; }
+
+  const series = [];
+  trendSelectedDims.forEach(dimKey => {
+    const numericKeys = STRUCTURED_META[dimKey]?.numeric || [];
+    numericKeys.forEach(nk => {
+      const data = dates.map(d => {
+        const dayReviews = dateMap[d];
+        for (const r of dayReviews) {
+          const parsed = parseDimensionValue(r.content[dimKey]);
+          if (parsed.structured && parsed.structured[nk]) {
+            const val = extractNumber(parsed.structured[nk]);
+            if (val !== null) return val;
+          }
+        }
+        return null;
+      });
+      if (data.some(v => v !== null)) {
+        const dimInfo = DIMENSIONS.find(d => d.key === dimKey);
+        series.push({
+          name: `${dimInfo?.name || dimKey} - ${nk}`,
+          type: 'line', smooth: true,
+          data: data.map(v => v === null ? '-' : v),
+          connectNulls: true,
+          lineStyle: { width: 2 },
+          symbol: 'circle', symbolSize: 4,
+        });
+      }
+    });
+  });
+
+  chart.setOption({
+    tooltip: { trigger: 'axis', formatter: p => {
+      let html = `<b>${p[0].axisValue}</b><br/>`;
+      p.forEach(item => { if (item.value !== '-') html += `${item.seriesName}: ${item.value}<br/>`; });
+      return html;
+    }},
+    legend: { data: series.map(s => s.name), bottom: 0, textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 11 } },
+    grid: { left: 50, right: 20, top: 20, bottom: 40 },
+    xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45, fontSize: 10, color: isDark ? '#94a3b8' : '#64748b' } },
+    yAxis: { type: 'value', axisLabel: { color: isDark ? '#94a3b8' : '#64748b' }, splitLine: { lineStyle: { color: isDark ? '#334155' : '#f1f5f9' } } },
+    series,
+  });
+}
+
+function renderTrendStacked() {
+  const chart = initChart('trend-stacked-chart');
+  if (!chart) return;
+
+  const startDate = daysAgo(trendRange);
+  const filtered = reviews.filter(r => r.date >= startDate);
+  const dateMap = {};
+  filtered.forEach(r => {
+    dateMap[r.date] = dateMap[r.date] || [];
+    dateMap[r.date].push(r);
+  });
+
+  const dates = Object.keys(dateMap).sort();
+  if (dates.length === 0) { chart.setOption({ title: { text: '暂无数据', left: 'center', top: 'center' } }); return; }
+
+  const series = DIMENSIONS.map(dim => ({
+    name: dim.name,
+    type: 'bar', stack: 'total',
+    data: dates.map(d => {
+      const dayReviews = dateMap[d];
+      for (const r of dayReviews) {
+        const parsed = parseDimensionValue(r.content[dim.key]);
+        const hasStructured = Object.values(parsed.structured || {}).some(v => v);
+        const hasFreeform = parsed.freeform && parsed.freeform.trim();
+        if (hasStructured || hasFreeform) return 1;
+      }
+      return 0;
+    }),
+    itemStyle: { color: dim.color },
+    emphasis: { focus: 'series' },
+  }));
+
+  chart.setOption({
+    tooltip: { trigger: 'axis', formatter: p => {
+      let html = `<b>${p[0].axisValue}</b><br/>`;
+      const activeDims = p.filter(item => item.value > 0);
+      if (activeDims.length === 0) { html += '无记录<br/>'; }
+      else { activeDims.forEach(item => { html += `${item.marker} ${item.seriesName}<br/>`; }); }
+      return html;
+    }},
+    legend: { data: DIMENSIONS.map(d => d.name), bottom: 0, textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 11 } },
+    grid: { left: 40, right: 20, top: 20, bottom: 40 },
+    xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45, fontSize: 10, color: isDark ? '#94a3b8' : '#64748b' } },
+    yAxis: { type: 'value', max: 8, axisLabel: { color: isDark ? '#94a3b8' : '#64748b' }, splitLine: { lineStyle: { color: isDark ? '#334155' : '#f1f5f9' } } },
+    series,
+  });
+}
+
+function renderWordCloud() {
+  const section = document.getElementById('word-cloud-section');
+  const chart = initChart('word-cloud-chart');
+  if (!chart) { section.classList.add('hidden'); return; }
+
+  const texts = [];
+  reviews.forEach(r => {
+    DIMENSIONS.forEach(dim => {
+      const parsed = parseDimensionValue(r.content[dim.key]);
+      const meta = STRUCTURED_META[dim.key];
+      if (meta) {
+        meta.text.forEach(tk => {
+          const val = parsed.structured?.[tk];
+          if (val) texts.push(val);
+        });
+      }
+      if (parsed.freeform) texts.push(parsed.freeform);
+    });
+  });
+
+  if (texts.length === 0) { section.classList.add('hidden'); return; }
+
+  const words = {};
+  const allText = texts.join(' ');
+  const segments = allText.split(/[\s,，。.、！!？?;；：:()（）\n\r]+/).filter(t => t.length >= 2);
+  segments.forEach(w => { words[w] = (words[w] || 0) + 1; });
+
+  const wordList = Object.entries(words).sort((a, b) => b[1] - a[1]).slice(0, 50);
+  if (wordList.length === 0) { section.classList.add('hidden'); return; }
+
+  section.classList.remove('hidden');
+  const maxFreq = wordList[0][1];
+  chart.setOption({
+    series: [{
+      type: 'wordCloud',
+      shape: 'circle',
+      sizeRange: [12, 40],
+      rotationRange: [-30, 30],
+      gridSize: 8,
+      drawOutOfBound: false,
+      data: wordList.map(([name, value]) => ({
+        name, value,
+        textStyle: { color: DIMENSIONS[Math.floor(Math.random() * DIMENSIONS.length)].color }
+      })),
+    }]
+  });
+}
+
+// ==================== CROSS ANALYSIS ====================
+function renderCross() {
+  renderCorrelationMatrix();
+  renderDualDimSelectors();
+  renderDualLineChart();
+  renderWorkdayComparison();
+}
+
+function renderCorrelationMatrix() {
+  const chart = initChart('correlation-chart');
+  if (!chart) return;
+
+  const dimKeys = DIMENSIONS.map(d => d.key);
+  const n = dimKeys.length;
+  const coOccur = {};
+  dimKeys.forEach(k => { coOccur[k] = {}; dimKeys.forEach(k2 => { coOccur[k][k2] = 0; }); });
+
+  const dimCounts = {};
+  dimKeys.forEach(k => { dimCounts[k] = 0; });
+
+  reviews.forEach(r => {
+    if (!r.content || typeof r.content !== 'object') return;
+    const activeDims = dimKeys.filter(k => {
+      const parsed = parseDimensionValue(r.content[k]);
+      return Object.values(parsed.structured || {}).some(v => v) || (parsed.freeform && parsed.freeform.trim());
+    });
+    activeDims.forEach(k => { dimCounts[k]++; });
+    for (let i = 0; i < activeDims.length; i++) {
+      for (let j = i; j < activeDims.length; j++) {
+        coOccur[activeDims[i]][activeDims[j]]++;
+        if (i !== j) coOccur[activeDims[j]][activeDims[i]]++;
+      }
+    }
+  });
+
+  const data = [];
+  dimKeys.forEach((k1, i) => {
+    dimKeys.forEach((k2, j) => {
+      const max1 = dimCounts[k1] || 1;
+      const max2 = dimCounts[k2] || 1;
+      const union = coOccur[k1][k2];
+      const corr = union / Math.sqrt(max1 * max2);
+      data.push([i, j, Math.round(corr * 100) / 100]);
+    });
+  });
+
+  chart.setOption({
+    tooltip: {
+      formatter: p => {
+        const i = p.data[0], j = p.data[1], val = p.data[2];
+        return `<b>${DIMENSIONS[i].name}</b> vs <b>${DIMENSIONS[j].name}</b><br/>相关系数: ${(val * 100).toFixed(0)}%`;
+      }
+    },
+    xAxis: { type: 'category', data: DIMENSIONS.map(d => d.name), axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }, splitLine: { show: false } },
+    yAxis: { type: 'category', data: DIMENSIONS.map(d => d.name), axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 10 }, splitLine: { show: false } },
+    visualMap: {
+      min: 0, max: 1,
+      calculable: true,
+      orient: 'horizontal', left: 'center', bottom: 0,
+      inRange: { color: ['#f1f5f9', '#bfdbfe', '#60a5fa', '#3b82f6', '#1d4ed8'] },
+      textStyle: { color: isDark ? '#94a3b8' : '#64748b' }
+    },
+    series: [{
+      type: 'heatmap',
+      data,
+      label: {
+        show: true,
+        formatter: p => {
+          const val = p.data[2];
+          return val > 0 ? (val * 100).toFixed(0) + '%' : '';
+        },
+        color: isDark ? '#e2e8f0' : '#1e293b',
+        fontSize: 10,
+      },
+      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' } }
+    }],
+    grid: { left: 50, right: 20, top: 10, bottom: 50 },
+  });
+}
+
+let dualDim1 = 'health', dualDim2 = 'work';
+
+function renderDualDimSelectors() {
+  const el = document.getElementById('dual-dimension-selectors');
+  el.innerHTML = `
+    <select onchange="dualDim1=this.value;renderDualLineChart()" class="px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      ${DIMENSIONS.map(d => `<option value="${d.key}" ${d.key === dualDim1 ? 'selected' : ''}>${d.name}</option>`).join('')}
+    </select>
+    <span class="text-xs text-slate-400">vs</span>
+    <select onchange="dualDim2=this.value;renderDualLineChart()" class="px-2 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      ${DIMENSIONS.map(d => `<option value="${d.key}" ${d.key === dualDim2 ? 'selected' : ''}>${d.name}</option>`).join('')}
+    </select>
+  `;
+}
+
+function renderDualLineChart() {
+  const chart = initChart('dual-line-chart');
+  if (!chart) return;
+
+  const startDate = daysAgo(90);
+  const filtered = reviews.filter(r => r.date >= startDate);
+  const dateMap = {};
+  filtered.forEach(r => { dateMap[r.date] = dateMap[r.date] || []; dateMap[r.date].push(r); });
+
+  const dates = Object.keys(dateMap).sort();
+  if (dates.length === 0) { chart.setOption({ title: { text: '暂无数据', left: 'center', top: 'center' } }); return; }
+
+  const dim1Info = DIMENSIONS.find(d => d.key === dualDim1);
+  const dim2Info = DIMENSIONS.find(d => d.key === dualDim2);
+
+  const getNumericData = (dimKey, dates) => {
+    const numKeys = STRUCTURED_META[dimKey]?.numeric || [];
+    if (numKeys.length === 0) return null;
+    return dates.map(d => {
+      const dayReviews = dateMap[d];
+      for (const r of dayReviews) {
+        const parsed = parseDimensionValue(r.content[dimKey]);
+        for (const nk of numKeys) {
+          const val = extractNumber(parsed.structured?.[nk]);
+          if (val !== null) return val;
+        }
+      }
+      return null;
+    });
+  };
+
+  const data1 = getNumericData(dualDim1, dates);
+  const data2 = getNumericData(dualDim2, dates);
+  if (!data1 || !data2 || data1.every(v => v === null) || data2.every(v => v === null)) {
+    chart.setOption({ title: { text: '所选维度无双维度可量化数据', left: 'center', top: 'center', textStyle: { fontSize: 14, color: isDark ? '#94a3b8' : '#64748b' } } });
+    document.getElementById('correlation-value').classList.add('hidden');
+    return;
+  }
+
+  const validPairs = [];
+  for (let i = 0; i < dates.length; i++) {
+    if (data1[i] !== null && data2[i] !== null) validPairs.push({ x: data1[i], y: data2[i] });
+  }
+
+  let rVal = 0;
+  if (validPairs.length > 2) {
+    const n = validPairs.length;
+    const sumX = validPairs.reduce((s, p) => s + p.x, 0), sumY = validPairs.reduce((s, p) => s + p.y, 0);
+    const meanX = sumX / n, meanY = sumY / n;
+    const num = validPairs.reduce((s, p) => s + (p.x - meanX) * (p.y - meanY), 0);
+    const denX = Math.sqrt(validPairs.reduce((s, p) => s + (p.x - meanX) ** 2, 0));
+    const denY = Math.sqrt(validPairs.reduce((s, p) => s + (p.y - meanY) ** 2, 0));
+    rVal = denX && denY ? num / (denX * denY) : 0;
+  }
+
+  const cv = document.getElementById('correlation-value');
+  cv.classList.remove('hidden');
+  cv.innerHTML = `相关系数 r = <b>${rVal.toFixed(3)}</b> (${Math.abs(rVal) > 0.7 ? '强相关' : Math.abs(rVal) > 0.4 ? '中等相关' : '弱相关'})，基于 ${validPairs.length} 个共同数据点`;
+
+  const dim1Color = dim1Info?.color || '#3b82f6';
+  const dim2Color = dim2Info?.color || '#f59e0b';
+
+  chart.setOption({
+    tooltip: { trigger: 'axis', formatter: p => {
+      let html = `<b>${p[0].axisValue}</b><br/>`;
+      p.forEach(item => { if (item.value !== '-') html += `${item.marker} ${item.seriesName}: ${item.value}<br/>`; });
+      return html;
+    }},
+    legend: { data: [`${dim1Info?.name}`, `${dim2Info?.name}`], bottom: 0, textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 11 } },
+    grid: { left: 50, right: 50, top: 20, bottom: 40 },
+    xAxis: { type: 'category', data: dates, axisLabel: { rotate: 45, fontSize: 10, color: isDark ? '#94a3b8' : '#64748b' } },
+    yAxis: [
+      { type: 'value', name: dim1Info?.name, nameTextStyle: { color: dim1Color }, axisLabel: { color: isDark ? '#94a3b8' : '#64748b' }, splitLine: { lineStyle: { color: isDark ? '#334155' : '#f1f5f9' } } },
+      { type: 'value', name: dim2Info?.name, nameTextStyle: { color: dim2Color }, axisLabel: { color: isDark ? '#94a3b8' : '#64748b' }, splitLine: { show: false } },
+    ],
+    series: [
+      { name: dim1Info?.name, type: 'line', smooth: true, data: data1.map(v => v === null ? '-' : v), connectNulls: true, lineStyle: { color: dim1Color, width: 2 }, symbol: 'circle', symbolSize: 4, yAxisIndex: 0, itemStyle: { color: dim1Color } },
+      { name: dim2Info?.name, type: 'line', smooth: true, data: data2.map(v => v === null ? '-' : v), connectNulls: true, lineStyle: { color: dim2Color, width: 2 }, symbol: 'diamond', symbolSize: 4, yAxisIndex: 1, itemStyle: { color: dim2Color } },
+    ]
+  });
+}
+
+function renderWorkdayComparison() {
+  const chart = initChart('workday-chart');
+  if (!chart) return;
+
+  const last90 = daysAgo(90);
+  const filtered = reviews.filter(r => r.date >= last90);
+
+  const dimData = {};
+  DIMENSIONS.forEach(d => { dimData[d.key] = { workday: 0, weekend: 0 }; });
+  let workdayCount = 0, weekendCount = 0;
+
+  filtered.forEach(r => {
+    const d = new Date(r.date);
+    const day = d.getDay();
+    const isWeekend = day === 0 || day === 6;
+    if (isWeekend) weekendCount++; else workdayCount++;
+    DIMENSIONS.forEach(dim => {
+      const parsed = parseDimensionValue(r.content[dim.key]);
+      const active = Object.values(parsed.structured || {}).some(v => v) || (parsed.freeform && parsed.freeform.trim());
+      if (active) dimData[dim.key][isWeekend ? 'weekend' : 'workday']++;
+    });
+  });
+
+  if (workdayCount === 0 && weekendCount === 0) {
+    chart.setOption({ title: { text: '暂无数据', left: 'center', top: 'center', textStyle: { fontSize: 14, color: isDark ? '#94a3b8' : '#64748b' } } });
+    return;
+  }
+
+  const workdayRate = workdayCount > 0 ? DIMENSIONS.map(d => Math.round((dimData[d.key].workday / workdayCount) * 100)) : DIMENSIONS.map(() => 0);
+  const weekendRate = weekendCount > 0 ? DIMENSIONS.map(d => Math.round((dimData[d.key].weekend / weekendCount) * 100)) : DIMENSIONS.map(() => 0);
+
+  chart.setOption({
+    tooltip: { trigger: 'axis', formatter: p => {
+      let html = `<b>${p[0].axisValue}</b><br/>`;
+      p.forEach(item => { html += `${item.marker} ${item.seriesName}: ${item.value}%<br/>`; });
+      return html;
+    }},
+    legend: { data: ['工作日', '周末'], bottom: 0, textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 11 } },
+    grid: { left: 50, right: 20, top: 20, bottom: 40 },
+    xAxis: { type: 'category', data: DIMENSIONS.map(d => d.name), axisLabel: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 10 } },
+    yAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%', color: isDark ? '#94a3b8' : '#64748b' }, splitLine: { lineStyle: { color: isDark ? '#334155' : '#f1f5f9' } } },
+    series: [
+      { name: '工作日', type: 'bar', data: workdayRate, itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }, barWidth: '30%' },
+      { name: '周末', type: 'bar', data: weekendRate, itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] }, barWidth: '30%' },
+    ]
+  });
+}
+
+// ==================== MONTHLY REPORT ====================
+function renderMonthlyReport() {
+  const months = [...new Set(reviews.map(r => getMonthStr(r.date)))].sort();
+  const sel = document.getElementById('month-selector');
+  const currentMonth = getMonthStr(getToday());
+  sel.innerHTML = months.map(m => `<option value="${m}" ${m === currentMonth ? 'selected' : ''}>${m}</option>`).join('');
+
+  const selectedMonth = sel.value || currentMonth;
+  const monthReviews = reviews.filter(r => getMonthStr(r.date) === selectedMonth);
+  const daysInMonth = monthReviews.length;
+
+  const prevMonthDate = new Date(selectedMonth + '-01');
+  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+  const prevMonthStr = getMonthStr(getLocalDateString(prevMonthDate));
+  const prevMonthReviews = reviews.filter(r => getMonthStr(r.date) === prevMonthStr);
+
+  const overview = document.getElementById('monthly-overview');
+  const streak = calcMonthlyStreak(monthReviews);
+
+  let activeDimCount = 0;
+  const dimFrequency = {};
+  DIMENSIONS.forEach(d => dimFrequency[d.key] = 0);
+  monthReviews.forEach(r => {
+    DIMENSIONS.forEach(dim => {
+      const parsed = parseDimensionValue(r.content[dim.key]);
+      const active = Object.values(parsed.structured || {}).some(v => v) || (parsed.freeform && parsed.freeform.trim());
+      if (active) { dimFrequency[dim.key]++; activeDimCount++; }
+    });
+  });
+
+  const totalDaysInMonth = new Date(new Date(selectedMonth + '-01').getFullYear(), new Date(selectedMonth + '-01').getMonth() + 1, 0).getDate();
+  const absentDays = totalDaysInMonth - daysInMonth;
+
+  overview.innerHTML = `
+    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3"><p class="text-xs text-slate-500 dark:text-slate-400">复盘天数</p><p class="text-lg font-bold">${daysInMonth}<span class="text-xs font-normal text-slate-400"> / ${totalDaysInMonth}天</span></p></div>
+    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3"><p class="text-xs text-slate-500 dark:text-slate-400">缺席天数</p><p class="text-lg font-bold text-orange-500">${absentDays}<span class="text-xs font-normal text-slate-400"> 天</span></p></div>
+    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3"><p class="text-xs text-slate-500 dark:text-slate-400">连续复盘</p><p class="text-lg font-bold">${streak}<span class="text-xs font-normal text-slate-400"> 天</span></p></div>
+    <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3"><p class="text-xs text-slate-500 dark:text-slate-400">维度记录</p><p class="text-lg font-bold">${activeDimCount}<span class="text-xs font-normal text-slate-400"> 次</span></p></div>
+  `;
+
+  renderMonthlyRadar(monthReviews, prevMonthReviews, selectedMonth);
+  renderMonthlyProgress(monthReviews, prevMonthReviews, DIMENSIONS.map(d => d.key));
+  renderMonthlyWordCloud(monthReviews);
+}
+
+function calcMonthlyStreak(monthReviews) {
+  if (monthReviews.length === 0) return 0;
+  const dates = monthReviews.map(r => r.date).sort();
+  let maxStreak = 1, current = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const d1 = new Date(dates[i-1]), d2 = new Date(dates[i]);
+    const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
+    if (diff === 1) { current++; maxStreak = Math.max(maxStreak, current); }
+    else current = 1;
+  }
+  return maxStreak;
+}
+
+function renderMonthlyRadar(monthReviews, prevMonthReviews, month) {
+  const chart = initChart('monthly-radar-chart');
+  if (!chart) return;
+
+  const calcScores = (reviewsList) => {
+    const scores = {};
+    DIMENSIONS.forEach(d => { scores[d.key] = 0; });
+    const count = reviewsList.length;
+    if (count === 0) return scores;
+    reviewsList.forEach(r => {
+      DIMENSIONS.forEach(dim => {
+        const parsed = parseDimensionValue(r.content[dim.key]);
+        const structured = parsed.structured || {};
+        let score = 0;
+        switch (dim.key) {
+          case 'health':
+            if (structured.sleep) { const h = extractNumber(structured.sleep); if (h && h >= 7) score += 50; }
+            if (structured.exercise) score += 30;
+            if (structured.diet) score += 20;
+            break;
+          case 'work':
+            if (structured.task) score += 50;
+            if (structured.hours) score += 50;
+            break;
+          case 'study':
+            if (structured.subject) score += 60;
+            if (structured.hours) { const h = extractNumber(structured.hours); if (h && h >= 1) score += 40; }
+            break;
+          case 'social':
+            if (structured.activity) score += 60;
+            if (structured.mood) score += 40;
+            break;
+          case 'finance':
+            if (structured.income) score += 50;
+            if (structured.expense) score += 50;
+            break;
+          case 'life':
+            if (structured.activity) score += 60;
+            if (structured.mood) score += 40;
+            break;
+          case 'spirit':
+            if (structured.reading) score += 50;
+            if (structured.reflection) score += 50;
+            break;
+          case 'leisure':
+            if (structured.activity) score += 50;
+            if (structured.duration) score += 50;
+            break;
+        }
+        scores[dim.key] += score;
+      });
+    });
+    DIMENSIONS.forEach(d => { scores[d.key] = Math.min(Math.round(scores[d.key] / Math.max(count, 1)), 100); });
+    return scores;
+  };
+
+  const scores = calcScores(monthReviews);
+  const prevScores = calcScores(prevMonthReviews);
+
+  const series = [{ name: month, type: 'radar', data: [{ value: DIMENSIONS.map(d => scores[d.key]), areaStyle: { opacity: 0.3, color: '#3b82f6' }, lineStyle: { color: '#3b82f6' }, itemStyle: { color: '#3b82f6' } }], symbol: 'circle', symbolSize: 4 }];
+  if (prevMonthReviews.length > 0) {
+    series.push({ name: '上月', type: 'radar', data: [{ value: DIMENSIONS.map(d => prevScores[d.key]), areaStyle: { opacity: 0.2, color: '#94a3b8' }, lineStyle: { color: '#94a3b8', type: 'dashed' }, itemStyle: { color: '#94a3b8' } }], symbol: 'diamond', symbolSize: 4 });
+  }
+
+  chart.setOption({
+    tooltip: { trigger: 'item' },
+    legend: { data: series.map(s => s.name), bottom: 0, textStyle: { color: isDark ? '#94a3b8' : '#64748b', fontSize: 11 } },
+    radar: {
+      indicator: DIMENSIONS.map(d => ({ name: d.name, max: 100 })),
+      axisName: { color: isDark ? '#94a3b8' : '#64748b' },
+      splitArea: { areaStyle: { color: isDark ? ['rgba(51,65,85,0.3)', 'rgba(51,65,85,0.1)'] : ['rgba(241,245,249,0.5)', 'rgba(241,245,249,0.2)'] } },
+      axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
+    },
+    series,
+  });
+}
+
+function renderMonthlyProgress(monthReviews, prevMonthReviews, dimKeys) {
+  const el = document.getElementById('monthly-progress');
+  const calcScore = (reviewsList, dk) => {
+    if (reviewsList.length === 0) return 0;
+    let total = 0;
+    reviewsList.forEach(r => {
+      const parsed = parseDimensionValue(r.content[dk]);
+      const structured = parsed.structured || {};
+      let score = 0;
+      if (structured.sleep) { const h = extractNumber(structured.sleep); if (h && h >= 7) score += 50; }
+      if (structured.exercise) score += 30;
+      if (structured.diet) score += 20;
+      if (structured.task) score += 50;
+      if (structured.hours) score += 50;
+      if (structured.subject) score += 60;
+      if (structured.activity) score += 60;
+      if (structured.mood) score += 40;
+      if (structured.income) score += 50;
+      if (structured.expense) score += 50;
+      if (structured.reading) score += 50;
+      if (structured.reflection) score += 50;
+      if (structured.duration) score += 50;
+    });
+    return Math.min(Math.round(total / Math.max(reviewsList.length, 1)), 100);
+  };
+
+  const changes = DIMENSIONS.map(d => {
+    const current = calcScore(monthReviews, d.key);
+    const prev = calcScore(prevMonthReviews, d.key);
+    return { dim: d, current, prev, change: prev > 0 ? current - prev : 0 };
+  }).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+
+  el.innerHTML = changes.map((item, i) => {
+    const changeStr = item.change > 0 ? `+${item.change}` : `${item.change}`;
+    const color = item.change > 0 ? 'text-green-500' : item.change < 0 ? 'text-red-500' : 'text-slate-400';
+    const arrow = item.change > 0 ? '↑' : item.change < 0 ? '↓' : '→';
+    return `
+      <div class="flex items-center justify-between py-2 ${i > 0 ? 'border-t border-slate-100 dark:border-slate-700' : ''}">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full" style="background:${item.dim.color}"></span>
+          <span class="text-sm">${item.dim.name}</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <span class="text-slate-500">上月: ${item.prev}</span>
+          <span class="text-slate-800 dark:text-slate-200 font-medium">本月: ${item.current}</span>
+          <span class="${color} font-medium w-12 text-right">${arrow} ${changeStr}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMonthlyWordCloud(monthReviews) {
+  const chart = initChart('monthly-wordcloud-chart');
+  if (!chart) return;
+
+  const texts = [];
+  monthReviews.forEach(r => {
+    DIMENSIONS.forEach(dim => {
+      const parsed = parseDimensionValue(r.content[dim.key]);
+      const meta = STRUCTURED_META[dim.key];
+      if (meta) meta.text.forEach(tk => { const val = parsed.structured?.[tk]; if (val) texts.push(val); });
+      if (parsed.freeform) texts.push(parsed.freeform);
+    });
+  });
+
+  const words = {};
+  const allText = texts.join(' ');
+  const segments = allText.split(/[\s,，。.、！!？?;；：:()（）\n\r]+/).filter(t => t.length >= 2);
+  segments.forEach(w => { words[w] = (words[w] || 0) + 1; });
+
+  const wordList = Object.entries(words).sort((a, b) => b[1] - a[1]).slice(0, 40);
+  if (wordList.length === 0) { chart.setOption({ title: { text: '暂无关键词', left: 'center', top: 'center', textStyle: { fontSize: 14, color: isDark ? '#94a3b8' : '#64748b' } } }); return; }
+
+  chart.setOption({
+    series: [{
+      type: 'wordCloud',
+      shape: 'circle',
+      sizeRange: [12, 40],
+      rotationRange: [-30, 30],
+      gridSize: 8,
+      drawOutOfBound: false,
+      data: wordList.map(([name, value], i) => ({ name, value, textStyle: { color: DIMENSIONS[i % DIMENSIONS.length].color } })),
+    }]
+  });
+}
+
+// ==================== ALERTS ====================
+const ALERT_RULES = [
+  { id: 'sleep', name: '睡眠不足', desc: '连续3天睡眠<6小时', level: 'yellow', icon: 'moon', check: r => {
+    const parsed = parseDimensionValue(r.content.health);
+    const val = extractNumber(parsed.structured?.sleep);
+    return val !== null && val < 6;
+  }},
+  { id: 'overtime', name: '连续加班', desc: '连续5天工作时长>10小时', level: 'yellow', icon: 'clock', check: r => {
+    const parsed = parseDimensionValue(r.content.work);
+    const val = extractNumber(parsed.structured?.hours);
+    return val !== null && val > 10;
+  }},
+  { id: 'noStudy', name: '学习中断', desc: '连续7天无学习记录', level: 'red', icon: 'book', check: r => {
+    const parsed = parseDimensionValue(r.content.study);
+    return !Object.values(parsed.structured || {}).some(v => v) && !(parsed.freeform && parsed.freeform.trim());
+  }},
+  { id: 'noSocial', name: '社交断连', desc: '连续14天无社交记录', level: 'red', icon: 'users', check: r => {
+    const parsed = parseDimensionValue(r.content.social);
+    return !Object.values(parsed.structured || {}).some(v => v) && !(parsed.freeform && parsed.freeform.trim());
+  }},
+  { id: 'noExercise', name: '运动荒废', desc: '连续7天无运动记录', level: 'yellow', icon: 'run', check: r => {
+    const parsed = parseDimensionValue(r.content.health);
+    return !parsed.structured?.exercise;
+  }},
+  { id: 'noReview', name: '复盘缺席', desc: '连续3天无复盘记录', level: 'yellow', icon: 'file', check: null },
+];
+
+const ALERT_SUGGESTIONS = {
+  sleep: '建议今晚提前30分钟上床，营造良好的睡眠环境',
+  overtime: '注意劳逸结合，尝试番茄工作法提高效率',
+  noStudy: '试试每天15分钟微学习，积少成多',
+  noSocial: '周末约朋友喝杯咖啡，保持社交联系',
+  noExercise: '起身活动一下，每天10分钟也能保持活力',
+  noReview: '花3分钟记录今日点滴，保持复盘习惯',
+};
+
+function generateAlerts() {
+  activeAlerts = [];
+  const sortedReviews = [...reviews].sort((a, b) => b.date.localeCompare(a.date));
+  if (sortedReviews.length === 0) { renderAlertList(); return; }
+
+  const todayStr = getToday();
+  const allDates = [];
+  const d = new Date(sortedReviews[0].date);
+  const end = new Date(todayStr);
+  while (d <= end) {
+    allDates.push(getLocalDateString(d));
+    d.setDate(d.getDate() + 1);
+  }
+  allDates.sort();
+
+  // 复盘缺席检测
+  let missingStreak = 0;
+  const reviewDates = new Set(reviews.map(r => r.date));
+  for (let i = allDates.length - 1; i >= 0; i--) {
+    if (!reviewDates.has(allDates[i])) {
+      missingStreak++;
+      if (missingStreak >= 3) {
+        activeAlerts.push({
+          ruleId: 'noReview', ruleName: '复盘缺席', desc: `连续${missingStreak}天无复盘记录`,
+          level: 'yellow', duration: missingStreak, date: allDates[i],
+          suggestion: ALERT_SUGGESTIONS.noReview,
+        });
+        break;
+      }
+    } else missingStreak = 0;
+  }
+
+  // 其他规则检测
+  ALERT_RULES.filter(rl => rl.check).forEach(rule => {
+    const streakResults = [];
+    for (const r of sortedReviews) {
+      if (rule.check(r)) streakResults.push(r.date);
+      else break;
+    }
+    const thresholds = { sleep: 3, overtime: 5, noStudy: 7, noSocial: 14, noExercise: 7 };
+    const threshold = thresholds[rule.id] || 3;
+    if (streakResults.length >= threshold && streakResults.length > 0) {
+      activeAlerts.push({
+        ruleId: rule.id, ruleName: rule.name, desc: rule.desc,
+        level: rule.level, duration: streakResults.length, date: streakResults[0],
+        suggestion: ALERT_SUGGESTIONS[rule.id] || '建议关注此指标变化',
+      });
+    }
+  });
+
+  activeAlerts.sort((a, b) => { const lv = { red: 0, yellow: 1 }; return (lv[a.level] || 1) - (lv[b.level] || 1); });
+  renderAlertList();
+}
+
+function renderAlertList() {
+  const list = document.getElementById('alert-list');
+  const empty = document.getElementById('alert-empty');
+  const badge = document.getElementById('alert-badge');
+
+  if (activeAlerts.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    badge.classList.add('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  badge.classList.remove('hidden');
+  badge.textContent = activeAlerts.length;
+
+  list.innerHTML = activeAlerts.map(a => `
+    <div class="alert-card p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600" style="border-left-color: ${a.level === 'red' ? '#ef4444' : '#eab308'}">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="pulse-dot ${a.level === 'red' ? 'bg-red-500' : 'bg-yellow-500'}"></span>
+            <span class="text-sm font-medium">${a.ruleName}</span>
+            <span class="text-xs px-1.5 py-0.5 rounded ${a.level === 'red' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'}">${a.level === 'red' ? '严重' : '提醒'}</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">${a.desc}</p>
+          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">持续 ${a.duration} 天 · 始于 ${a.date}</p>
+        </div>
+      </div>
+      <div class="mt-2 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 shrink-0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p class="text-xs text-blue-600 dark:text-blue-400">${a.suggestion}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== DATA TAB ====================
+function renderDataTab() {
+  if (reviews.length === 0) { document.getElementById('data-status').innerHTML = '<p class="text-slate-400">暂无数据</p>'; return; }
+
+  const total = reviews.length;
+  const firstDate = reviews[0]?.date || '-';
+  const lastDate = reviews[reviews.length - 1]?.date || '-';
+  const dateRange = lastDate && firstDate ? Math.round((new Date(lastDate) - new Date(firstDate)) / (1000 * 60 * 60 * 24)) + 1 : 0;
+
+  const todayStr = getToday();
+  const allDays = Math.round((new Date(todayStr) - new Date(firstDate)) / (1000 * 60 * 60 * 24)) + 1;
+  const missingDays = allDays - total;
+
+  document.getElementById('data-status').innerHTML = `
+    <div class="flex justify-between py-1.5"><span class="text-slate-500">总记录数</span><span class="font-medium">${total}</span></div>
+    <div class="flex justify-between py-1.5"><span class="text-slate-500">最早日期</span><span>${firstDate}</span></div>
+    <div class="flex justify-between py-1.5"><span class="text-slate-500">最晚日期</span><span>${lastDate}</span></div>
+    <div class="flex justify-between py-1.5"><span class="text-slate-500">时间跨度</span><span>${dateRange} 天</span></div>
+    <div class="flex justify-between py-1.5"><span class="text-slate-500">缺失天数</span><span class="text-orange-500">${Math.max(0, missingDays)} 天</span></div>
+  `;
+
+  const recordsEl = document.getElementById('data-records');
+  const rows = reviews.slice(-50).reverse().map(r => {
+    const dimIcons = Object.keys(r.content || {}).filter(k => {
+      const parsed = parseDimensionValue(r.content[k]);
+      return Object.values(parsed.structured || {}).some(v => v) || (parsed.freeform && parsed.freeform.trim());
+    }).map(k => {
+      const dim = DIMENSIONS.find(d => d.key === k);
+      return dim ? `<span class="inline-block w-2 h-2 rounded-full" style="background:${dim.color}" title="${dim.name}"></span>` : '';
+    }).join('');
+    return `<tr class="border-b border-slate-100 dark:border-slate-700"><td class="py-2 px-2 text-xs text-slate-600 dark:text-slate-400">${r.date}</td><td class="py-2 px-2"><div class="flex gap-1">${dimIcons || '<span class="text-xs text-slate-400">无</span>'}</div></td><td class="py-2 px-2 text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]">${r.summary || '-'}</td></tr>`;
+  }).join('');
+  recordsEl.innerHTML = rows ? `<table class="w-full"><thead><tr class="text-left text-xs text-slate-500 dark:text-slate-400"><th class="py-2 px-2">日期</th><th class="py-2 px-2">维度</th><th class="py-2 px-2">摘要</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="text-sm text-slate-400 py-4 text-center">暂无记录数据</p>';
+}
+
+function exportCSV() {
+  if (reviews.length === 0) { alert('暂无数据可导出'); return; }
+  const headers = ['日期', '维度', '字段', '值', '自由文本', '总结'];
+  const rows = [];
+  reviews.forEach(r => {
+    DIMENSIONS.forEach(dim => {
+      const parsed = parseDimensionValue(r.content[dim.key]);
+      const structured = parsed.structured || {};
+      const keys = Object.keys(structured);
+      if (keys.length > 0) {
+        keys.forEach(k => rows.push([r.date, dim.name, k, structured[k], '', r.summary || '']));
+      } else if (parsed.freeform) {
+        rows.push([r.date, dim.name, '', '', parsed.freeform, r.summary || '']);
+      }
+    });
+  });
+
+  const csv = [headers.join(','), ...rows.map(row => row.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `review-data-${getToday()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportJSON() {
+  if (reviews.length === 0) { alert('暂无数据可导出'); return; }
+  const exportData = reviews.map(r => ({
+    date: r.date, summary: r.summary, content: r.content, createdAt: r.createdAt, updatedAt: r.updatedAt
+  }));
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `review-data-${getToday()}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== THEME ====================
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.classList.toggle('dark', isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-icon-sun').classList.toggle('hidden', isDark);
+  document.getElementById('theme-icon-moon').classList.toggle('hidden', !isDark);
+  const meta = document.getElementById('theme-color');
+  if (meta) meta.setAttribute('content', isDark ? '#1e293b' : '#ffffff');
+  if (reviews.length > 0) renderCurrentTab();
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  isDark = saved ? saved === 'dark' : prefersDark;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+  document.getElementById('theme-icon-sun').classList.toggle('hidden', isDark);
+  document.getElementById('theme-icon-moon').classList.toggle('hidden', !isDark);
+  const meta = document.getElementById('theme-color');
+  if (meta) meta.setAttribute('content', isDark ? '#1e293b' : '#ffffff');
+
+  // 监听系统主题变化（仅在用户没有手动设置时自动切换）
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    const saved = localStorage.getItem('theme');
+    if (!saved) {
+      isDark = e.matches;
+      document.documentElement.classList.toggle('dark', isDark);
+      document.getElementById('theme-icon-sun').classList.toggle('hidden', isDark);
+      document.getElementById('theme-icon-moon').classList.toggle('hidden', !isDark);
+      const meta = document.getElementById('theme-color');
+      if (meta) meta.setAttribute('content', isDark ? '#1e293b' : '#ffffff');
+      if (reviews.length > 0) renderCurrentTab();
+    }
+  });
+}
+
+// ==================== AUTH ====================
+function updateAuthUI() {
+  const user = SharedAuth ? SharedAuth.getUser() : { isAuthenticated: false, username: null };
+  if (user.isAuthenticated && user.username) {
+    document.getElementById('btnLogin').classList.add('hidden');
+    document.getElementById('loggedInArea').classList.remove('hidden');
+    document.getElementById('userDisplay').textContent = user.username;
+    document.getElementById('menuUserDisplay').textContent = user.username;
+    hideAllStates();
+    if (reviews.length === 0) loadData();
+    else { document.getElementById('app-content').classList.remove('hidden'); renderCurrentTab(); }
+  } else {
+    document.getElementById('btnLogin').classList.remove('hidden');
+    document.getElementById('loggedInArea').classList.add('hidden');
+    hideAllStates();
+    document.getElementById('login-prompt').classList.remove('hidden');
+    document.getElementById('app-content').classList.add('hidden');
+  }
+  updateFooter();
+}
+
+function handleLogout() {
+  const userMenu = document.getElementById('userMenu');
+  if (userMenu) {
+    userMenu.classList.add('hidden');
+  }
+  showConfirmDialog(
+    '退出登录',
+    '确定要退出登录吗？',
+    '退出',
+    '取消'
+  ).then((confirmed) => {
+    if (!confirmed) {
+      return;
+    }
+    if (SharedAuth) {
+      SharedAuth.logout();
+    }
+    reviews = [];
+    updateAuthUI();
+  });
+}
+
+let confirmResolve = null;
+
+function showConfirmDialog(title, message, confirmText = '确定', cancelText = '取消') {
+  return new Promise((resolve) => {
+    confirmResolve = resolve;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmBtn').textContent = confirmText;
+    document.getElementById('cancelBtn').textContent = cancelText;
+    document.getElementById('confirmModal').classList.add('active');
+  });
+}
+
+function confirmCallback(result) {
+  document.getElementById('confirmModal').classList.remove('active');
+  if (confirmResolve) {
+    confirmResolve(result);
+    confirmResolve = null;
+  }
+}
+
+function toggleUserMenu() {
+  const menu = document.getElementById('userMenu');
+  menu.classList.toggle('hidden');
+}
+
+// ==================== INIT ====================
+function init() {
+  initTheme();
+
+  if (window.SharedAuth) {
+    SharedAuth.init();
+
+    SharedAuth.on('auth:change', (state) => {
+      updateAuthUI();
+    });
+
+    SharedAuth.on('auth:login', () => {
+      loadData();
+    });
+
+    SharedAuth.on('auth:logout', () => {
+      reviews = [];
+      updateAuthUI();
+    });
+  }
+
+  if (window.AuthModal) {
+    AuthModal.init();
+  }
+
+  updateAuthUI();
+
+  window.onAuthSuccess = (data) => {
+    if (SharedAuth.isAuthenticated()) loadData();
+  };
+
+  // 点击其他地方关闭用户菜单
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('userMenu');
+    const btn = document.getElementById('btnUser');
+    if (menu && btn && !menu.classList.contains('hidden')) {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize', () => {
+  if (reviews.length > 0) renderCurrentTab();
+});
+</script>
+</body>
+</html>

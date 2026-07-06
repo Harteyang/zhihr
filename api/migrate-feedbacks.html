@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>反馈数据迁移工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+            <i data-lucide="message-square-text" class="text-blue-600"></i>
+            反馈数据迁移工具
+        </h1>
+        <p class="text-slate-600 mb-8">将首页反馈数据从旧格式迁移到 Cloudflare D1 数据库</p>
+
+        <!-- API 配置 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="settings" class="w-5 h-5 text-blue-600"></i>
+                API 配置
+            </h2>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Cloudflare API 地址</label>
+                <input type="text" id="apiBaseUrl" value="https://api.zhihr.vip" 
+                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+
+        <!-- 数据预览 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+                现有数据（7条反馈）
+            </h2>
+            <div class="space-y-4 max-h-96 overflow-y-auto">
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">sunny</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">已完成</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">你上次做的甘特图挺好看的，能做成工具吗？我们填填数就能生成。</div>
+                        <div class="text-xs text-slate-500">2026-04-14</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">李哥</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">已完成</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">招聘漏斗确实是比较刚性的需求，可以做一个招聘漏斗，主要是漂亮的那种，填填数字就可以了。</div>
+                        <div class="text-xs text-slate-500">2026-04-14</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">Jone</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">已完成</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">最近组织结构变化大，老板需要实时的看到数据，能不能做一个快速画组织结构图的工具，要求简单，纯粹就是为了画组织结构图的。谢谢</div>
+                        <div class="text-xs text-slate-500">2026-04-14</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">小李</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">待处理</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">需要一个固定的冰山模型的面试评价表，直接填写或者选择纬度，生成对应的评价。</div>
+                        <div class="text-xs text-slate-500">2026-04-16</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">兰姐</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">待处理</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">周年庆和生日卡片很需要，自动生成祝福和卡片样式，内容可修改，能帮我提效。</div>
+                        <div class="text-xs text-slate-500">2026-04-20</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">热心网友</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">待处理</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">需要一个盘点工具，雷达图那种，我收回表格后不用作图，直接填进去就能生成好看的图标和备注。</div>
+                        <div class="text-xs text-slate-500">2026-04-24</div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium text-slate-800">你的名字</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">已完成</span>
+                    </div>
+                    <div class="text-sm text-slate-600">
+                        <div class="mb-1">小弟需要一个任务管理工具，todolist那种。先谢过。</div>
+                        <div class="text-xs text-slate-500">2026-05-08</div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-3 text-sm text-slate-500">
+                共 7 条反馈数据（4条已完成，3条待处理）
+            </p>
+        </div>
+
+        <!-- 迁移操作 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="upload" class="w-5 h-5 text-blue-600"></i>
+                开始迁移
+            </h2>
+            <div class="space-y-4">
+                <button id="migrateBtn" onclick="handleMigration()" 
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <i data-lucide="database-zap" class="w-5 h-5"></i>
+                    迁移数据到数据库
+                </button>
+            </div>
+            <div id="migrationLog" class="mt-4 p-4 bg-slate-100 rounded-lg hidden">
+                <h3 class="font-semibold text-slate-800 mb-2">迁移日志</h3>
+                <div id="logContent" class="text-sm text-slate-600 space-y-1 max-h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- 验证 -->
+        <div class="bg-white rounded-lg border border-slate-200 p-6">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-5 h-5 text-blue-600"></i>
+                验证迁移结果
+            </h2>
+            <button id="verifyBtn" onclick="verifyMigration()" 
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <i data-lucide="list" class="w-5 h-5"></i>
+                查看数据库中的所有反馈
+            </button>
+            <div id="verifyResult" class="mt-4 space-y-2 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        const FEEDBACKS_TO_MIGRATE = [
+            {
+                name: 'sunny',
+                content: '你上次做的甘特图挺好看的，能做成工具吗？我们填填数就能生成。',
+                status: 'completed',
+                created_at: '2026-04-14T07:19:28.643Z'
+            },
+            {
+                name: '李哥',
+                content: '招聘漏斗确实是比较刚性的需求，可以做一个招聘漏斗，主要是漂亮的那种，填填数字就可以了。',
+                status: 'completed',
+                created_at: '2026-04-14T07:22:14.548Z'
+            },
+            {
+                name: 'Jone',
+                content: '最近组织结构变化大，老板需要实时的看到数据，能不能做一个快速画组织结构图的工具，要求简单，纯粹就是为了画组织结构图的。谢谢',
+                status: 'completed',
+                created_at: '2026-04-14T07:44:55.087Z'
+            },
+            {
+                name: '小李',
+                content: '需要一个固定的冰山模型的面试评价表，直接填写或者选择纬度，生成对应的评价。',
+                status: 'pending',
+                created_at: '2026-04-16T22:35:36.989Z'
+            },
+            {
+                name: '兰姐',
+                content: '周年庆和生日卡片很需要，自动生成祝福和卡片样式，内容可修改，能帮我提效。',
+                status: 'pending',
+                created_at: '2026-04-20T23:52:14.435Z'
+            },
+            {
+                name: '热心网友',
+                content: '需要一个盘点工具，雷达图那种，我收回表格后不用作图，直接填进去就能生成好看的图标和备注。',
+                status: 'pending',
+                created_at: '2026-04-24T00:59:43.760Z'
+            },
+            {
+                name: '你的名字',
+                content: '小弟需要一个任务管理工具，todolist那种。先谢过。',
+                status: 'completed',
+                created_at: '2026-05-08T07:15:47.154Z'
+            }
+        ];
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('migrationLog');
+            const logContent = document.getElementById('logContent');
+            logDiv.classList.remove('hidden');
+            
+            const colors = {
+                info: 'text-blue-600',
+                success: 'text-green-600',
+                error: 'text-red-600'
+            };
+            
+            const entry = document.createElement('div');
+            entry.className = colors[type] || colors.info;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        async function handleMigration() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const migrateBtn = document.getElementById('migrateBtn');
+
+            migrateBtn.disabled = true;
+            migrateBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> 迁移中...';
+            lucide.createIcons();
+
+            log(`开始迁移 ${FEEDBACKS_TO_MIGRATE.length} 条反馈数据...`);
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < FEEDBACKS_TO_MIGRATE.length; i++) {
+                const feedback = FEEDBACKS_TO_MIGRATE[i];
+                
+                try {
+                    const response = await fetch(`${apiBaseUrl}/api/feedbacks`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(feedback)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        successCount++;
+                        log(`✓ 反馈 #${i + 1} 迁移成功 (ID: ${result.data.id})`, 'success');
+                    } else {
+                        failCount++;
+                        log(`✗ 反馈 #${i + 1} 迁移失败: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    failCount++;
+                    log(`✗ 反馈 #${i + 1} 迁移失败: ${error.message}`, 'error');
+                }
+            }
+
+            log(`迁移完成！成功: ${successCount}, 失败: ${failCount}`, successCount > 0 ? 'success' : 'error');
+
+            migrateBtn.disabled = false;
+            migrateBtn.innerHTML = '<i data-lucide="database-zap" class="w-5 h-5"></i> 迁移数据到数据库';
+            lucide.createIcons();
+        }
+
+        async function verifyMigration() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const verifyBtn = document.getElementById('verifyBtn');
+            const verifyResult = document.getElementById('verifyResult');
+
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> 加载中...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/feedbacks?limit=100`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const feedbacks = result.data || [];
+                    
+                    if (feedbacks.length === 0) {
+                        verifyResult.innerHTML = '<p class="text-slate-500">暂无反馈数据</p>';
+                    } else {
+                        verifyResult.innerHTML = feedbacks.map(fb => `
+                            <div class="p-3 bg-slate-100 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-medium text-slate-800">${fb.name}</span>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-${fb.status === 'completed' ? 'green' : fb.status === 'processing' ? 'blue' : 'yellow'}-100 text-${fb.status === 'completed' ? 'green' : fb.status === 'processing' ? 'blue' : 'yellow'}-700">${fb.status === 'completed' ? '已完成' : fb.status === 'processing' ? '处理中' : '待处理'}</span>
+                                </div>
+                                <div class="text-sm text-slate-600">
+                                    <div class="whitespace-pre-wrap">${fb.content}</div>
+                                    <div class="mt-2 text-xs text-slate-500">
+                                        创建时间: ${new Date(fb.created_at).toLocaleString('zh-CN')}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    verifyResult.classList.remove('hidden');
+                    log(`验证成功，共 ${feedbacks.length} 条反馈数据`, 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                verifyResult.innerHTML = `<p class="text-red-600">验证失败: ${error.message}</p>`;
+                verifyResult.classList.remove('hidden');
+                log(`验证失败: ${error.message}`, 'error');
+            }
+
+            verifyBtn.disabled = false;
+            verifyBtn.innerHTML = '<i data-lucide="list" class="w-5 h-5"></i> 查看数据库中的所有反馈';
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
