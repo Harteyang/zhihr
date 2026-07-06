@@ -6,9 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: "pages"
@@ -16,9 +14,6 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -52,8 +47,6 @@ jobs:
         run: |
           cd moodist
           pnpm install
-          # Use jsdelivr CDN for sounds (from original moodist repo)
-          # Override with SOUNDS_CDN_URL secret if set
           CDN_URL="${{ secrets.SOUNDS_CDN_URL }}"
           if [ -z "$CDN_URL" ]; then
             CDN_URL="https://cdn.jsdelivr.net/gh/remvze/moodist@main/public/sounds"
@@ -64,32 +57,22 @@ jobs:
         run: |
           cd miaodu/frontend
           npm ci
-          # 设置生产环境 API 地址（通过 GitHub Secrets 配置）
           VITE_API_BASE="${{ secrets.MIAODU_API_BASE_URL }}" VITE_BASE=/miaodu/ npm run build
 
       - name: Prepare deployment
         run: |
-          # Create a staging directory with the correct structure
           mkdir -p /tmp/deploy
-          # Copy everything except source code directories
           for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu)$'); do
             cp -r "$item" /tmp/deploy/
           done
-          # Copy review-system build output (dist) as the review-system directory
           cp -r review-system/dist /tmp/deploy/review-system
-          # Copy moodist build output as the moodist directory
           cp -r moodist/dist /tmp/deploy/moodist
-          # Copy miaodu build output as the miaodu directory
           cp -r miaodu/frontend/dist /tmp/deploy/miaodu
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '/tmp/deploy'
-
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /tmp/deploy
+          publish_branch: gh-pages
+          force_orphan: true
