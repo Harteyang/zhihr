@@ -398,7 +398,7 @@ async function handleListBooks(request, env, corsHeaders) {
 
     // 按 id 升序（入库顺序）分页查询，限制每页最多 100 条
     const books = await env.DB.prepare(
-      'SELECT id, title, author, douban_rate, douban_link FROM miaodu_books WHERE status = ? ORDER BY id ASC LIMIT ? OFFSET ?'
+      'SELECT id, title, author, douban_rate, douban_link, isbn FROM miaodu_books WHERE status = ? ORDER BY id ASC LIMIT ? OFFSET ?'
     ).bind('completed', pageSize, offset).all()
 
     return jsonResponse({

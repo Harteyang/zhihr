@@ -4,12 +4,12 @@ import * as api from '../api'
 const FIRST_PAGE_SIZE = 100
 const NEXT_PAGE_SIZE = 24
 
-/** 从豆瓣链接中提取 subject ID，构造封面图 URL */
-function getDoubanCoverUrl(doubanLink) {
-  if (!doubanLink) return null
-  const match = doubanLink.match(/\/subject\/(\d+)\/?/)
-  if (!match) return null
-  return `https://img2.doubanio.com/view/subject/m/public/${match[1]}.jpg`
+/** 通过 ISBN 从 Open Library 获取封面图（免费开放，不拦截热链接） */
+function getCoverUrl(isbn) {
+  if (!isbn) return null
+  const clean = isbn.replace(/[^0-9X]/gi, '')
+  if (clean.length < 10) return null
+  return `https://covers.openlibrary.org/b/isbn/${clean}-S.jpg`
 }
 
 export default function BookList({ onSearchBook }) {
@@ -108,7 +108,7 @@ export default function BookList({ onSearchBook }) {
       {/* 书籍网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayedBooks.map((book) => {
-          const coverUrl = getDoubanCoverUrl(book.douban_link)
+          const coverUrl = getCoverUrl(book.isbn)
           return (
           <div
             key={book.id}
