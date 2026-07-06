@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import * as api from '../api'
 
-const FIRST_PAGE_SIZE = 100
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip'
+const FIRST_PAGE_SIZE = 18
 const NEXT_PAGE_SIZE = 24
 
-/** 通过 ISBN 从 Open Library 获取封面图（免费开放，不拦截热链接） */
-function getCoverUrl(isbn) {
-  if (!isbn) return null
-  const clean = isbn.replace(/[^0-9X]/gi, '')
-  if (clean.length < 10) return null
-  return `https://covers.openlibrary.org/b/isbn/${clean}-S.jpg`
+/** 从豆瓣链接提取 subject ID，通过 API 代理获取封面（解决热链接拦截） */
+function getCoverUrl(doubanLink) {
+  if (!doubanLink) return null
+  const match = doubanLink.match(/\/subject\/(\d+)\/?/)
+  if (!match) return null
+  return `${API_BASE}/api/cover/${match[1]}`
 }
 
 export default function BookList({ onSearchBook }) {
@@ -108,7 +109,7 @@ export default function BookList({ onSearchBook }) {
       {/* 书籍网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayedBooks.map((book) => {
-          const coverUrl = getCoverUrl(book.isbn)
+          const coverUrl = getCoverUrl(book.douban_link)
           return (
           <div
             key={book.id}

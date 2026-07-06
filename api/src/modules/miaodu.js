@@ -418,6 +418,57 @@ async function handleListBooks(request, env, corsHeaders) {
   }
 }
 
+// ========= 封面代理 (解决豆瓣 CDN 热链接拦截) =========
+
+async function handleCover(request, env, corsHeaders, params) {
+  try {
+    const subjectId = params.id
+    if (!subjectId || !/^\d+$/.test(subjectId)) {
+      return jsonResponse({ error: 'invalid subject id' }, 400, corsHeaders)
+    }
+
+    // 先获取豆瓣页面 HTML（含反爬 Cookie），再用 Cookie 请求封面图
+    const pageUrl = `https://book.douban.com/subject/${subjectId}/`
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'zh-CN,zh;q=0.9',
+    }
+
+    // 请求页面获取 Cookie
+    const pageRes = await fetch(pageUrl, { headers })
+    const setCookies = pageRes.headers.get('Set-Cookie') || ''
+
+    // 从页面 HTML 中提取封面图 URL
+    const html = await pageRes.text()
+    // 豆瓣封面图在 <div id="mainpic"> 内的 <img> 标签上
+    const imgMatch = html.match(/<div[^>]+id="mainpic"[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"/)
+    const imgSrc = imgMatch?.[1]
+
+    if (!imgSrc) {
+      return jsonResponse({ error: 'cover not found' }, 404, corsHeaders)
+    }
+
+    // 用页面 Cookie 代理请求封面图
+    const imgRes = await fetch(imgSrc, {
+      headers: { ...headers, 'Referer': pageUrl, 'Cookie': setCookies, 'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' },
+    })
+    if (!imgRes.ok) return jsonResponse({ error: 'cover not found' }, 404, corsHeaders)
+
+    return new Response(imgRes.body, {
+      status: 200,
+      headers: {
+        'Content-Type': imgRes.headers.get('Content-Type') || 'image/jpeg',
+        'Cache-Control': 'public, max-age=604800, s-maxage=604800',
+        ...corsHeaders,
+      },
+    })
+  } catch (err) {
+    console.error('handleCover error:', err)
+    return jsonResponse({ error: 'proxy failed' }, 502, corsHeaders)
+  }
+}
+
 // ========= 路由导出 =========
 
 export const routes = [
@@ -431,4 +482,5 @@ export const routes = [
   { method: 'POST', path: '/api/admin/books', handler: handleAddBook },
   { method: 'POST', path: '/api/admin/submit-batch', handler: handleBatchSubmit },
   { method: 'GET', path: '/api/books/list', handler: handleListBooks },
+  { method: 'GET', path: '/api/cover/:id', handler: handleCover },
 ]
