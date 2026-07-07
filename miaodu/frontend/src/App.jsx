@@ -6,6 +6,7 @@ import MlookResults from './components/MlookResults'
 import SubmitForm from './components/SubmitForm'
 import BookList from './components/BookList'
 import Breadcrumb from './components/Breadcrumb'
+import KnowledgeGraph from './components/KnowledgeGraph'
 import * as api from './api'
 
 export default function App() {
@@ -18,6 +19,8 @@ export default function App() {
   const [error, setError] = useState(null)
   const [query, setQuery] = useState('')
   const [lastQuery, setLastQuery] = useState('')
+  // 知识点搜索结果下的视图：list | graph
+  const [knowledgeView, setKnowledgeView] = useState('list')
   // 保留从知识点搜索跳转书籍搜索时的原知识点搜索上下文
   const [knowledgeSearchContext, setKnowledgeSearchContext] = useState(null)
   // 用于取消过期搜索响应（面包屑返回时使进行中的搜索失效）
@@ -29,6 +32,7 @@ export default function App() {
     setError(null)
     setLastQuery(q)
     setSearchType(type)
+    setKnowledgeView('list')
     setResults(null)
     setMlookBooks([])
     setSelectedBook(null)
@@ -84,6 +88,7 @@ export default function App() {
     if (!knowledgeSearchContext) return
     searchIdRef.current++  // 使进行中的搜索失效
     setSearchType('knowledge')
+    setKnowledgeView('list')
     setQuery(knowledgeSearchContext.query)
     setLastQuery(knowledgeSearchContext.query)
     setResults(knowledgeSearchContext.results)
@@ -118,6 +123,7 @@ export default function App() {
   const handleReset = useCallback(() => {
     searchIdRef.current++
     setPhase('search')
+    setKnowledgeView('list')
     setResults(null)
     setMlookBooks([])
     setSelectedBook(null)
@@ -223,21 +229,51 @@ export default function App() {
         {/* 按知识点搜索结果 */}
         {!loading && phase === 'search' && searchType === 'knowledge' && results?.length > 0 && (
           <div className="fade-in">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <p className="text-sm text-gray-500">
                 找到 {results.length} 条相关知识点
               </p>
-              <button onClick={handleReset} className="text-sm text-primary hover:underline">
-                重新搜索
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg overflow-hidden border border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setKnowledgeView('list')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      knowledgeView === 'list'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    列表视图
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKnowledgeView('graph')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      knowledgeView === 'graph'
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    图谱视图
+                  </button>
+                </div>
+                <button onClick={handleReset} className="text-sm text-primary hover:underline">
+                  重新搜索
+                </button>
+              </div>
             </div>
-            {results.map((item, i) => (
-              <KnowledgeResultCard
-                key={item.id || i}
-                item={item}
-                onViewBook={handleViewBookFromKnowledge}
-              />
-            ))}
+            {knowledgeView === 'graph' ? (
+              <KnowledgeGraph results={results} query={lastQuery} onViewBook={handleViewBookFromKnowledge} />
+            ) : (
+              results.map((item, i) => (
+                <KnowledgeResultCard
+                  key={item.id || i}
+                  item={item}
+                  onViewBook={handleViewBookFromKnowledge}
+                />
+              ))
+            )}
           </div>
         )}
 

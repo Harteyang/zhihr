@@ -66,7 +66,7 @@ export async function searchBookByTitle(db: D1Database, query: string) {
 
 // 按知识点关键词搜索
 export async function searchKnowledgeByKeyword(db: D1Database, keyword: string) {
-  const sql = `SELECT * FROM miaodu_knowledge_points WHERE title LIKE '%${esc(keyword)}%' OR content LIKE '%${esc(keyword)}%' ORDER BY book_id, sort_order`
+  const sql = `SELECT kp.*, b.title AS book_title, b.author AS book_author FROM miaodu_knowledge_points kp JOIN miaodu_books b ON kp.book_id = b.id WHERE kp.title LIKE '%${esc(keyword)}%' OR kp.content LIKE '%${esc(keyword)}%' ORDER BY kp.book_id, kp.sort_order`
   const kps = await db.prepare(sql).all()
 
   return kps.results as unknown as KnowledgePoint[]
