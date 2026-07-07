@@ -43,21 +43,17 @@ export interface Submission {
   updated_at: string
 }
 
-function esc(s: string): string {
-  return s.replace(/'/g, "''")
-}
-
 // 按书名搜索书籍及其知识点
 export async function searchBookByTitle(db: D1Database, query: string) {
-  const sql = `SELECT * FROM miaodu_books WHERE title LIKE '%${esc(query)}%' ORDER BY created_at DESC`
-  const books = await db.prepare(sql).all()
+  const sql = `SELECT * FROM miaodu_books WHERE title LIKE ? ORDER BY created_at DESC`
+  const books = await db.prepare(sql).bind(`%${query}%`).all()
 
   if (!books.results.length) return []
 
   const result = []
   for (const book of books.results) {
-    const kpSql = `SELECT * FROM miaodu_knowledge_points WHERE book_id = ${book.id} ORDER BY sort_order`
-    const kps = await db.prepare(kpSql).all()
+    const kpSql = `SELECT * FROM miaodu_knowledge_points WHERE book_id = ? ORDER BY sort_order`
+    const kps = await db.prepare(kpSql).bind(book.id).all()
     result.push({ ...book, knowledge_points: kps.results })
   }
 
@@ -66,8 +62,9 @@ export async function searchBookByTitle(db: D1Database, query: string) {
 
 // 按知识点关键词搜索
 export async function searchKnowledgeByKeyword(db: D1Database, keyword: string) {
-  const sql = `SELECT kp.*, b.title AS book_title, b.author AS book_author FROM miaodu_knowledge_points kp JOIN miaodu_books b ON kp.book_id = b.id WHERE kp.title LIKE '%${esc(keyword)}%' OR kp.content LIKE '%${esc(keyword)}%' ORDER BY kp.book_id, kp.sort_order`
-  const kps = await db.prepare(sql).all()
+  const sql = `SELECT kp.*, b.title AS book_title, b.author AS book_author FROM miaodu_knowledge_points kp JOIN miaodu_books b ON kp.book_id = b.id WHERE kp.title LIKE ? OR kp.content LIKE ? ORDER BY kp.book_id, kp.sort_order`
+  const keywordPattern = `%${keyword}%`
+  const kps = await db.prepare(sql).bind(keywordPattern, keywordPattern).all()
 
   return kps.results as unknown as KnowledgePoint[]
 }
