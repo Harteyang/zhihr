@@ -9,7 +9,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { forceCollide } from 'd3-force-3d'
-import { getYunmuCategory, getLayerColor, splitPinyinHanzi } from '../../utils/pinyin-utils'
+import { getYunmuCategory, getLayerColor, getLayerTextColor, splitPinyinHanzi } from '../../utils/pinyin-utils'
 import {
   NODE_TYPES, NODE_VALUES,
   FORCE_CONFIG,
@@ -29,16 +29,17 @@ function measureLabelWidth(text, fontSize, fontWeight = '400') {
   return labelCtx.measureText(String(text)).width
 }
 
-function getNodeRadius(node, showLabels) {
+function getNodeRadius(node, showLabels, scale = 1) {
+  let base
   if (node.type === NODE_TYPES.SHENGMU) {
-    return Math.max(36, (node.__labelWidth || 0) / 2 + 12)
+    base = Math.max(36, (node.__labelWidth || 0) / 2 + 12)
+  } else if (node.type === NODE_TYPES.YUNMU) {
+    base = Math.max(26, (node.__labelWidth || 0) / 2 + 8)
+  } else {
+    // 拼音节点
+    base = !showLabels ? 18 : Math.max(18, (node.__labelWidth || 0) / 2 + 8)
   }
-  if (node.type === NODE_TYPES.YUNMU) {
-    return Math.max(26, (node.__labelWidth || 0) / 2 + 8)
-  }
-  // 拼音节点
-  if (!showLabels) return 18
-  return Math.max(18, (node.__labelWidth || 0) / 2 + 8)
+  return base * scale
 }
 
 function computeNominalBounds(nodeCount, containerWidth, containerHeight) {
@@ -127,6 +128,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     shengmuNode.__fontSize = sMeta.fontSize
     shengmuNode.__fontWeight = sMeta.fontWeight
     shengmuNode.__labelWidth = measureLabelWidth(shengmuNode.__text, sMeta.fontSize, sMeta.fontWeight)
+    shengmuNode.__targetScale = 1
     nodes.push(shengmuNode)
 
     for (const item of data) {
@@ -146,6 +148,9 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
         yunmuNode.__fontSize = yMeta.fontSize
         yunmuNode.__fontWeight = yMeta.fontWeight
         yunmuNode.__labelWidth = measureLabelWidth(yunmuNode.__text, yMeta.fontSize, yMeta.fontWeight)
+        const isExpandedYunmuLink = activeExpandedYunmu === yunmuNode.id
+        const isDimmedYunmuLink = activeExpandedYunmu && activeExpandedYunmu !== yunmuNode.id
+        yunmuNode.__targetScale = isExpandedYunmuLink ? 1.35 : isDimmedYunmuLink ? 0.7 : 1
         yunmuMap.set(item.yunmu, yunmuNode)
         nodes.push(yunmuNode)
 
@@ -153,7 +158,12 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
           source: shengmuNode.id,
           target: yunmuNode.id,
           value: 2,
-          color: 'rgba(31, 41, 55, 0.15)',
+          color: isDimmedYunmuLink
+            ? 'rgba(31, 41, 55, 0.05)'
+            : isExpandedYunmuLink
+              ? 'rgba(31, 41, 55, 0.40)'
+              : 'rgba(31, 41, 55, 0.20)',
+          width: isDimmedYunmuLink ? 0.5 : isExpandedYunmuLink ? 2 : 1.5,
         })
       }
 
@@ -161,21 +171,58 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       yunmuDataMap.get(item.yunmu).push(item)
     }
 
+    // 韵母认知顺序：单韵母 → 复韵母 → 前鼻韵母 → 后鼻韵母 → 介音韵母
+    const YUNMU_ORDER = [
+      'a', 'o', 'e', 'i', 'u', 'ü',
+      'ai', 'ei', 'ui', 'ao', 'ou', 'iu', 'ie', 'üe', 'er',
+      'an', 'en', 'in', 'un', 'ün',
+      'ang', 'eng', 'ing', 'ong',
+      'ia', 'iao', 'ian', 'iang', 'iong',
+      'ua', 'uo', 'uai', 'uan', 'uang', 'üan',
+    ]
+
     const yunmuNodes = Array.from(yunmuMap.values())
+    yunmuNodes.sort((a, b) => {
+      const idxA = YUNMU_ORDER.indexOf(a.label)
+      const idxB = YUNMU_ORDER.indexOf(b.label)
+      if (idxA === -1 && idxB === -1) return a.label.localeCompare(b.label)
+      if (idxA === -1) return 1
+      if (idxB === -1) return -1
+      return idxA - idxB
+    })
     const yunmuCount = yunmuNodes.length
 
     const minRadius = 120
     const maxRadius = 400
     const maxPerRing = 8
-    const ringCount = Math.ceil(yunmuCount / maxPerRing)
-    const radiusStep = ringCount > 1 ? (maxRadius - minRadius) / (ringCount - 1) : 0
+
+    // 均衡分配到各环，使每环节点数量差不超过 1
+    function distributeRings(count, limit) {
+      const rings = Math.ceil(count / limit)
+      if (rings <= 1) return [{ count, startIndex: 0 }]
+      const base = Math.floor(count / rings)
+      const remainder = count % rings
+      const result = []
+      let idx = 0
+      for (let i = 0; i < rings; i++) {
+        const c = base + (i < remainder ? 1 : 0)
+        result.push({ count: c, startIndex: idx })
+        idx += c
+      }
+      return result
+    }
+
+    const ringLayout = distributeRings(yunmuCount, maxPerRing)
+    const radiusStep = ringLayout.length > 1 ? (maxRadius - minRadius) / (ringLayout.length - 1) : 0
 
     yunmuNodes.forEach((node, i) => {
-      const ringIndex = Math.floor(i / maxPerRing)
-      const ringOffset = i % maxPerRing
+      const ringIndex = ringLayout.findIndex((r) => i >= r.startIndex && i < r.startIndex + r.count)
+      const ring = ringLayout[ringIndex]
+      const ringOffset = i - ring.startIndex
       const ringRadius = minRadius + ringIndex * radiusStep
-      const ringNodeCount = Math.min(maxPerRing, yunmuCount - ringIndex * maxPerRing)
+      const ringNodeCount = ring.count
       const angleStep = (2 * Math.PI) / Math.max(1, ringNodeCount)
+      // 相邻环错位半个步长，避免节点对齐造成视觉拥挤
       const angleOffset = (ringIndex % 2) * (angleStep / 2)
       const angle = ringOffset * angleStep + angleOffset - Math.PI / 2
 
@@ -217,6 +264,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
         pinyinNode.__pairs = splitPinyinHanzi(item.pinyin, item.hanzi)
         pinyinNode.__fontSize = pMeta.fontSize
         pinyinNode.__fontWeight = pMeta.fontWeight
+        pinyinNode.__targetScale = isInExpandedBranch ? 1.25 : 1
         pinyinNode.__labelWidth = Math.max(
           ...pinyinNode.__pairs.map((pair) =>
             Math.max(
@@ -232,7 +280,8 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
           source: `ym-${item.yunmu}`,
           target: key,
           value: 1,
-          color: isInExpandedBranch ? 'rgba(255, 154, 162, 0.4)' : 'rgba(150, 150, 150, 0.2)',
+          color: isInExpandedBranch ? 'rgba(255, 154, 162, 0.50)' : 'rgba(150, 150, 150, 0.12)',
+          width: isInExpandedBranch ? 1.5 : 0.5,
         })
       }
 
@@ -356,7 +405,13 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
 
   // 自定义节点绘制
   const nodeCanvasObject = useCallback((node, ctx) => {
-    const radius = node.__radius ?? getNodeRadius(node, showLabels)
+    // 平滑插值到目标半径，实现 300-500ms 的缩放动画
+    const targetRadius = getNodeRadius(node, showLabels, node.__targetScale ?? 1)
+    if (node.__radius == null || !isFinite(node.__radius)) {
+      node.__radius = targetRadius
+    }
+    node.__radius += (targetRadius - node.__radius) * 0.18
+    const radius = node.__radius
     let opacity = node.opacity ?? 1
     const isExpandedYunmu = expandedYunmu === node.id && node.type === NODE_TYPES.YUNMU
     const isPinyinInExpandedBranch =
@@ -375,8 +430,10 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     // 绘制节点（带与颜色匹配的柔和阴影）
     ctx.save()
     ctx.globalAlpha = opacity
-    const shadowBlur = node.type === NODE_TYPES.SHENGMU ? 14 : node.type === NODE_TYPES.YUNMU ? 10 : 8
+    let shadowBlur = node.type === NODE_TYPES.SHENGMU ? 14 : node.type === NODE_TYPES.YUNMU ? 10 : 8
     const shadowOffsetY = node.type === NODE_TYPES.SHENGMU ? 4 : 3
+    // 选中分支增强阴影，突出当前焦点
+    if (isExpandedYunmu || isPinyinInExpandedBranch) shadowBlur += 5
     ctx.shadowColor = (node.color || '#999999') + '66'
     ctx.shadowBlur = shadowBlur
     ctx.shadowOffsetX = 0
@@ -449,13 +506,19 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
 
-      // 文字阴影
+      // 根据状态选择文字颜色：淡化态使用低对比灰，正常态使用层级配色文字
+      const isDimmed = expandedYunmu && !isPinyinInExpandedBranch
+      const textColor = isDimmed ? '#6B7280' : getLayerTextColor(NODE_TYPES.PINYIN)
+      const needsDarkShadow = textColor.toLowerCase() === '#ffffff'
+
       ctx.save()
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
-      ctx.shadowBlur = 2
-      ctx.shadowOffsetX = 0
-      ctx.shadowOffsetY = 1
-      ctx.fillStyle = '#ffffff'
+      if (needsDarkShadow) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
+        ctx.shadowBlur = 2
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 1
+      }
+      ctx.fillStyle = textColor
 
       let currentX = node.x - totalW / 2
       for (let i = 0; i < pairs.length; i++) {
@@ -496,22 +559,28 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 
-    // 文字阴影，增强在彩色节点上的可读性
-    ctx.save()
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
-    ctx.shadowBlur = 2
-    ctx.shadowOffsetX = 0
-    ctx.shadowOffsetY = 1
+    // 根据状态选择文字颜色，确保 WCAG AA 对比度
+    const isDimmed = expandedYunmu && node.type === NODE_TYPES.YUNMU && !isExpandedYunmu
+    const textColor = isDimmed ? '#6B7280' : getLayerTextColor(node.type)
+    const needsDarkShadow = textColor.toLowerCase() === '#ffffff'
 
-    // 文字颜色：使用白色以保证在彩色节点上清晰可读
-    ctx.fillStyle = '#ffffff'
+    ctx.save()
+    if (needsDarkShadow) {
+      // 仅浅色文字需要暗色阴影以增强可读性
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)'
+      ctx.shadowBlur = 2
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 1
+    }
+    ctx.fillStyle = textColor
     ctx.fillText(text, node.x, node.y)
     ctx.restore()
   }, [showLabels, expandedYunmu])
 
-  // 边宽度
+  // 边宽度：优先使用数据中的 width，否则按层级默认
   const linkWidth = useCallback((link) => {
-    if (link.source?.type === NODE_TYPES.SHENGMU) return 2
+    if (link.width != null) return link.width
+    if (link.source?.type === NODE_TYPES.SHENGMU) return 1.5
     return 1
   }, [])
 
@@ -584,7 +653,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
         </button>
       </div>
 
-      <div ref={wrapperRef} className="h-[400px] md:h-[600px] w-full">
+      <div ref={wrapperRef} className="h-[58vh] md:h-[62vh] min-h-[360px] max-h-[720px] w-full">
         {size.width > 0 && size.height > 0 && (
           <ForceGraph2D
             ref={fgRef}

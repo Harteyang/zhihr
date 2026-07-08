@@ -100,14 +100,34 @@ export default function App() {
 
         {/* ==================== 图谱选项卡 ==================== */}
         {tab === 'graph' && (
-          <div>
+          <div className="flex flex-col gap-4">
             {/* 声母选择器 */}
             <ShengmuSelector
               selected={currentShengmu}
               onSelect={handleShengmuChange}
             />
 
-            {/* 工具栏 */}
+            {/* 核心内容区：知识图谱，占据主要可视区域 */}
+            <div className="relative">
+              <PinyinGraph
+                data={currentData}
+                shengmu={currentShengmu}
+                onPlaySound={handlePlaySound}
+                onNodeClick={handleNodeClick}
+              />
+
+              {/* 拼音详情卡片 */}
+              {selectedNode && (
+                <PinyinCard
+                  node={selectedNode}
+                  onClose={handleCloseCard}
+                  onPlaySound={handlePlaySound}
+                  onStartPractice={handleStartPractice}
+                />
+              )}
+            </div>
+
+            {/* 辅助信息：统计与练习入口 */}
             <GraphToolbar
               shengmu={currentShengmu}
               shengmuCount={shengmuStats.yunmuCount}
@@ -115,25 +135,16 @@ export default function App() {
               onStartPractice={handleStartPractice}
             />
 
-            {/* 图谱 */}
-              <div className="relative">
-                <PinyinGraph
-                  data={currentData}
-                  shengmu={currentShengmu}
-                  onPlaySound={handlePlaySound}
-                  onNodeClick={handleNodeClick}
-                />
-
-                {/* 拼音详情卡片 */}
-                {selectedNode && (
-                  <PinyinCard
-                    node={selectedNode}
-                    onClose={handleCloseCard}
-                    onPlaySound={handlePlaySound}
-                    onStartPractice={handleStartPractice}
-                  />
-                )}
-              </div>
+            {/* 操作说明 */}
+            <div className="card text-sm text-gray-600">
+              <h3 className="font-semibold text-gray-800 mb-2">使用说明</h3>
+              <ul className="list-disc list-inside space-y-1 text-gray-500">
+                <li>点击声母切换中心节点</li>
+                <li>点击韵母展开对应拼音和汉字</li>
+                <li>点击拼音节点查看详情并发音</li>
+                <li>使用「显示汉字」可全局查看所有汉字</li>
+              </ul>
+            </div>
           </div>
         )}
 

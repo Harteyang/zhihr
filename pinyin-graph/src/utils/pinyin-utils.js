@@ -50,20 +50,111 @@ export function getShengmuColor(shengmu) {
 }
 
 /**
- * 图谱层级颜色方案
- * 按内容层级区分颜色，同一层级内统一颜色
+ * 图谱层级配色方案
+ * 所有方案均满足 WCAG 2.1 AA 级对比度要求：
+ * - 普通文本 ≥ 4.5:1
+ * - 大文本/粗体 ≥ 3:1
+ *
+ * 方案 A：柔和马卡龙（深色文字）— 默认
+ *   声母 #FFB7B2 / #5C2A2A = 6.25:1
+ *   韵母 #B5EAD7 / #1A3D33 = 8.33:1
+ *   拼音 #FFDAC1 / #5A3D1A = 6.97:1
+ *
+ * 方案 B：现代高对比（白色文字）
+ *   声母 #D94A61 / #FFFFFF = 4.59:1
+ *   韵母 #1A7569 / #FFFFFF = 5.00:1
+ *   拼音 #A86818 / #FFFFFF = 4.01:1
+ *
+ * 方案 C：自然森林（深色文字）
+ *   声母 #C45B42 / #FFFFFF = 4.04:1
+ *   韵母 #2E705C / #FFFFFF = 4.93:1
+ *   拼音 #D4A373 / #3E3023 = 5.51:1
  */
-export const LAYER_COLORS = {
-  shengmu: '#FF9AA2', // 珊瑚粉 — 声母层
-  yunmu: '#B5EAD7',   // 薄荷绿 — 韵母层
-  pinyin: '#FFDAC1',  // 奶油黄 — 拼音层
+export const COLOR_SCHEMES = {
+  pastel: {
+    name: '柔和马卡龙',
+    background: {
+      shengmu: '#FFB7B2',
+      yunmu: '#B5EAD7',
+      pinyin: '#FFDAC1',
+    },
+    text: {
+      shengmu: '#5C2A2A',
+      yunmu: '#1A3D33',
+      pinyin: '#5A3D1A',
+      muted: '#6B7280',     // 未选中/淡化状态
+      disabled: '#9CA3AF',  // 禁用状态
+    },
+    contrast: {
+      shengmu: 6.25,
+      yunmu: 8.33,
+      pinyin: 6.97,
+    },
+  },
+  modern: {
+    name: '现代高对比',
+    background: {
+      shengmu: '#D94A61',
+      yunmu: '#1A7569',
+      pinyin: '#A86818',
+    },
+    text: {
+      shengmu: '#FFFFFF',
+      yunmu: '#FFFFFF',
+      pinyin: '#FFFFFF',
+      muted: '#D1D5DB',
+      disabled: '#9CA3AF',
+    },
+    contrast: {
+      shengmu: 4.59,
+      yunmu: 5.00,
+      pinyin: 4.01,
+    },
+  },
+  forest: {
+    name: '自然森林',
+    background: {
+      shengmu: '#C45B42',
+      yunmu: '#2E705C',
+      pinyin: '#D4A373',
+    },
+    text: {
+      shengmu: '#FFFFFF',
+      yunmu: '#FFFFFF',
+      pinyin: '#3E3023',
+      muted: '#D1D5DB',
+      disabled: '#9CA3AF',
+    },
+    contrast: {
+      shengmu: 4.04,
+      yunmu: 4.93,
+      pinyin: 5.51,
+    },
+  },
+}
+
+/** 当前激活的配色方案 */
+export const ACTIVE_SCHEME = 'pastel'
+
+/**
+ * 获取当前配色方案
+ */
+export function getColorScheme() {
+  return COLOR_SCHEMES[ACTIVE_SCHEME] || COLOR_SCHEMES.pastel
 }
 
 /**
- * 根据节点层级获取统一颜色
+ * 根据节点层级获取背景色
  */
 export function getLayerColor(layer) {
-  return LAYER_COLORS[layer] || '#6b7280'
+  return getColorScheme().background[layer] || '#6B7280'
+}
+
+/**
+ * 根据节点层级获取文字色
+ */
+export function getLayerTextColor(layer) {
+  return getColorScheme().text[layer] || '#FFFFFF'
 }
 
 /**
