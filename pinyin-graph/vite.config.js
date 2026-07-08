@@ -31,4 +31,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  test: {
+    globals: true,
+    environment: 'node',
+  },
 })

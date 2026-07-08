@@ -10,6 +10,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { forceCollide } from 'd3-force-3d'
 import { getYunmuCategory, getLayerColor, getLayerTextColor, splitPinyinHanzi } from '../../utils/pinyin-utils'
+import { computeYunmuLayout } from '../../utils/yunmu-layout'
 import {
   NODE_TYPES, NODE_VALUES,
   FORCE_CONFIG,
@@ -173,64 +174,18 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       yunmuDataMap.get(item.yunmu).push(item)
     }
 
-    // 韵母认知顺序：单韵母 → 复韵母 → 前鼻韵母 → 后鼻韵母 → 介音韵母
-    const YUNMU_ORDER = [
-      'a', 'o', 'e', 'i', 'u', 'ü',
-      'ai', 'ei', 'ui', 'ao', 'ou', 'iu', 'ie', 'üe', 'er',
-      'an', 'en', 'in', 'un', 'ün',
-      'ang', 'eng', 'ing', 'ong',
-      'ia', 'iao', 'ian', 'iang', 'iong',
-      'ua', 'uo', 'uai', 'uan', 'uang', 'üan',
-    ]
-
     const yunmuNodes = Array.from(yunmuMap.values())
-    yunmuNodes.sort((a, b) => {
-      const idxA = YUNMU_ORDER.indexOf(a.label)
-      const idxB = YUNMU_ORDER.indexOf(b.label)
-      if (idxA === -1 && idxB === -1) return a.label.localeCompare(b.label)
-      if (idxA === -1) return 1
-      if (idxB === -1) return -1
-      return idxA - idxB
-    })
-    const yunmuCount = yunmuNodes.length
+    const yunmuLabels = yunmuNodes.map((n) => n.label)
+    const layoutMap = computeYunmuLayout(yunmuLabels)
 
-    const minRadius = 120
-    const maxRadius = 400
-    const maxPerRing = 8
-
-    // 均衡分配到各环，使每环节点数量差不超过 1
-    function distributeRings(count, limit) {
-      const rings = Math.ceil(count / limit)
-      if (rings <= 1) return [{ count, startIndex: 0 }]
-      const base = Math.floor(count / rings)
-      const remainder = count % rings
-      const result = []
-      let idx = 0
-      for (let i = 0; i < rings; i++) {
-        const c = base + (i < remainder ? 1 : 0)
-        result.push({ count: c, startIndex: idx })
-        idx += c
-      }
-      return result
-    }
-
-    const ringLayout = distributeRings(yunmuCount, maxPerRing)
-    const radiusStep = ringLayout.length > 1 ? (maxRadius - minRadius) / (ringLayout.length - 1) : 0
-
-    yunmuNodes.forEach((node, i) => {
-      const ringIndex = ringLayout.findIndex((r) => i >= r.startIndex && i < r.startIndex + r.count)
-      const ring = ringLayout[ringIndex]
-      const ringOffset = i - ring.startIndex
-      const ringRadius = minRadius + ringIndex * radiusStep
-      const ringNodeCount = ring.count
-      const angleStep = (2 * Math.PI) / Math.max(1, ringNodeCount)
-      // 相邻环错位半个步长，避免节点对齐造成视觉拥挤
-      const angleOffset = (ringIndex % 2) * (angleStep / 2)
-      const angle = ringOffset * angleStep + angleOffset - Math.PI / 2
-
-      node.x = ringRadius * Math.cos(angle)
-      node.y = ringRadius * Math.sin(angle)
-      node.angle = angle
+    yunmuNodes.forEach((node) => {
+      const pos = layoutMap.get(node.label)
+      if (!pos) return
+      node.x = pos.x
+      node.y = pos.y
+      node.fx = pos.fx
+      node.fy = pos.fy
+      node.angle = pos.angle
       node.data = yunmuDataMap.get(node.label) || []
     })
 
