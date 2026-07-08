@@ -107,6 +107,8 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
   const graphData = useMemo(() => {
     if (!data?.length) return { nodes: [], links: [] }
 
+    const activeExpandedYunmu = expandedYunmu
+
     const nodes = []
     const links = []
     const yunmuMap = new Map()
@@ -233,7 +235,6 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     })
 
     // 生成拼音节点：全局显示汉字 或 有韵母展开时
-    const activeExpandedYunmu = expandedYunmu
     const shouldGeneratePinyin = showLabels || activeExpandedYunmu != null
 
     if (shouldGeneratePinyin) {
@@ -402,6 +403,19 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current)
     }
   }, [graphData, showLabels, size.width, size.height])
+
+  // 节点点击热区：使用与视觉渲染一致的半径，确保命中区域匹配可视节点大小
+  // react-force-graph-2d 在 nodeCanvasObject 模式下默认用 nodeRelSize 做命中检测，
+  // 远小于实际绘制的节点半径，导致点击不响应。nodePointerAreaPaint 是官方机制。
+  const nodePointerAreaPaint = useCallback((node, color, ctx) => {
+    if (!isFinite(node.x) || !isFinite(node.y)) return
+    const radius = node.__radius ?? getNodeRadius(node, showLabels, node.__targetScale ?? 1)
+    if (!isFinite(radius) || radius <= 0) return
+    ctx.beginPath()
+    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false)
+    ctx.fillStyle = color
+    ctx.fill()
+  }, [showLabels])
 
   // 自定义节点绘制
   const nodeCanvasObject = useCallback((node, ctx) => {
@@ -661,6 +675,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
             height={size.height}
             graphData={graphData}
             nodeCanvasObject={nodeCanvasObject}
+            nodePointerAreaPaint={nodePointerAreaPaint}
             linkWidth={linkWidth}
             linkColor={(link) => link.color || '#e5e7eb'}
             linkDistance={100}
