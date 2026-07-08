@@ -162,4 +162,47 @@ describe('computeYunmuLayout — 顺时针排序核心逻辑', () => {
       expect(diff).toBeCloseTo(expectedStep, 5)
     }
   })
+
+  it('内外环半径比为 2:1，外圈连线长度合理', () => {
+    const labels = YUNMU_ORDER.slice(0, 16) // 16 个韵母 → 2 环
+    const layout = computeYunmuLayout(labels)
+    const innerRing = []
+    const outerRing = []
+    for (const [, pos] of layout) {
+      if (pos.ring === 0) innerRing.push(pos)
+      else outerRing.push(pos)
+    }
+    // 内环节点在 minRadius=120 圆上
+    for (const pos of innerRing) {
+      expect(pos.ringRadius).toBe(120)
+    }
+    // 外环节点在 maxRadius=240 圆上
+    for (const pos of outerRing) {
+      expect(pos.ringRadius).toBe(240)
+    }
+    // 外圈连线长度（从中心到外环节点）不超过内圈的 2 倍
+    const innerDist = 120
+    const outerDist = 240
+    expect(outerDist / innerDist).toBe(2)
+  })
+
+  it('内外环节点分别精确排列在两个同心圆上', () => {
+    const labels = YUNMU_ORDER.slice(0, 16)
+    const layout = computeYunmuLayout(labels)
+    const innerRadii = []
+    const outerRadii = []
+    for (const [, pos] of layout) {
+      const actualRadius = Math.hypot(pos.x, pos.y)
+      if (pos.ring === 0) innerRadii.push(actualRadius)
+      else outerRadii.push(actualRadius)
+    }
+    // 所有内环节点到中心距离一致
+    for (const r of innerRadii) {
+      expect(r).toBeCloseTo(120, 5)
+    }
+    // 所有外环节点到中心距离一致
+    for (const r of outerRadii) {
+      expect(r).toBeCloseTo(240, 5)
+    }
+  })
 })

@@ -17,7 +17,7 @@ export const YUNMU_ORDER = [
 
 export const LAYOUT_DEFAULTS = {
   minRadius: 120,
-  maxRadius: 400,
+  maxRadius: 240, // 内外环比 2:1，避免外圈连线过长
   maxPerRing: 8,
 }
 
