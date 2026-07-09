@@ -32,3 +32,8 @@ lerna-debug.log*
 screenshot-*.png
 *.mp4
 *.webm
+
+# Environment variables
+.env
+.env.*
+!.env.example

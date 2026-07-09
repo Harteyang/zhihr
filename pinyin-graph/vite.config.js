@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import iflytekTtsProxy from './plugins/iflytek-tts-proxy'
 
 /**
  * 开发环境自动补全 base 路径末尾斜杠
@@ -25,14 +26,22 @@ function trailingSlashRedirect(base) {
   }
 }
 
-export default defineConfig({
-  plugins: [react(), trailingSlashRedirect('/pinyin-graph/')],
-  base: '/pinyin-graph/',
-  build: {
-    outDir: 'dist',
-  },
-  test: {
-    globals: true,
-    environment: 'node',
-  },
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [
+      react(),
+      trailingSlashRedirect('/pinyin-graph/'),
+      iflytekTtsProxy(env),
+    ],
+    base: '/pinyin-graph/',
+    build: {
+      outDir: 'dist',
+    },
+    test: {
+      globals: true,
+      environment: 'node',
+    },
+  }
 })

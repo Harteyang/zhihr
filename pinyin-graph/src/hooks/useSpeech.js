@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { speakWithIflytek } from '../utils/iflytek-tts'
 
 /**
- * useSpeech — 封装浏览器原生 SpeechSynthesis API
+ * useSpeech — 语音合成 Hook
  *
- * 优化目标：
- * 1. 语速降至更慢（rate ~0.55），适合儿童学习
- * 2. 自动选择最接近真人的中文语音
- * 3. 提供可用语音列表和当前选中语音
+ * 策略：优先使用讯飞 TTS（通过本地 dev 代理），失败时回退到浏览器原生 SpeechSynthesis。
  *
  * 返回值：
  *   speak(text)        — 朗读文本
  *   speakPinyin(pinyin) — 朗读拼音字符串
  *   stop               — 停止朗读
- *   supported          — 浏览器是否支持
- *   voices             — 可用中文语音列表
- *   currentVoice       — 当前使用的语音
- *   setVoice(voiceURI) — 切换指定语音
+ *   supported          — 浏览器是否支持 TTS
+ *   voices             — 可用浏览器原生中文语音列表
+ *   currentVoice       — 当前浏览器语音
+ *   setVoice(voiceURI) — 切换浏览器语音
+ *   usingIflytek       — 当前是否使用讯飞 TTS
+ *   iflytekError       — 讯飞 TTS 最近一次错误
  */
 
 const DEFAULT_RATE = 0.55
@@ -24,7 +24,7 @@ const DEFAULT_VOLUME = 1
 
 // 已知真人感较强的中文语音，按优先级排序
 const PREFERRED_VOICE_URIS = [
-  'com.apple.voice.compact.zh-CN.TingTing',      // macOS/iOS Ting-Ting
+  'com.apple.voice.compact.zh-CN.TingTing', // macOS/iOS Ting-Ting
   'com.apple.voice.super-compact.zh-CN.TingTing',
   'com.apple.speech.synthesis.voice.ting-ting',
   'Microsoft Yaoyao - Chinese (Simplified, PRC)', // Windows
@@ -32,16 +32,18 @@ const PREFERRED_VOICE_URIS = [
   'Microsoft Xiaoyi - Chinese (Simplified, PRC)',
   'Microsoft Yunxi - Chinese (Simplified, PRC)',
   'Microsoft Yunjian - Chinese (Simplified, PRC)',
-  'Google 普通话（中国大陆）',                    // Chrome
+  'Google 普通话（中国大陆）', // Chrome
   'Google 普通話（香港）',
   'Google 國語（臺灣）',
-  'zh-CN',                                        // 通用兜底
+  'zh-CN', // 通用兜底
   'cmn-Hans-CN',
 ]
 
 function isChineseVoice(voice) {
   const lang = (voice.lang || '').toLowerCase()
-  return lang.startsWith('zh') || lang.startsWith('cmn') || lang.startsWith('cmn-hans') || lang.startsWith('cmn-hant')
+  return (
+    lang.startsWith('zh') || lang.startsWith('cmn') || lang.startsWith('cmn-hans') || lang.startsWith('cmn-hant')
+  )
 }
 
 function scoreVoice(voice) {
@@ -62,6 +64,8 @@ export default function useSpeech() {
   const currentVoiceRef = useRef(null)
   const [voices, setVoices] = useState([])
   const [currentVoice, setCurrentVoice] = useState(null)
+  const [usingIflytek, setUsingIflytek] = useState(true)
+  const [iflytekError, setIflytekError] = useState(null)
 
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
@@ -69,7 +73,6 @@ export default function useSpeech() {
     if (!supported) return
     const allVoices = window.speechSynthesis.getVoices()
     const chineseVoices = allVoices.filter(isChineseVoice)
-    // 按真人感优先级排序
     chineseVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a))
 
     voicesRef.current = chineseVoices
@@ -84,7 +87,6 @@ export default function useSpeech() {
   useEffect(() => {
     if (!supported) return
     loadVoices()
-    // Chrome 语音是异步加载的
     window.speechSynthesis.onvoiceschanged = loadVoices
     return () => {
       window.speechSynthesis.onvoiceschanged = null
@@ -99,7 +101,13 @@ export default function useSpeech() {
     }
   }, [])
 
-  const speak = useCallback(
+  const stop = useCallback(() => {
+    if (supported) {
+      window.speechSynthesis.cancel()
+    }
+  }, [supported])
+
+  const speakNative = useCallback(
     (text) => {
       if (!supported || !text) return
 
@@ -123,6 +131,27 @@ export default function useSpeech() {
     [supported]
   )
 
+  const speak = useCallback(
+    async (text) => {
+      if (!text) return
+
+      if (usingIflytek) {
+        try {
+          await speakWithIflytek(text)
+          setIflytekError(null)
+          return
+        } catch (err) {
+          setIflytekError(err.message)
+          // 回退到浏览器原生 TTS
+          speakNative(text)
+        }
+      } else {
+        speakNative(text)
+      }
+    },
+    [usingIflytek, speakNative]
+  )
+
   const speakPinyin = useCallback(
     (pinyin) => {
       speak(pinyin)
@@ -130,11 +159,15 @@ export default function useSpeech() {
     [speak]
   )
 
-  const stop = useCallback(() => {
-    if (supported) {
-      window.speechSynthesis.cancel()
-    }
-  }, [supported])
-
-  return { speak, speakPinyin, stop, supported, voices, currentVoice, setVoice }
+  return {
+    speak,
+    speakPinyin,
+    stop,
+    supported,
+    voices,
+    currentVoice,
+    setVoice,
+    usingIflytek,
+    iflytekError,
+  }
 }
