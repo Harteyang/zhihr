@@ -1,11 +1,11 @@
 /**
  * ShengmuOverview — 24 声母卡片总览
- * 统一卡片式网格布局，响应式设计
+ * 全平台统一网格布局：移动端 4 列，平板 6 列，PC 端 8 列
  */
 import { OVERVIEW_ITEMS } from '../../../utils/shengmu-overview'
 import ShengmuOverviewCard from './ShengmuOverviewCard'
 
-export default function ShengmuOverview({ onSelect, getPinyinCount, pinyinData }) {
+export default function ShengmuOverview({ onSelect, getPinyinCount }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -13,15 +13,15 @@ export default function ShengmuOverview({ onSelect, getPinyinCount, pinyinData }
         <span className="text-xs text-gray-400">点击声母进入详细图谱</span>
       </div>
 
-      <div className="w-full">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div className="w-full bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6">
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 justify-items-center">
           {OVERVIEW_ITEMS.map((item) => (
             <ShengmuOverviewCard
               key={item.id}
               item={item}
               count={getPinyinCount(item.id) || 0}
               onSelect={onSelect}
-              pinyinData={pinyinData}
+              size="md"
             />
           ))}
         </div>

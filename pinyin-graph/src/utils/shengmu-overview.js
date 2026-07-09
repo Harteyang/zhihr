@@ -9,12 +9,11 @@
 import { SHENGMU_GROUPS } from '../components/graph/ShengmuSelector'
 
 export const OVERVIEW_ITEMS = [
-  ...SHENGMU_GROUPS
-    .filter((g) => g.label !== '零声母')
-    .flatMap((g) => g.items.map((id) => ({ id, label: id, virtual: false }))),
-  { id: '零声母', label: '零声母', virtual: false },
-  { id: 'y', label: 'y', virtual: true, redirect: '零声母' },
-  { id: 'w', label: 'w', virtual: true, redirect: '零声母' },
+  ...SHENGMU_GROUPS.flatMap((g) =>
+    g.items.map((id) => ({ id, label: id, virtual: false, group: g.label }))
+  ),
+  { id: 'y', label: 'y', virtual: true, redirect: '零声母', group: '零声母' },
+  { id: 'w', label: 'w', virtual: true, redirect: '零声母', group: '零声母' },
 ]
 
 export const RING_BREAKPOINT = 768
