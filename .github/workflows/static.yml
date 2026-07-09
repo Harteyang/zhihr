@@ -64,15 +64,22 @@ jobs:
           npm ci
           VITE_API_BASE="${{ secrets.MIAODU_API_BASE_URL }}" VITE_BASE=/miaodu/ npm run build
 
+      - name: Build pinyin-graph
+        run: |
+          cd pinyin-graph
+          npm ci
+          npm run build
+
       - name: Prepare deployment
         run: |
           mkdir -p /tmp/deploy
-          for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu)$'); do
+          for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu|pinyin-graph)$'); do
             cp -r "$item" /tmp/deploy/
           done
           cp -r review-system/dist /tmp/deploy/review-system
           cp -r moodist/dist /tmp/deploy/moodist
           cp -r miaodu/frontend/dist /tmp/deploy/miaodu
+          cp -r pinyin-graph/dist /tmp/deploy/pinyin-graph
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
