@@ -333,10 +333,12 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       fg.d3Force('boundary', forceBoundary(maxRadius, BOUNDARY_PADDING))
       fg.d3Force('center', null)
 
-      // 边距离
+      // 边距离：根据韵母数量动态调整，使布局更紧凑
+      const yunmuCount = graphData.nodes.filter(n => n.type === NODE_TYPES.YUNMU).length
+      const shengmuToYunmuDist = Math.max(80, 120 - Math.floor(yunmuCount / 2) * 5)
       fg.d3Force('link')?.distance((link) => {
-        if (link.source?.type === NODE_TYPES.SHENGMU) return 160
-        return showLabels ? 130 : 100
+        if (link.source?.type === NODE_TYPES.SHENGMU) return shengmuToYunmuDist
+        return showLabels ? 100 : 70
       })
 
       fg.d3ReheatSimulation()
