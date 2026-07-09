@@ -5,9 +5,8 @@
  */
 import { getLayerColor, getLayerTextColor } from '../../utils/pinyin-utils'
 
-// 声母分组（用于视觉分类）
 export const SHENGMU_GROUPS = [
-  { label: '唇音', items: ['b', 'p', 'm', 'f', 'y', 'w'] },
+  { label: '唇音', items: ['b', 'p', 'm', 'f'] },
   { label: '舌尖音', items: ['d', 't', 'n', 'l'] },
   { label: '舌根音', items: ['g', 'k', 'h'] },
   { label: '舌面音', items: ['j', 'q', 'x'] },

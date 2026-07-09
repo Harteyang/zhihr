@@ -1099,11 +1099,12 @@ export const byYunmu = pinyinData.reduce((acc, item) => {
  * 获取指定声母的所有音节
  */
 export function getByShengmu(sm) {
-  if (sm === 'y') {
-    return pinyinData.filter(item => item.pinyin.startsWith('y'))
-  }
-  if (sm === 'w') {
-    return pinyinData.filter(item => item.pinyin.startsWith('w'))
+  if (sm === '整体认读音节') {
+    return pinyinData.filter(item => 
+      item.shengmu === '整体认读音节' || 
+      item.shengmu === 'y' || 
+      item.shengmu === 'w'
+    )
   }
   return byShengmu[sm] || []
 }
