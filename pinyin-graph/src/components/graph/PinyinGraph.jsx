@@ -74,7 +74,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
   const fgRef = useRef(null)
   const wrapperRef = useRef(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [showLabels, setShowLabels] = useState(false)
+  const [showLabels, setShowLabels] = useState(true)
   const [expandedYunmu, setExpandedYunmu] = useState(null)
   const [minZoom, setMinZoom] = useState(MIN_ZOOM_FLOOR)
 
