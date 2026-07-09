@@ -29,21 +29,14 @@ export default function GraphDetailView({
       <div className="flex items-center gap-2">
         <button
           onClick={onBack}
-          className="
-            flex items-center gap-1 px-3 py-2 rounded-xl
-            text-sm font-medium text-gray-600
-            bg-white border border-gray-200 shadow-sm
-            hover:bg-gray-50 hover:border-gray-300
-            transition-all duration-150
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-          "
+          className="btn-secondary flex items-center gap-1"
           aria-label="返回声母总览"
         >
           <span className="text-base leading-none" aria-hidden="true">←</span>
           <span>总览</span>
         </button>
-        <span className="text-sm text-gray-400 ml-1">
-          / 声母 <strong className="text-gray-700">{shengmu}</strong>
+        <span className="text-caption text-content-tertiary ml-1">
+          / 声母 <strong className="text-content-primary">{shengmu}</strong>
         </span>
       </div>
 
@@ -51,13 +44,13 @@ export default function GraphDetailView({
       <div className="flex items-center justify-end gap-2">
         <button
           onClick={() => graphRef.current?.fitView()}
-          className="px-3 py-1.5 bg-white text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
+          className="btn-secondary text-small px-3 py-1.5"
         >
           适应视图
         </button>
         <button
           onClick={() => setShowLabels((v) => !v)}
-          className="px-3 py-1.5 bg-white text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
+          className="btn-secondary text-small px-3 py-1.5"
         >
           {showLabels ? '隐藏汉字' : '显示汉字'}
         </button>

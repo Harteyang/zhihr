@@ -9,7 +9,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { forceCollide } from 'd3-force-3d'
-import { getYunmuCategory, getLayerColor, getLayerTextColor, splitPinyinHanzi } from '../../utils/pinyin-utils'
+import { getYunmuCategory, splitPinyinHanzi } from '../../utils/pinyin-utils'
 import { computeYunmuLayout } from '../../utils/yunmu-layout'
 import {
   NODE_TYPES, NODE_VALUES,
@@ -18,6 +18,44 @@ import {
   YUNMU_EXPAND_RADIUS,
   getShengmuRenderMeta, getYunmuRenderMeta, getPinyinRenderMeta,
 } from './graph-config'
+
+/** 节点配色：light / dark */
+const NODE_THEME = {
+  light: {
+    [NODE_TYPES.SHENGMU]: { fill: '#E85D75', text: '#FFFFFF' },
+    [NODE_TYPES.YUNMU]: { fill: '#00C9A7', text: '#FFFFFF' },
+    [NODE_TYPES.PINYIN]: { fill: '#FFD15C', text: '#7A4F00' },
+  },
+  dark: {
+    [NODE_TYPES.SHENGMU]: { fill: '#FF7A95', text: '#2D0A12' },
+    [NODE_TYPES.YUNMU]: { fill: '#33E6C4', text: '#003D32' },
+    [NODE_TYPES.PINYIN]: { fill: '#FFE08A', text: '#3D2800' },
+  },
+}
+
+/** 连线配色：light / dark */
+const LINE_THEME = {
+  light: {
+    default: 'rgba(229, 216, 206, 0.5)',
+    highlight: 'rgba(255, 140, 66, 0.6)',
+    dimmed: 'rgba(229, 216, 206, 0.2)',
+  },
+  dark: {
+    default: 'rgba(74, 80, 112, 0.5)',
+    highlight: 'rgba(255, 154, 92, 0.6)',
+    dimmed: 'rgba(74, 80, 112, 0.25)',
+  },
+}
+
+const DIMMED_TEXT = {
+  light: '#6B6058',
+  dark: '#7A7F99',
+}
+
+function getTheme() {
+  if (typeof document === 'undefined') return 'light'
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+}
 
 // 离屏 Canvas 用于精确测量标签宽度
 const labelCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null
@@ -128,7 +166,6 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
       label: shengmu === '零声母' ? '零声母' : shengmu,
       type: NODE_TYPES.SHENGMU,
       val: NODE_VALUES[NODE_TYPES.SHENGMU],
-      color: getLayerColor(NODE_TYPES.SHENGMU),
       fx: 0,
       fy: 0,
     }
@@ -148,7 +185,6 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
           label: item.yunmu,
           type: NODE_TYPES.YUNMU,
           val: NODE_VALUES[NODE_TYPES.YUNMU],
-          color: getLayerColor(NODE_TYPES.YUNMU),
           category: getYunmuCategory(item.yunmu),
           opacity: 0.85,
         }
@@ -166,11 +202,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
           source: shengmuNode.id,
           target: yunmuNode.id,
           value: 2,
-          color: isDimmedYunmuLink
-            ? 'rgba(31, 41, 55, 0.05)'
-            : isExpandedYunmuLink
-              ? 'rgba(31, 41, 55, 0.40)'
-              : 'rgba(31, 41, 55, 0.20)',
+          lineType: isDimmedYunmuLink ? 'dimmed' : isExpandedYunmuLink ? 'highlight' : 'default',
           width: isDimmedYunmuLink ? 0.5 : isExpandedYunmuLink ? 2 : 1.5,
         })
       }
@@ -186,15 +218,15 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
     yunmuNodes.forEach((node) => {
       const pos = layoutMap.get(node.label)
       if (!pos) return
-      
+
       const isExpanded = activeExpandedYunmu === node.id
       const isDimmed = activeExpandedYunmu && !isExpanded
-      
+
       let scaleFactor = 1
       if (isDimmed) {
         scaleFactor = 0.45
       }
-      
+
       node.x = pos.x * scaleFactor
       node.y = pos.y * scaleFactor
       node.fx = pos.x * scaleFactor
@@ -224,7 +256,6 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
           label: item.pinyin,
           type: NODE_TYPES.PINYIN,
           val: NODE_VALUES[NODE_TYPES.PINYIN],
-          color: getLayerColor(NODE_TYPES.PINYIN),
           pinyin: item.pinyin,
           hanzi: item.hanzi,
           zuci: item.zuci,
@@ -253,7 +284,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
           source: `ym-${item.yunmu}`,
           target: key,
           value: 1,
-          color: isInExpandedBranch ? 'rgba(255, 154, 162, 0.50)' : 'rgba(150, 150, 150, 0.12)',
+          lineType: isInExpandedBranch ? 'highlight' : 'default',
           width: isInExpandedBranch ? 1.5 : 0.5,
         })
       }
@@ -397,6 +428,10 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
 
   // 自定义节点绘制
   const nodeCanvasObject = useCallback((node, ctx) => {
+    const theme = getTheme()
+    const themeColors = NODE_THEME[theme]
+    const dimmedText = DIMMED_TEXT[theme]
+
     // 平滑插值到目标半径，实现 300-500ms 的缩放动画
     const targetRadius = getNodeRadius(node, showLabels, node.__targetScale ?? 1)
     if (node.__radius == null || !isFinite(node.__radius)) {
@@ -419,6 +454,9 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
     // 展开态下，未展开分支的拼音节点不绘制
     if (expandedYunmu && node.type === NODE_TYPES.PINYIN && !isPinyinInExpandedBranch) return
 
+    const nodeColor = themeColors[node.type]
+    const fillColor = nodeColor.fill
+
     // 绘制节点（带与颜色匹配的柔和阴影）
     ctx.save()
     ctx.globalAlpha = opacity
@@ -426,7 +464,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
     const shadowOffsetY = node.type === NODE_TYPES.SHENGMU ? 4 : 3
     // 选中分支增强阴影，突出当前焦点
     if (isExpandedYunmu || isPinyinInExpandedBranch) shadowBlur += 5
-    ctx.shadowColor = (node.color || '#999999') + '66'
+    ctx.shadowColor = fillColor + '66'
     ctx.shadowBlur = shadowBlur
     ctx.shadowOffsetX = 0
     ctx.shadowOffsetY = shadowOffsetY
@@ -436,8 +474,8 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
 
     // 渐变填充
     const gradient = ctx.createRadialGradient(node.x - radius * 0.3, node.y - radius * 0.3, 0, node.x, node.y, radius)
-    gradient.addColorStop(0, node.color)
-    gradient.addColorStop(1, node.type === NODE_TYPES.SHENGMU ? node.color : node.color + 'cc')
+    gradient.addColorStop(0, fillColor)
+    gradient.addColorStop(1, node.type === NODE_TYPES.SHENGMU ? fillColor : fillColor + 'cc')
     ctx.fillStyle = gradient
     ctx.fill()
     ctx.restore()
@@ -500,7 +538,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
 
       // 根据状态选择文字颜色：淡化态使用低对比灰，正常态使用层级配色文字
       const isDimmed = expandedYunmu && !isPinyinInExpandedBranch
-      const textColor = isDimmed ? '#6B7280' : getLayerTextColor(NODE_TYPES.PINYIN)
+      const textColor = isDimmed ? dimmedText : nodeColor.text
       const needsDarkShadow = textColor.toLowerCase() === '#ffffff'
 
       ctx.save()
@@ -553,7 +591,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
 
     // 根据状态选择文字颜色，确保 WCAG AA 对比度
     const isDimmed = expandedYunmu && node.type === NODE_TYPES.YUNMU && !isExpandedYunmu
-    const textColor = isDimmed ? '#6B7280' : getLayerTextColor(node.type)
+    const textColor = isDimmed ? dimmedText : nodeColor.text
     const needsDarkShadow = textColor.toLowerCase() === '#ffffff'
 
     ctx.save()
@@ -574,6 +612,13 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
     if (link.width != null) return link.width
     if (link.source?.type === NODE_TYPES.SHENGMU) return 1.5
     return 1
+  }, [])
+
+  // 边颜色：根据主题与语义（默认 / 高亮 / 淡化）动态解析
+  const linkColor = useCallback((link) => {
+    const theme = getTheme()
+    const palette = LINE_THEME[theme]
+    return palette[link.lineType] || palette.default
   }, [])
 
   // 点击节点
@@ -607,14 +652,14 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
 
   if (!data?.length) {
     return (
-      <div className="flex items-center justify-center h-[400px] md:h-[600px] text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-[400px] md:h-[600px] text-caption text-content-tertiary">
         暂无拼音数据
       </div>
     )
   }
 
   return (
-    <div className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="card relative overflow-hidden">
       <div ref={wrapperRef} className="h-[58vh] md:h-[62vh] min-h-[360px] max-h-[720px] w-full">
         {size.width > 0 && size.height > 0 && (
           <ForceGraph2D
@@ -625,7 +670,7 @@ const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound
             nodeCanvasObject={nodeCanvasObject}
             nodePointerAreaPaint={nodePointerAreaPaint}
             linkWidth={linkWidth}
-            linkColor={(link) => link.color || '#e5e7eb'}
+            linkColor={linkColor}
             linkDistance={100}
             linkDirectionalArrowLength={0}
             minZoom={minZoom}
