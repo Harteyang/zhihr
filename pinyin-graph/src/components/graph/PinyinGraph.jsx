@@ -212,6 +212,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
           pinyin: item.pinyin,
           hanzi: item.hanzi,
           zuci: item.zuci,
+          liju: item.liju,
           shengdiao: item.shengdiao,
           yunmu: item.yunmu,
           shengmu: item.shengmu,

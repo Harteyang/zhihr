@@ -12,7 +12,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bā",
     "hanzi": "八",
-    "zuci": "八个"
+    "zuci": "八个",
+    "liju": "我有八个气球。"
   },
   {
     "id": "b-a-2",
@@ -22,7 +23,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "bá",
     "hanzi": "拔",
-    "zuci": "拔河"
+    "zuci": "拔河",
+    "liju": "同学们在拔河。"
   },
   {
     "id": "b-a-3",
@@ -32,7 +34,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǎ",
     "hanzi": "把",
-    "zuci": "把手"
+    "zuci": "把手",
+    "liju": "请把把手擦干净。"
   },
   {
     "id": "b-a-4",
@@ -42,7 +45,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bà",
     "hanzi": "爸",
-    "zuci": "爸爸"
+    "zuci": "爸爸",
+    "liju": "爸爸在看报纸。"
   },
   {
     "id": "b-o-1",
@@ -52,7 +56,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bō",
     "hanzi": "播",
-    "zuci": "广播"
+    "zuci": "广播",
+    "liju": "广播里播新闻。"
   },
   {
     "id": "b-o-2",
@@ -62,7 +67,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "bó",
     "hanzi": "脖",
-    "zuci": "脖子"
+    "zuci": "脖子",
+    "liju": "他的脖子很长。"
   },
   {
     "id": "b-o-3",
@@ -72,7 +78,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǒ",
     "hanzi": "跛",
-    "zuci": "跛脚"
+    "zuci": "跛脚",
+    "liju": "他走路像跛脚。"
   },
   {
     "id": "b-o-4",
@@ -82,7 +89,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bò",
     "hanzi": "薄",
-    "zuci": "薄荷"
+    "zuci": "薄荷",
+    "liju": "我喜欢薄荷的味道。"
   },
   {
     "id": "b-ai-1",
@@ -92,7 +100,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bāi",
     "hanzi": "掰",
-    "zuci": "掰开"
+    "zuci": "掰开",
+    "liju": "请把面包掰开。"
   },
   {
     "id": "b-ai-2",
@@ -102,7 +111,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "bái",
     "hanzi": "白",
-    "zuci": "白色"
+    "zuci": "白色",
+    "liju": "雪是白色的。"
   },
   {
     "id": "b-ai-3",
@@ -112,7 +122,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǎi",
     "hanzi": "百",
-    "zuci": "一百"
+    "zuci": "一百",
+    "liju": "这个班有一百人。"
   },
   {
     "id": "b-ai-4",
@@ -122,7 +133,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bài",
     "hanzi": "败",
-    "zuci": "失败"
+    "zuci": "失败",
+    "liju": "他不怕失败。"
   },
   {
     "id": "b-ei-1",
@@ -132,7 +144,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bēi",
     "hanzi": "杯",
-    "zuci": "杯子"
+    "zuci": "杯子",
+    "liju": "杯子里有水。"
   },
   {
     "id": "b-ei-3",
@@ -142,7 +155,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "běi",
     "hanzi": "北",
-    "zuci": "北方"
+    "zuci": "北方",
+    "liju": "北方很冷。"
   },
   {
     "id": "b-ei-4",
@@ -152,7 +166,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bèi",
     "hanzi": "被",
-    "zuci": "被子"
+    "zuci": "被子",
+    "liju": "我的被子很软。"
   },
   {
     "id": "b-ao-1",
@@ -162,7 +177,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bāo",
     "hanzi": "包",
-    "zuci": "包子"
+    "zuci": "包子",
+    "liju": "妈妈买了包子。"
   },
   {
     "id": "b-ao-2",
@@ -172,7 +188,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "báo",
     "hanzi": "薄",
-    "zuci": "薄饼"
+    "zuci": "薄饼",
+    "liju": "薄饼很好吃。"
   },
   {
     "id": "b-ao-3",
@@ -182,7 +199,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǎo",
     "hanzi": "宝",
-    "zuci": "宝贝"
+    "zuci": "宝贝",
+    "liju": "这是我的宝贝。"
   },
   {
     "id": "b-ao-4",
@@ -192,7 +210,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bào",
     "hanzi": "报",
-    "zuci": "报纸"
+    "zuci": "报纸",
+    "liju": "我每天看报纸。"
   },
   {
     "id": "b-an-1",
@@ -202,7 +221,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bān",
     "hanzi": "班",
-    "zuci": "班级"
+    "zuci": "班级",
+    "liju": "班级有十个人。"
   },
   {
     "id": "b-an-3",
@@ -212,7 +232,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǎn",
     "hanzi": "板",
-    "zuci": "黑板"
+    "zuci": "黑板",
+    "liju": "黑板是黑色的。"
   },
   {
     "id": "b-an-4",
@@ -222,7 +243,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bàn",
     "hanzi": "办",
-    "zuci": "办法"
+    "zuci": "办法",
+    "liju": "这个办法很好。"
   },
   {
     "id": "b-en-1",
@@ -232,7 +254,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bēn",
     "hanzi": "奔",
-    "zuci": "奔跑"
+    "zuci": "奔跑",
+    "liju": "马儿在奔跑。"
   },
   {
     "id": "b-en-3",
@@ -242,7 +265,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "běn",
     "hanzi": "本",
-    "zuci": "书本"
+    "zuci": "书本",
+    "liju": "书本放在桌上。"
   },
   {
     "id": "b-en-4",
@@ -252,7 +276,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bèn",
     "hanzi": "笨",
-    "zuci": "笨蛋"
+    "zuci": "笨蛋",
+    "liju": "我不是笨蛋。"
   },
   {
     "id": "b-ang-1",
@@ -262,7 +287,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bāng",
     "hanzi": "帮",
-    "zuci": "帮忙"
+    "zuci": "帮忙",
+    "liju": "他找人帮忙。"
   },
   {
     "id": "b-ang-3",
@@ -272,7 +298,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǎng",
     "hanzi": "榜",
-    "zuci": "榜样"
+    "zuci": "榜样",
+    "liju": "他是我的榜样。"
   },
   {
     "id": "b-ang-4",
@@ -282,7 +309,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bàng",
     "hanzi": "棒",
-    "zuci": "木棒"
+    "zuci": "木棒",
+    "liju": "他拿着木棒。"
   },
   {
     "id": "b-eng-1",
@@ -292,7 +320,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bēng",
     "hanzi": "崩",
-    "zuci": "崩溃"
+    "zuci": "崩溃",
+    "liju": "他崩溃了。"
   },
   {
     "id": "b-eng-3",
@@ -302,7 +331,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "běng",
     "hanzi": "绷",
-    "zuci": "绷脸"
+    "zuci": "绷脸",
+    "liju": "他绷着脸。"
   },
   {
     "id": "b-eng-4",
@@ -312,7 +342,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bèng",
     "hanzi": "蹦",
-    "zuci": "蹦跳"
+    "zuci": "蹦跳",
+    "liju": "小兔子在蹦跳。"
   },
   {
     "id": "b-i-1",
@@ -322,7 +353,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bī",
     "hanzi": "逼",
-    "zuci": "逼迫"
+    "zuci": "逼迫",
+    "liju": "他被人逼迫。"
   },
   {
     "id": "b-i-2",
@@ -332,7 +364,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "bí",
     "hanzi": "鼻",
-    "zuci": "鼻子"
+    "zuci": "鼻子",
+    "liju": "我的鼻子很灵。"
   },
   {
     "id": "b-i-3",
@@ -342,7 +375,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǐ",
     "hanzi": "笔",
-    "zuci": "铅笔"
+    "zuci": "铅笔",
+    "liju": "我用铅笔写字。"
   },
   {
     "id": "b-i-4",
@@ -352,7 +386,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bì",
     "hanzi": "闭",
-    "zuci": "关闭"
+    "zuci": "关闭",
+    "liju": "请关闭大门。"
   },
   {
     "id": "b-ie-1",
@@ -362,7 +397,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "biē",
     "hanzi": "憋",
-    "zuci": "憋气"
+    "zuci": "憋气",
+    "liju": "他憋住气。"
   },
   {
     "id": "b-ie-2",
@@ -372,7 +408,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "bié",
     "hanzi": "别",
-    "zuci": "别人"
+    "zuci": "别人",
+    "liju": "别人来了。"
   },
   {
     "id": "b-ie-3",
@@ -382,7 +419,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "biě",
     "hanzi": "瘪",
-    "zuci": "干瘪"
+    "zuci": "干瘪",
+    "liju": "干瘪的豆子。"
   },
   {
     "id": "b-ie-4",
@@ -392,7 +430,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "biè",
     "hanzi": "别",
-    "zuci": "别扭"
+    "zuci": "别扭",
+    "liju": "他有点别扭。"
   },
   {
     "id": "b-iao-1",
@@ -402,7 +441,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "biāo",
     "hanzi": "标",
-    "zuci": "目标"
+    "zuci": "目标",
+    "liju": "我定了一个目标。"
   },
   {
     "id": "b-iao-3",
@@ -412,7 +452,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "biǎo",
     "hanzi": "表",
-    "zuci": "表达"
+    "zuci": "表达",
+    "liju": "请表达你的意思。"
   },
   {
     "id": "b-iao-4",
@@ -422,7 +463,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "biào",
     "hanzi": "鳔",
-    "zuci": "鱼鳔"
+    "zuci": "鱼鳔",
+    "liju": "鱼有鱼鳔。"
   },
   {
     "id": "b-ian-1",
@@ -432,7 +474,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "biān",
     "hanzi": "边",
-    "zuci": "旁边"
+    "zuci": "旁边",
+    "liju": "他在旁边看书。"
   },
   {
     "id": "b-ian-3",
@@ -442,7 +485,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "biǎn",
     "hanzi": "扁",
-    "zuci": "扁担"
+    "zuci": "扁担",
+    "liju": "他挑着扁担。"
   },
   {
     "id": "b-ian-4",
@@ -452,7 +496,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "biàn",
     "hanzi": "变",
-    "zuci": "变化"
+    "zuci": "变化",
+    "liju": "天气变化很快。"
   },
   {
     "id": "b-in-1",
@@ -462,7 +507,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bīn",
     "hanzi": "宾",
-    "zuci": "宾客"
+    "zuci": "宾客",
+    "liju": "宾客已经来了。"
   },
   {
     "id": "b-in-4",
@@ -472,7 +518,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bìn",
     "hanzi": "殡",
-    "zuci": "殡仪"
+    "zuci": "殡仪",
+    "liju": "殡仪馆很远。"
   },
   {
     "id": "b-ing-1",
@@ -482,7 +529,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "bīng",
     "hanzi": "冰",
-    "zuci": "冰块"
+    "zuci": "冰块",
+    "liju": "冰块很冷。"
   },
   {
     "id": "b-ing-3",
@@ -492,7 +540,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǐng",
     "hanzi": "饼",
-    "zuci": "饼干"
+    "zuci": "饼干",
+    "liju": "饼干很好吃。"
   },
   {
     "id": "b-ing-4",
@@ -502,7 +551,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bìng",
     "hanzi": "病",
-    "zuci": "生病"
+    "zuci": "生病",
+    "liju": "他生病了。"
   },
   {
     "id": "b-u-3",
@@ -512,7 +562,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "bǔ",
     "hanzi": "补",
-    "zuci": "补充"
+    "zuci": "补充",
+    "liju": "请补充水分。"
   },
   {
     "id": "b-u-4",
@@ -522,7 +573,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "bù",
     "hanzi": "不",
-    "zuci": "不要"
+    "zuci": "不要",
+    "liju": "不要乱跑。"
   },
   {
     "id": "p-a-1",
@@ -532,7 +584,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pā",
     "hanzi": "趴",
-    "zuci": "趴下"
+    "zuci": "趴下",
+    "liju": "他趴下休息。"
   },
   {
     "id": "p-a-2",
@@ -542,7 +595,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pá",
     "hanzi": "爬",
-    "zuci": "爬山"
+    "zuci": "爬山",
+    "liju": "周末我们去爬山。"
   },
   {
     "id": "p-a-4",
@@ -552,7 +606,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pà",
     "hanzi": "怕",
-    "zuci": "害怕"
+    "zuci": "害怕",
+    "liju": "他害怕天黑。"
   },
   {
     "id": "p-o-1",
@@ -562,7 +617,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pō",
     "hanzi": "坡",
-    "zuci": "山坡"
+    "zuci": "山坡",
+    "liju": "山坡上有很多花。"
   },
   {
     "id": "p-o-2",
@@ -572,7 +628,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pó",
     "hanzi": "婆",
-    "zuci": "婆婆"
+    "zuci": "婆婆",
+    "liju": "婆婆在做饭。"
   },
   {
     "id": "p-o-3",
@@ -582,7 +639,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pǒ",
     "hanzi": "叵",
-    "zuci": "叵测"
+    "zuci": "叵测",
+    "liju": "人心叵测。"
   },
   {
     "id": "p-o-4",
@@ -592,7 +650,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pò",
     "hanzi": "破",
-    "zuci": "打破"
+    "zuci": "打破",
+    "liju": "杯子打破了。"
   },
   {
     "id": "p-ai-1",
@@ -602,7 +661,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pāi",
     "hanzi": "拍",
-    "zuci": "拍手"
+    "zuci": "拍手",
+    "liju": "大家拍手欢迎。"
   },
   {
     "id": "p-ai-2",
@@ -612,7 +672,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pái",
     "hanzi": "排",
-    "zuci": "排队"
+    "zuci": "排队",
+    "liju": "请排队上车。"
   },
   {
     "id": "p-ai-4",
@@ -622,7 +683,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pài",
     "hanzi": "派",
-    "zuci": "派送"
+    "zuci": "派送",
+    "liju": "快递派送中。"
   },
   {
     "id": "p-ei-1",
@@ -632,7 +694,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pēi",
     "hanzi": "胚",
-    "zuci": "胚胎"
+    "zuci": "胚胎",
+    "liju": "胚胎在发育。"
   },
   {
     "id": "p-ei-2",
@@ -642,7 +705,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "péi",
     "hanzi": "陪",
-    "zuci": "陪伴"
+    "zuci": "陪伴",
+    "liju": "他陪伴妈妈。"
   },
   {
     "id": "p-ei-4",
@@ -652,7 +716,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pèi",
     "hanzi": "配",
-    "zuci": "配合"
+    "zuci": "配合",
+    "liju": "大家配合工作。"
   },
   {
     "id": "p-ao-1",
@@ -662,7 +727,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pāo",
     "hanzi": "抛",
-    "zuci": "抛弃"
+    "zuci": "抛弃",
+    "liju": "他不抛弃朋友。"
   },
   {
     "id": "p-ao-2",
@@ -672,7 +738,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "páo",
     "hanzi": "袍",
-    "zuci": "旗袍"
+    "zuci": "旗袍",
+    "liju": "旗袍很漂亮。"
   },
   {
     "id": "p-ao-3",
@@ -682,7 +749,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pǎo",
     "hanzi": "跑",
-    "zuci": "跑步"
+    "zuci": "跑步",
+    "liju": "他每天跑步。"
   },
   {
     "id": "p-ao-4",
@@ -692,7 +760,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pào",
     "hanzi": "炮",
-    "zuci": "大炮"
+    "zuci": "大炮",
+    "liju": "大炮很厉害。"
   },
   {
     "id": "p-ou-1",
@@ -702,7 +771,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pōu",
     "hanzi": "剖",
-    "zuci": "解剖"
+    "zuci": "解剖",
+    "liju": "医生解剖标本。"
   },
   {
     "id": "p-an-1",
@@ -712,7 +782,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pān",
     "hanzi": "攀",
-    "zuci": "攀登"
+    "zuci": "攀登",
+    "liju": "他攀登高山。"
   },
   {
     "id": "p-an-2",
@@ -722,7 +793,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pán",
     "hanzi": "盘",
-    "zuci": "盘子"
+    "zuci": "盘子",
+    "liju": "盘子里有水果。"
   },
   {
     "id": "p-an-4",
@@ -732,7 +804,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pàn",
     "hanzi": "判",
-    "zuci": "判断"
+    "zuci": "判断",
+    "liju": "判断错误了。"
   },
   {
     "id": "p-en-1",
@@ -742,7 +815,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pēn",
     "hanzi": "喷",
-    "zuci": "喷水"
+    "zuci": "喷水",
+    "liju": "喷水车来了。"
   },
   {
     "id": "p-en-2",
@@ -752,7 +826,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pén",
     "hanzi": "盆",
-    "zuci": "花盆"
+    "zuci": "花盆",
+    "liju": "花盆里有花。"
   },
   {
     "id": "p-en-4",
@@ -762,7 +837,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pèn",
     "hanzi": "喷",
-    "zuci": "喷香"
+    "zuci": "喷香",
+    "liju": "饭菜喷香。"
   },
   {
     "id": "p-ang-1",
@@ -772,7 +848,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pāng",
     "hanzi": "滂",
-    "zuci": "滂沱"
+    "zuci": "滂沱",
+    "liju": "大雨滂沱。"
   },
   {
     "id": "p-ang-2",
@@ -782,7 +859,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "páng",
     "hanzi": "旁",
-    "zuci": "旁边"
+    "zuci": "旁边",
+    "liju": "她坐在旁边。"
   },
   {
     "id": "p-ang-4",
@@ -792,7 +870,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pàng",
     "hanzi": "胖",
-    "zuci": "胖子"
+    "zuci": "胖子",
+    "liju": "那个胖子在跑步。"
   },
   {
     "id": "p-eng-1",
@@ -802,7 +881,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pēng",
     "hanzi": "砰",
-    "zuci": "砰的一声"
+    "zuci": "砰的一声",
+    "liju": "砰的一声，门关了。"
   },
   {
     "id": "p-eng-2",
@@ -812,7 +892,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "péng",
     "hanzi": "朋",
-    "zuci": "朋友"
+    "zuci": "朋友",
+    "liju": "朋友来了。"
   },
   {
     "id": "p-eng-3",
@@ -822,7 +903,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pěng",
     "hanzi": "捧",
-    "zuci": "捧场"
+    "zuci": "捧场",
+    "liju": "谢谢大家捧场。"
   },
   {
     "id": "p-eng-4",
@@ -832,7 +914,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pèng",
     "hanzi": "碰",
-    "zuci": "碰见"
+    "zuci": "碰见",
+    "liju": "我碰见了他。"
   },
   {
     "id": "p-i-1",
@@ -842,7 +925,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pī",
     "hanzi": "批",
-    "zuci": "批评"
+    "zuci": "批评",
+    "liju": "他批评了我。"
   },
   {
     "id": "p-i-2",
@@ -852,7 +936,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pí",
     "hanzi": "皮",
-    "zuci": "皮肤"
+    "zuci": "皮肤",
+    "liju": "皮肤很白。"
   },
   {
     "id": "p-i-3",
@@ -862,7 +947,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pǐ",
     "hanzi": "匹",
-    "zuci": "马匹"
+    "zuci": "马匹",
+    "liju": "马匹在吃草。"
   },
   {
     "id": "p-i-4",
@@ -872,7 +958,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pì",
     "hanzi": "屁",
-    "zuci": "屁股"
+    "zuci": "屁股",
+    "liju": "屁股坐在椅子上。"
   },
   {
     "id": "p-ie-1",
@@ -882,7 +969,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "piē",
     "hanzi": "瞥",
-    "zuci": "瞥见"
+    "zuci": "瞥见",
+    "liju": "他瞥见一个人。"
   },
   {
     "id": "p-ie-3",
@@ -892,7 +980,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "piě",
     "hanzi": "撇",
-    "zuci": "撇开"
+    "zuci": "撇开",
+    "liju": "撇开这个问题。"
   },
   {
     "id": "p-iao-1",
@@ -902,7 +991,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "piāo",
     "hanzi": "飘",
-    "zuci": "飘落"
+    "zuci": "飘落",
+    "liju": "树叶飘落。"
   },
   {
     "id": "p-iao-2",
@@ -912,7 +1002,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "piáo",
     "hanzi": "瓢",
-    "zuci": "瓢虫"
+    "zuci": "瓢虫",
+    "liju": "瓢虫是益虫。"
   },
   {
     "id": "p-iao-3",
@@ -922,7 +1013,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "piǎo",
     "hanzi": "漂",
-    "zuci": "漂洗"
+    "zuci": "漂洗",
+    "liju": "衣服漂洗三次。"
   },
   {
     "id": "p-iao-4",
@@ -932,7 +1024,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "piào",
     "hanzi": "票",
-    "zuci": "门票"
+    "zuci": "门票",
+    "liju": "门票很贵。"
   },
   {
     "id": "p-ian-1",
@@ -942,7 +1035,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "piān",
     "hanzi": "偏",
-    "zuci": "偏心"
+    "zuci": "偏心",
+    "liju": "老师不偏心。"
   },
   {
     "id": "p-ian-2",
@@ -952,7 +1046,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pián",
     "hanzi": "便",
-    "zuci": "便宜"
+    "zuci": "便宜",
+    "liju": "这个很便宜。"
   },
   {
     "id": "p-ian-4",
@@ -962,7 +1057,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "piàn",
     "hanzi": "片",
-    "zuci": "照片"
+    "zuci": "照片",
+    "liju": "照片很好看。"
   },
   {
     "id": "p-in-1",
@@ -972,7 +1068,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pīn",
     "hanzi": "拼",
-    "zuci": "拼音"
+    "zuci": "拼音",
+    "liju": "我在学拼音。"
   },
   {
     "id": "p-in-2",
@@ -982,7 +1079,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pín",
     "hanzi": "贫",
-    "zuci": "贫穷"
+    "zuci": "贫穷",
+    "liju": "他贫穷但快乐。"
   },
   {
     "id": "p-in-3",
@@ -992,7 +1090,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pǐn",
     "hanzi": "品",
-    "zuci": "品质"
+    "zuci": "品质",
+    "liju": "品质很好。"
   },
   {
     "id": "p-in-4",
@@ -1002,7 +1101,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pìn",
     "hanzi": "聘",
-    "zuci": "聘请"
+    "zuci": "聘请",
+    "liju": "聘请老师。"
   },
   {
     "id": "p-ing-1",
@@ -1012,7 +1112,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pīng",
     "hanzi": "乒",
-    "zuci": "乒乓"
+    "zuci": "乒乓",
+    "liju": "乒乓比赛很精彩。"
   },
   {
     "id": "p-ing-2",
@@ -1022,7 +1123,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "píng",
     "hanzi": "平",
-    "zuci": "平安"
+    "zuci": "平安",
+    "liju": "平安回家。"
   },
   {
     "id": "p-u-1",
@@ -1032,7 +1134,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "pū",
     "hanzi": "扑",
-    "zuci": "扑向"
+    "zuci": "扑向",
+    "liju": "猫扑向老鼠。"
   },
   {
     "id": "p-u-2",
@@ -1042,7 +1145,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "pú",
     "hanzi": "葡",
-    "zuci": "葡萄"
+    "zuci": "葡萄",
+    "liju": "葡萄很甜。"
   },
   {
     "id": "p-u-3",
@@ -1052,7 +1156,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "pǔ",
     "hanzi": "普",
-    "zuci": "普通"
+    "zuci": "普通",
+    "liju": "他很普通。"
   },
   {
     "id": "p-u-4",
@@ -1062,7 +1167,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "pù",
     "hanzi": "铺",
-    "zuci": "店铺"
+    "zuci": "店铺",
+    "liju": "店铺开门了。"
   },
   {
     "id": "m-a-1",
@@ -1072,7 +1178,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "mā",
     "hanzi": "妈",
-    "zuci": "妈妈"
+    "zuci": "妈妈",
+    "liju": "我的妈妈在厨房做饭。"
   },
   {
     "id": "m-a-2",
@@ -1082,7 +1189,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "má",
     "hanzi": "麻",
-    "zuci": "麻烦"
+    "zuci": "麻烦",
+    "liju": "这件事太麻烦你了。"
   },
   {
     "id": "m-a-3",
@@ -1092,7 +1200,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǎ",
     "hanzi": "马",
-    "zuci": "马车"
+    "zuci": "马车",
+    "liju": "爷爷赶着马车进城。"
   },
   {
     "id": "m-a-4",
@@ -1102,7 +1211,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mà",
     "hanzi": "骂",
-    "zuci": "骂人"
+    "zuci": "骂人",
+    "liju": "骂人是不文明的行为。"
   },
   {
     "id": "m-o-1",
@@ -1112,7 +1222,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "mō",
     "hanzi": "摸",
-    "zuci": "摸鱼"
+    "zuci": "摸鱼",
+    "liju": "弟弟在河里摸鱼玩。"
   },
   {
     "id": "m-o-2",
@@ -1122,7 +1233,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mó",
     "hanzi": "模",
-    "zuci": "模样"
+    "zuci": "模样",
+    "liju": "她的模样真可爱。"
   },
   {
     "id": "m-o-3",
@@ -1132,7 +1244,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǒ",
     "hanzi": "抹",
-    "zuci": "抹黑"
+    "zuci": "抹黑",
+    "liju": "不要故意抹黑别人。"
   },
   {
     "id": "m-o-4",
@@ -1142,7 +1255,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mò",
     "hanzi": "末",
-    "zuci": "期末"
+    "zuci": "期末",
+    "liju": "期末我们要认真复习。"
   },
   {
     "id": "m-ai-2",
@@ -1152,7 +1266,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mái",
     "hanzi": "埋",
-    "zuci": "埋土"
+    "zuci": "埋土",
+    "liju": "把花种子埋土里。"
   },
   {
     "id": "m-ai-3",
@@ -1162,7 +1277,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǎi",
     "hanzi": "买",
-    "zuci": "买书"
+    "zuci": "买书",
+    "liju": "我去书店买书看。"
   },
   {
     "id": "m-ai-4",
@@ -1172,7 +1288,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mài",
     "hanzi": "卖",
-    "zuci": "卖菜"
+    "zuci": "卖菜",
+    "liju": "妈妈在集市卖菜。"
   },
   {
     "id": "m-ei-2",
@@ -1182,7 +1299,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "méi",
     "hanzi": "没",
-    "zuci": "没有"
+    "zuci": "没有",
+    "liju": "今天没有下雨。"
   },
   {
     "id": "m-ei-3",
@@ -1192,7 +1310,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "měi",
     "hanzi": "每",
-    "zuci": "每天"
+    "zuci": "每天",
+    "liju": "他每天坚持跑步。"
   },
   {
     "id": "m-ei-4",
@@ -1202,7 +1321,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mèi",
     "hanzi": "妹",
-    "zuci": "妹妹"
+    "zuci": "妹妹",
+    "liju": "我的妹妹很爱笑。"
   },
   {
     "id": "m-ao-1",
@@ -1212,7 +1332,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "māo",
     "hanzi": "猫",
-    "zuci": "小猫"
+    "zuci": "小猫",
+    "liju": "小猫在院子里捉老鼠。"
   },
   {
     "id": "m-ao-2",
@@ -1222,7 +1343,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "máo",
     "hanzi": "毛",
-    "zuci": "毛发"
+    "zuci": "毛发",
+    "liju": "小兔子的毛发很白。"
   },
   {
     "id": "m-ao-3",
@@ -1232,7 +1354,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǎo",
     "hanzi": "卯",
-    "zuci": "卯时"
+    "zuci": "卯时",
+    "liju": "古代卯时就开始工作。"
   },
   {
     "id": "m-ao-4",
@@ -1242,7 +1365,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mào",
     "hanzi": "帽",
-    "zuci": "帽子"
+    "zuci": "帽子",
+    "liju": "冬天戴帽子保暖。"
   },
   {
     "id": "m-ou-2",
@@ -1252,7 +1376,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "móu",
     "hanzi": "谋",
-    "zuci": "参谋"
+    "zuci": "参谋",
+    "liju": "他是军队的参谋长。"
   },
   {
     "id": "m-ou-3",
@@ -1262,7 +1387,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǒu",
     "hanzi": "某",
-    "zuci": "某人"
+    "zuci": "某人",
+    "liju": "某人在门口等你。"
   },
   {
     "id": "m-an-3",
@@ -1272,7 +1398,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǎn",
     "hanzi": "满",
-    "zuci": "满足"
+    "zuci": "满足",
+    "liju": "我对现在的生活很满足。"
   },
   {
     "id": "m-an-4",
@@ -1282,7 +1409,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "màn",
     "hanzi": "慢",
-    "zuci": "快慢"
+    "zuci": "快慢",
+    "liju": "走路快慢要适中。"
   },
   {
     "id": "m-en-1",
@@ -1292,7 +1420,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "mēn",
     "hanzi": "闷",
-    "zuci": "闷热"
+    "zuci": "闷热",
+    "liju": "夏天的午后很闷热。"
   },
   {
     "id": "m-en-2",
@@ -1302,7 +1431,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mén",
     "hanzi": "门",
-    "zuci": "门口"
+    "zuci": "门口",
+    "liju": "小狗趴在门口睡觉。"
   },
   {
     "id": "m-en-4",
@@ -1312,7 +1442,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mèn",
     "hanzi": "闷",
-    "zuci": "烦闷"
+    "zuci": "烦闷",
+    "liju": "他心情不好，有点烦闷。"
   },
   {
     "id": "m-ang-2",
@@ -1322,7 +1453,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "máng",
     "hanzi": "忙",
-    "zuci": "忙碌"
+    "zuci": "忙碌",
+    "liju": "爸爸整天都很忙碌。"
   },
   {
     "id": "m-ang-3",
@@ -1332,7 +1464,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǎng",
     "hanzi": "莽",
-    "zuci": "鲁莽"
+    "zuci": "鲁莽",
+    "liju": "做事情不能太鲁莽。"
   },
   {
     "id": "m-eng-1",
@@ -1342,7 +1475,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "mēng",
     "hanzi": "蒙",
-    "zuci": "蒙上"
+    "zuci": "蒙上",
+    "liju": "蒙上眼睛玩游戏。"
   },
   {
     "id": "m-eng-2",
@@ -1352,7 +1486,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "méng",
     "hanzi": "蒙",
-    "zuci": "启蒙"
+    "zuci": "启蒙",
+    "liju": "启蒙老师教会我很多。"
   },
   {
     "id": "m-eng-3",
@@ -1362,7 +1497,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "měng",
     "hanzi": "猛",
-    "zuci": "凶猛"
+    "zuci": "凶猛",
+    "liju": "老虎是一种凶猛的动物。"
   },
   {
     "id": "m-eng-4",
@@ -1372,7 +1508,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mèng",
     "hanzi": "梦",
-    "zuci": "梦想"
+    "zuci": "梦想",
+    "liju": "每个人都有美好的梦想。"
   },
   {
     "id": "m-i-1",
@@ -1382,7 +1519,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "mī",
     "hanzi": "眯",
-    "zuci": "眯眼"
+    "zuci": "眯眼",
+    "liju": "阳光太强，他眯着眼。"
   },
   {
     "id": "m-i-2",
@@ -1392,7 +1530,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mí",
     "hanzi": "迷",
-    "zuci": "迷人"
+    "zuci": "迷人",
+    "liju": "这里的风景真迷人。"
   },
   {
     "id": "m-i-3",
@@ -1402,7 +1541,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǐ",
     "hanzi": "米",
-    "zuci": "小米"
+    "zuci": "小米",
+    "liju": "奶奶煮了小米粥。"
   },
   {
     "id": "m-i-4",
@@ -1412,7 +1552,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mì",
     "hanzi": "密",
-    "zuci": "秘密"
+    "zuci": "秘密",
+    "liju": "这是我和小明的秘密。"
   },
   {
     "id": "m-ie-1",
@@ -1422,7 +1563,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "miē",
     "hanzi": "咩",
-    "zuci": "咩咩"
+    "zuci": "咩咩",
+    "liju": "小羊在草地上咩咩叫。"
   },
   {
     "id": "m-ie-4",
@@ -1432,7 +1574,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "miè",
     "hanzi": "灭",
-    "zuci": "灭火"
+    "zuci": "灭火",
+    "liju": "消防员及时灭了火。"
   },
   {
     "id": "m-iao-1",
@@ -1442,7 +1585,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "miāo",
     "hanzi": "喵",
-    "zuci": "喵喵"
+    "zuci": "喵喵",
+    "liju": "小猫饿了一直喵喵叫。"
   },
   {
     "id": "m-iao-2",
@@ -1452,7 +1596,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "miáo",
     "hanzi": "苗",
-    "zuci": "禾苗"
+    "zuci": "禾苗",
+    "liju": "田里的禾苗长得很高。"
   },
   {
     "id": "m-iao-3",
@@ -1462,7 +1607,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "miǎo",
     "hanzi": "秒",
-    "zuci": "秒针"
+    "zuci": "秒针",
+    "liju": "时钟的秒针不停走动。"
   },
   {
     "id": "m-iao-4",
@@ -1472,7 +1618,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "miào",
     "hanzi": "妙",
-    "zuci": "美妙"
+    "zuci": "美妙",
+    "liju": "音乐会上的歌声真美妙。"
   },
   {
     "id": "m-iu-4",
@@ -1482,7 +1629,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "miù",
     "hanzi": "谬",
-    "zuci": "谬误"
+    "zuci": "谬误",
+    "liju": "这种说法有明显的谬误。"
   },
   {
     "id": "m-ian-2",
@@ -1492,7 +1640,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mián",
     "hanzi": "棉",
-    "zuci": "棉花"
+    "zuci": "棉花",
+    "liju": "新疆产的棉花质量很好。"
   },
   {
     "id": "m-ian-3",
@@ -1502,7 +1651,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "miǎn",
     "hanzi": "免",
-    "zuci": "免费"
+    "zuci": "免费",
+    "liju": "公园今天免费开放。"
   },
   {
     "id": "m-ian-4",
@@ -1512,7 +1662,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "miàn",
     "hanzi": "面",
-    "zuci": "面包"
+    "zuci": "面包",
+    "liju": "早餐我吃面包喝牛奶。"
   },
   {
     "id": "m-in-2",
@@ -1522,7 +1673,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mín",
     "hanzi": "民",
-    "zuci": "人民"
+    "zuci": "人民",
+    "liju": "人民的力量是无穷的。"
   },
   {
     "id": "m-in-3",
@@ -1532,7 +1684,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǐn",
     "hanzi": "敏",
-    "zuci": "敏捷"
+    "zuci": "敏捷",
+    "liju": "他思维敏捷，反应很快。"
   },
   {
     "id": "m-ing-2",
@@ -1542,7 +1695,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "míng",
     "hanzi": "名",
-    "zuci": "名字"
+    "zuci": "名字",
+    "liju": "请写下你的名字。"
   },
   {
     "id": "m-ing-3",
@@ -1552,7 +1706,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǐng",
     "hanzi": "酩",
-    "zuci": "酩酊"
+    "zuci": "酩酊",
+    "liju": "他喝得酩酊大醉。"
   },
   {
     "id": "m-ing-4",
@@ -1562,7 +1717,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mìng",
     "hanzi": "命",
-    "zuci": "生命"
+    "zuci": "生命",
+    "liju": "我们要珍惜自己的生命。"
   },
   {
     "id": "m-u-2",
@@ -1572,7 +1728,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "mú",
     "hanzi": "模",
-    "zuci": "模样"
+    "zuci": "模样",
+    "liju": "双胞胎长得模样一样。"
   },
   {
     "id": "m-u-3",
@@ -1582,7 +1739,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "mǔ",
     "hanzi": "母",
-    "zuci": "母亲"
+    "zuci": "母亲",
+    "liju": "母亲节那天我给妈妈送了花。"
   },
   {
     "id": "m-u-4",
@@ -1592,7 +1750,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "mù",
     "hanzi": "目",
-    "zuci": "目标"
+    "zuci": "目标",
+    "liju": "考试前我制定了学习目标。"
   },
   {
     "id": "f-a-1",
@@ -1602,7 +1761,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fā",
     "hanzi": "发",
-    "zuci": "发现"
+    "zuci": "发现",
+    "liju": "他发现了一个秘密。"
   },
   {
     "id": "f-a-2",
@@ -1612,7 +1772,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fá",
     "hanzi": "罚",
-    "zuci": "处罚"
+    "zuci": "处罚",
+    "liju": "交通违规要受到处罚。"
   },
   {
     "id": "f-a-3",
@@ -1622,7 +1783,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fǎ",
     "hanzi": "法",
-    "zuci": "办法"
+    "zuci": "办法",
+    "liju": "大家要想办法解决问题。"
   },
   {
     "id": "f-a-4",
@@ -1632,7 +1794,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fà",
     "hanzi": "发",
-    "zuci": "头发"
+    "zuci": "头发",
+    "liju": "她的头发又黑又长。"
   },
   {
     "id": "f-o-2",
@@ -1642,7 +1805,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fó",
     "hanzi": "佛",
-    "zuci": "佛像"
+    "zuci": "佛像",
+    "liju": "寺庙里有一尊大佛像。"
   },
   {
     "id": "f-ei-1",
@@ -1652,7 +1816,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fēi",
     "hanzi": "飞",
-    "zuci": "飞机"
+    "zuci": "飞机",
+    "liju": "飞机在蓝天上飞翔。"
   },
   {
     "id": "f-ei-2",
@@ -1662,7 +1827,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "féi",
     "hanzi": "肥",
-    "zuci": "肥胖"
+    "zuci": "肥胖",
+    "liju": "肥胖会影响身体健康。"
   },
   {
     "id": "f-ei-3",
@@ -1672,7 +1838,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fěi",
     "hanzi": "匪",
-    "zuci": "土匪"
+    "zuci": "土匪",
+    "liju": "土匪被警察抓住了。"
   },
   {
     "id": "f-ei-4",
@@ -1682,7 +1849,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fèi",
     "hanzi": "费",
-    "zuci": "学费"
+    "zuci": "学费",
+    "liju": "今年的学费已经交了。"
   },
   {
     "id": "f-ou-3",
@@ -1692,7 +1860,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fǒu",
     "hanzi": "否",
-    "zuci": "是否"
+    "zuci": "是否",
+    "liju": "你是否愿意参加活动？"
   },
   {
     "id": "f-an-1",
@@ -1702,7 +1871,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fān",
     "hanzi": "翻",
-    "zuci": "翻开"
+    "zuci": "翻开",
+    "liju": "他翻开书认真阅读。"
   },
   {
     "id": "f-an-2",
@@ -1712,7 +1882,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fán",
     "hanzi": "烦",
-    "zuci": "烦恼"
+    "zuci": "烦恼",
+    "liju": "不要为小事烦恼。"
   },
   {
     "id": "f-an-3",
@@ -1722,7 +1893,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fǎn",
     "hanzi": "反",
-    "zuci": "反对"
+    "zuci": "反对",
+    "liju": "我反对这个计划。"
   },
   {
     "id": "f-an-4",
@@ -1732,7 +1904,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fàn",
     "hanzi": "饭",
-    "zuci": "吃饭"
+    "zuci": "吃饭",
+    "liju": "全家人在一起吃饭。"
   },
   {
     "id": "f-en-1",
@@ -1742,7 +1915,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fēn",
     "hanzi": "分",
-    "zuci": "分开"
+    "zuci": "分开",
+    "liju": "他们俩已经分开了。"
   },
   {
     "id": "f-en-2",
@@ -1752,7 +1926,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fén",
     "hanzi": "坟",
-    "zuci": "坟墓"
+    "zuci": "坟墓",
+    "liju": "山上有座古老的坟墓。"
   },
   {
     "id": "f-en-3",
@@ -1762,7 +1937,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fěn",
     "hanzi": "粉",
-    "zuci": "粉色"
+    "zuci": "粉色",
+    "liju": "她穿了一件粉色裙子。"
   },
   {
     "id": "f-en-4",
@@ -1772,7 +1948,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fèn",
     "hanzi": "份",
-    "zuci": "份量"
+    "zuci": "份量",
+    "liju": "这份菜的份量很足。"
   },
   {
     "id": "f-ang-1",
@@ -1782,7 +1959,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fāng",
     "hanzi": "方",
-    "zuci": "方向"
+    "zuci": "方向",
+    "liju": "我们要明确前进的方向。"
   },
   {
     "id": "f-ang-2",
@@ -1792,7 +1970,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fáng",
     "hanzi": "房",
-    "zuci": "房子"
+    "zuci": "房子",
+    "liju": "他在城里买了一套房子。"
   },
   {
     "id": "f-ang-3",
@@ -1802,7 +1981,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fǎng",
     "hanzi": "访",
-    "zuci": "访问"
+    "zuci": "访问",
+    "liju": "校长访问了贫困家庭。"
   },
   {
     "id": "f-ang-4",
@@ -1812,7 +1992,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fàng",
     "hanzi": "放",
-    "zuci": "放学"
+    "zuci": "放学",
+    "liju": "下午四点学校放学。"
   },
   {
     "id": "f-eng-1",
@@ -1822,7 +2003,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fēng",
     "hanzi": "风",
-    "zuci": "大风"
+    "zuci": "大风",
+    "liju": "今天刮起了大风。"
   },
   {
     "id": "f-eng-2",
@@ -1832,7 +2014,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "féng",
     "hanzi": "逢",
-    "zuci": "相逢"
+    "zuci": "相逢",
+    "liju": "我们在路口偶然相逢。"
   },
   {
     "id": "f-eng-3",
@@ -1842,7 +2025,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fěng",
     "hanzi": "讽",
-    "zuci": "讽刺"
+    "zuci": "讽刺",
+    "liju": "他经常讽刺别人的缺点。"
   },
   {
     "id": "f-eng-4",
@@ -1852,7 +2036,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fèng",
     "hanzi": "凤",
-    "zuci": "凤凰"
+    "zuci": "凤凰",
+    "liju": "凤凰是一种吉祥的鸟。"
   },
   {
     "id": "f-u-1",
@@ -1862,7 +2047,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "fū",
     "hanzi": "夫",
-    "zuci": "夫人"
+    "zuci": "夫人",
+    "liju": "那位夫人很有礼貌。"
   },
   {
     "id": "f-u-2",
@@ -1872,7 +2058,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "fú",
     "hanzi": "服",
-    "zuci": "衣服"
+    "zuci": "衣服",
+    "liju": "他换了一件干净衣服。"
   },
   {
     "id": "f-u-3",
@@ -1882,7 +2069,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "fǔ",
     "hanzi": "府",
-    "zuci": "政府"
+    "zuci": "政府",
+    "liju": "政府为民办了实事。"
   },
   {
     "id": "f-u-4",
@@ -1892,7 +2080,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "fù",
     "hanzi": "父",
-    "zuci": "父亲"
+    "zuci": "父亲",
+    "liju": "我的父亲是一名医生。"
   },
   {
     "id": "d-a-1",
@@ -1902,7 +2091,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dā",
     "hanzi": "搭",
-    "zuci": "搭车"
+    "zuci": "搭车",
+    "liju": "我每天搭公交车上学。"
   },
   {
     "id": "d-a-2",
@@ -1912,7 +2102,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "dá",
     "hanzi": "答",
-    "zuci": "回答"
+    "zuci": "回答",
+    "liju": "老师的问题他回答正确。"
   },
   {
     "id": "d-a-3",
@@ -1922,7 +2113,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǎ",
     "hanzi": "打",
-    "zuci": "打扫"
+    "zuci": "打扫",
+    "liju": "星期天妈妈打扫卫生。"
   },
   {
     "id": "d-a-4",
@@ -1932,7 +2124,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dà",
     "hanzi": "大",
-    "zuci": "大小"
+    "zuci": "大小",
+    "liju": "这两只鞋大小不一样。"
   },
   {
     "id": "d-e-2",
@@ -1942,7 +2135,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "dé",
     "hanzi": "得",
-    "zuci": "得到"
+    "zuci": "得到",
+    "liju": "他努力得到了好成绩。"
   },
   {
     "id": "d-ai-1",
@@ -1952,7 +2146,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dāi",
     "hanzi": "呆",
-    "zuci": "发呆"
+    "zuci": "发呆",
+    "liju": "别发呆，快写作业。"
   },
   {
     "id": "d-ai-3",
@@ -1962,7 +2157,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǎi",
     "hanzi": "歹",
-    "zuci": "好歹"
+    "zuci": "好歹",
+    "liju": "好歹你也说句话呀。"
   },
   {
     "id": "d-ai-4",
@@ -1972,7 +2168,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dài",
     "hanzi": "代",
-    "zuci": "代表"
+    "zuci": "代表",
+    "liju": "小明代表班级发言。"
   },
   {
     "id": "d-ei-3",
@@ -1982,7 +2179,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "děi",
     "hanzi": "得",
-    "zuci": "得劲儿"
+    "zuci": "得劲儿",
+    "liju": "这把扫帚用着很得劲儿。"
   },
   {
     "id": "d-ao-1",
@@ -1992,7 +2190,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dāo",
     "hanzi": "刀",
-    "zuci": "刀子"
+    "zuci": "刀子",
+    "liju": "厨房里的刀子很锋利。"
   },
   {
     "id": "d-ao-3",
@@ -2002,7 +2201,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǎo",
     "hanzi": "导",
-    "zuci": "指导"
+    "zuci": "指导",
+    "liju": "老师指导我们做实验。"
   },
   {
     "id": "d-ao-4",
@@ -2012,7 +2212,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dào",
     "hanzi": "到",
-    "zuci": "到达"
+    "zuci": "到达",
+    "liju": "火车准时到达了北京。"
   },
   {
     "id": "d-ou-1",
@@ -2022,7 +2223,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dōu",
     "hanzi": "都",
-    "zuci": "都有"
+    "zuci": "都有",
+    "liju": "每个同学都有新书包。"
   },
   {
     "id": "d-ou-3",
@@ -2032,7 +2234,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǒu",
     "hanzi": "斗",
-    "zuci": "北斗"
+    "zuci": "北斗",
+    "liju": "北斗星在夜空中很亮。"
   },
   {
     "id": "d-ou-4",
@@ -2042,7 +2245,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dòu",
     "hanzi": "豆",
-    "zuci": "豆子"
+    "zuci": "豆子",
+    "liju": "奶奶种了很多豆子。"
   },
   {
     "id": "d-an-1",
@@ -2052,7 +2256,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dān",
     "hanzi": "单",
-    "zuci": "简单"
+    "zuci": "简单",
+    "liju": "这道数学题很简单。"
   },
   {
     "id": "d-an-3",
@@ -2062,7 +2267,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǎn",
     "hanzi": "胆",
-    "zuci": "胆子"
+    "zuci": "胆子",
+    "liju": "他的胆子越来越大了。"
   },
   {
     "id": "d-an-4",
@@ -2072,7 +2278,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dàn",
     "hanzi": "但",
-    "zuci": "但是"
+    "zuci": "但是",
+    "liju": "我想去，但是下雨了。"
   },
   {
     "id": "d-ang-1",
@@ -2082,7 +2289,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dāng",
     "hanzi": "当",
-    "zuci": "当时"
+    "zuci": "当时",
+    "liju": "当时我并不知道这件事。"
   },
   {
     "id": "d-ang-3",
@@ -2092,7 +2300,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǎng",
     "hanzi": "党",
-    "zuci": "党员"
+    "zuci": "党员",
+    "liju": "爸爸是一名老党员。"
   },
   {
     "id": "d-ang-4",
@@ -2102,7 +2311,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dàng",
     "hanzi": "荡",
-    "zuci": "荡秋千"
+    "zuci": "荡秋千",
+    "liju": "妹妹在公园荡秋千。"
   },
   {
     "id": "d-eng-1",
@@ -2112,7 +2322,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dēng",
     "hanzi": "灯",
-    "zuci": "灯光"
+    "zuci": "灯光",
+    "liju": "教室里的灯光很明亮。"
   },
   {
     "id": "d-eng-3",
@@ -2122,7 +2333,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "děng",
     "hanzi": "等",
-    "zuci": "等待"
+    "zuci": "等待",
+    "liju": "他在车站等待公交车。"
   },
   {
     "id": "d-eng-4",
@@ -2132,7 +2344,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dèng",
     "hanzi": "邓",
-    "zuci": "邓氏"
+    "zuci": "邓氏",
+    "liju": "邓氏家族在当地很有名。"
   },
   {
     "id": "d-i-1",
@@ -2142,7 +2355,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dī",
     "hanzi": "低",
-    "zuci": "低头"
+    "zuci": "低头",
+    "liju": "他低头认真看书。"
   },
   {
     "id": "d-i-2",
@@ -2152,7 +2366,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "dí",
     "hanzi": "敌",
-    "zuci": "敌人"
+    "zuci": "敌人",
+    "liju": "战士们勇敢地打击敌人。"
   },
   {
     "id": "d-i-3",
@@ -2162,7 +2377,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǐ",
     "hanzi": "底",
-    "zuci": "底下"
+    "zuci": "底下",
+    "liju": "桌子底下有一只猫。"
   },
   {
     "id": "d-i-4",
@@ -2172,7 +2388,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dì",
     "hanzi": "地",
-    "zuci": "大地"
+    "zuci": "大地",
+    "liju": "春天来了，大地回暖。"
   },
   {
     "id": "d-ia-3",
@@ -2182,7 +2399,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "diǎ",
     "hanzi": "嗲",
-    "zuci": "嗲声"
+    "zuci": "嗲声",
+    "liju": "她说话总是嗲声嗲气。"
   },
   {
     "id": "d-ie-1",
@@ -2192,7 +2410,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "diē",
     "hanzi": "爹",
-    "zuci": "爹娘"
+    "zuci": "爹娘",
+    "liju": "他的爹娘都在农村。"
   },
   {
     "id": "d-ie-2",
@@ -2202,7 +2421,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "dié",
     "hanzi": "叠",
-    "zuci": "重叠"
+    "zuci": "重叠",
+    "liju": "两张纸重叠在一起了。"
   },
   {
     "id": "d-iao-1",
@@ -2212,7 +2432,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "diāo",
     "hanzi": "叼",
-    "zuci": "叼走"
+    "zuci": "叼走",
+    "liju": "狗叼走了地上的骨头。"
   },
   {
     "id": "d-iao-4",
@@ -2222,7 +2443,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "diào",
     "hanzi": "吊",
-    "zuci": "吊灯"
+    "zuci": "吊灯",
+    "liju": "客厅里挂着一盏吊灯。"
   },
   {
     "id": "d-ian-1",
@@ -2232,7 +2454,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "diān",
     "hanzi": "颠",
-    "zuci": "颠倒"
+    "zuci": "颠倒",
+    "liju": "他说话颠三倒四的。"
   },
   {
     "id": "d-ian-3",
@@ -2242,7 +2465,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "diǎn",
     "hanzi": "点",
-    "zuci": "一点"
+    "zuci": "一点",
+    "liju": "我只吃了一点点饭。"
   },
   {
     "id": "d-ian-4",
@@ -2252,7 +2476,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "diàn",
     "hanzi": "电",
-    "zuci": "电视"
+    "zuci": "电视",
+    "liju": "晚上全家一起看电视。"
   },
   {
     "id": "d-ing-1",
@@ -2262,7 +2487,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dīng",
     "hanzi": "丁",
-    "zuci": "园丁"
+    "zuci": "园丁",
+    "liju": "园丁在花园里浇水。"
   },
   {
     "id": "d-ing-3",
@@ -2272,7 +2498,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǐng",
     "hanzi": "顶",
-    "zuci": "屋顶"
+    "zuci": "屋顶",
+    "liju": "屋顶上有一只小鸟。"
   },
   {
     "id": "d-ing-4",
@@ -2282,7 +2509,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dìng",
     "hanzi": "定",
-    "zuci": "一定"
+    "zuci": "一定",
+    "liju": "我一定会完成任务的。"
   },
   {
     "id": "d-u-1",
@@ -2292,7 +2520,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dū",
     "hanzi": "都",
-    "zuci": "首都"
+    "zuci": "首都",
+    "liju": "北京是中国的首都。"
   },
   {
     "id": "d-u-2",
@@ -2302,7 +2531,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "dú",
     "hanzi": "读",
-    "zuci": "读书"
+    "zuci": "读书",
+    "liju": "她喜欢在图书馆读书。"
   },
   {
     "id": "d-u-3",
@@ -2312,7 +2542,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "dǔ",
     "hanzi": "堵",
-    "zuci": "堵车"
+    "zuci": "堵车",
+    "liju": "早上八点经常堵车。"
   },
   {
     "id": "d-u-4",
@@ -2322,7 +2553,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dù",
     "hanzi": "度",
-    "zuci": "温度"
+    "zuci": "温度",
+    "liju": "今天温度很高，很热。"
   },
   {
     "id": "d-uo-1",
@@ -2332,7 +2564,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "duō",
     "hanzi": "多",
-    "zuci": "多少"
+    "zuci": "多少",
+    "liju": "这道题你做了多少遍？"
   },
   {
     "id": "d-uo-2",
@@ -2342,7 +2575,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "duó",
     "hanzi": "夺",
-    "zuci": "夺取"
+    "zuci": "夺取",
+    "liju": "我们要努力夺取冠军。"
   },
   {
     "id": "d-uo-3",
@@ -2352,7 +2586,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "duǒ",
     "hanzi": "躲",
-    "zuci": "躲避"
+    "zuci": "躲避",
+    "liju": "他躲在门后不出来。"
   },
   {
     "id": "d-uo-4",
@@ -2362,7 +2597,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "duò",
     "hanzi": "剁",
-    "zuci": "剁碎"
+    "zuci": "剁碎",
+    "liju": "妈妈把肉剁碎了包饺子。"
   },
   {
     "id": "d-ui-1",
@@ -2372,7 +2608,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "duī",
     "hanzi": "堆",
-    "zuci": "堆积"
+    "zuci": "堆积",
+    "liju": "地上堆积了很多落叶。"
   },
   {
     "id": "d-ui-4",
@@ -2382,7 +2619,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "duì",
     "hanzi": "对",
-    "zuci": "对错"
+    "zuci": "对错",
+    "liju": "要分清对错才行。"
   },
   {
     "id": "d-uan-1",
@@ -2392,7 +2630,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "duān",
     "hanzi": "端",
-    "zuci": "端正"
+    "zuci": "端正",
+    "liju": "写字时要坐姿端正。"
   },
   {
     "id": "d-uan-3",
@@ -2402,7 +2641,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "duǎn",
     "hanzi": "短",
-    "zuci": "长短"
+    "zuci": "长短",
+    "liju": "这两条绳子长短不同。"
   },
   {
     "id": "d-uan-4",
@@ -2412,7 +2652,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "duàn",
     "hanzi": "段",
-    "zuci": "段落"
+    "zuci": "段落",
+    "liju": "这篇文章有三段。"
   },
   {
     "id": "d-un-1",
@@ -2422,7 +2663,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "dūn",
     "hanzi": "蹲",
-    "zuci": "蹲下"
+    "zuci": "蹲下",
+    "liju": "他蹲下系鞋带。"
   },
   {
     "id": "d-un-4",
@@ -2432,7 +2674,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "dùn",
     "hanzi": "顿",
-    "zuci": "顿时"
+    "zuci": "顿时",
+    "liju": "顿时天空下起大雨。"
   },
   {
     "id": "t-a-1",
@@ -2442,7 +2685,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tā",
     "hanzi": "他",
-    "zuci": "他们"
+    "zuci": "他们",
+    "liju": "他们是我的好朋友。"
   },
   {
     "id": "t-a-3",
@@ -2452,7 +2696,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǎ",
     "hanzi": "塔",
-    "zuci": "宝塔"
+    "zuci": "宝塔",
+    "liju": "山顶上有一座古塔。"
   },
   {
     "id": "t-a-4",
@@ -2462,7 +2707,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tà",
     "hanzi": "踏",
-    "zuci": "踏步"
+    "zuci": "踏步",
+    "liju": "同学们在操场踏步走。"
   },
   {
     "id": "t-e-4",
@@ -2472,7 +2718,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tè",
     "hanzi": "特",
-    "zuci": "特别"
+    "zuci": "特别",
+    "liju": "这个礼物很特别。"
   },
   {
     "id": "t-ai-1",
@@ -2482,7 +2729,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tāi",
     "hanzi": "胎",
-    "zuci": "胎儿"
+    "zuci": "胎儿",
+    "liju": "孕妇要定期检查胎儿。"
   },
   {
     "id": "t-ai-2",
@@ -2492,7 +2740,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tái",
     "hanzi": "台",
-    "zuci": "台风"
+    "zuci": "台风",
+    "liju": "台风带来了大暴雨。"
   },
   {
     "id": "t-ai-4",
@@ -2502,7 +2751,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tài",
     "hanzi": "太",
-    "zuci": "太阳"
+    "zuci": "太阳",
+    "liju": "太阳从东方升起来。"
   },
   {
     "id": "t-ao-1",
@@ -2512,7 +2762,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tāo",
     "hanzi": "涛",
-    "zuci": "海涛"
+    "zuci": "海涛",
+    "liju": "海涛拍打着岩石。"
   },
   {
     "id": "t-ao-2",
@@ -2522,7 +2773,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "táo",
     "hanzi": "逃",
-    "zuci": "逃跑"
+    "zuci": "逃跑",
+    "liju": "小偷逃跑时被抓了。"
   },
   {
     "id": "t-ao-3",
@@ -2532,7 +2784,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǎo",
     "hanzi": "讨",
-    "zuci": "讨厌"
+    "zuci": "讨厌",
+    "liju": "我最讨厌下雨天。"
   },
   {
     "id": "t-ao-4",
@@ -2542,7 +2795,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tào",
     "hanzi": "套",
-    "zuci": "手套"
+    "zuci": "手套",
+    "liju": "冬天出门要戴手套。"
   },
   {
     "id": "t-ou-2",
@@ -2552,7 +2806,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tóu",
     "hanzi": "头",
-    "zuci": "头发"
+    "zuci": "头发",
+    "liju": "她的头发又黑又亮。"
   },
   {
     "id": "t-ou-4",
@@ -2562,7 +2817,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tòu",
     "hanzi": "透",
-    "zuci": "透明"
+    "zuci": "透明",
+    "liju": "玻璃是透明的。"
   },
   {
     "id": "t-an-1",
@@ -2572,7 +2828,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tān",
     "hanzi": "滩",
-    "zuci": "沙滩"
+    "zuci": "沙滩",
+    "liju": "小朋友在沙滩上玩耍。"
   },
   {
     "id": "t-an-2",
@@ -2582,7 +2839,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tán",
     "hanzi": "谈",
-    "zuci": "谈话"
+    "zuci": "谈话",
+    "liju": "老师找小明谈话了。"
   },
   {
     "id": "t-an-3",
@@ -2592,7 +2850,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǎn",
     "hanzi": "坦",
-    "zuci": "坦白"
+    "zuci": "坦白",
+    "liju": "他坦白了所有错误。"
   },
   {
     "id": "t-an-4",
@@ -2602,7 +2861,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tàn",
     "hanzi": "叹",
-    "zuci": "叹气"
+    "zuci": "叹气",
+    "liju": "遇到困难不要叹气。"
   },
   {
     "id": "t-ang-1",
@@ -2612,7 +2872,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tāng",
     "hanzi": "汤",
-    "zuci": "喝汤"
+    "zuci": "喝汤",
+    "liju": "吃饭前先喝碗汤。"
   },
   {
     "id": "t-ang-2",
@@ -2622,7 +2883,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "táng",
     "hanzi": "糖",
-    "zuci": "糖果"
+    "zuci": "糖果",
+    "liju": "小孩子都喜欢吃糖。"
   },
   {
     "id": "t-ang-3",
@@ -2632,7 +2894,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǎng",
     "hanzi": "躺",
-    "zuci": "躺下"
+    "zuci": "躺下",
+    "liju": "累了就躺下休息。"
   },
   {
     "id": "t-ang-4",
@@ -2642,7 +2905,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tàng",
     "hanzi": "烫",
-    "zuci": "烫手"
+    "zuci": "烫手",
+    "liju": "刚烧开的水很烫手。"
   },
   {
     "id": "t-eng-2",
@@ -2652,7 +2916,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "téng",
     "hanzi": "疼",
-    "zuci": "疼痛"
+    "zuci": "疼痛",
+    "liju": "他的伤口还在疼痛。"
   },
   {
     "id": "t-eng-4",
@@ -2662,7 +2927,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tèng",
     "hanzi": "滕",
-    "zuci": "滕州"
+    "zuci": "滕州",
+    "liju": "我的老家在山东滕州。"
   },
   {
     "id": "t-i-1",
@@ -2672,7 +2938,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tī",
     "hanzi": "梯",
-    "zuci": "楼梯"
+    "zuci": "楼梯",
+    "liju": "上下楼梯要小心。"
   },
   {
     "id": "t-i-2",
@@ -2682,7 +2949,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tí",
     "hanzi": "提",
-    "zuci": "提高"
+    "zuci": "提高",
+    "liju": "我们要提高写作水平。"
   },
   {
     "id": "t-i-3",
@@ -2692,7 +2960,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǐ",
     "hanzi": "体",
-    "zuci": "身体"
+    "zuci": "身体",
+    "liju": "每天锻炼身体好。"
   },
   {
     "id": "t-i-4",
@@ -2702,7 +2971,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tì",
     "hanzi": "替",
-    "zuci": "代替"
+    "zuci": "代替",
+    "liju": "他用铅笔代替钢笔。"
   },
   {
     "id": "t-ie-1",
@@ -2712,7 +2982,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tiē",
     "hanzi": "贴",
-    "zuci": "粘贴"
+    "zuci": "粘贴",
+    "liju": "把通知粘贴在墙上。"
   },
   {
     "id": "t-ie-3",
@@ -2722,7 +2993,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tiě",
     "hanzi": "铁",
-    "zuci": "钢铁"
+    "zuci": "钢铁",
+    "liju": "钢铁可以用来建桥。"
   },
   {
     "id": "t-ie-4",
@@ -2732,7 +3004,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tiè",
     "hanzi": "帖",
-    "zuci": "字帖"
+    "zuci": "字帖",
+    "liju": "他每天临摹字帖。"
   },
   {
     "id": "t-iao-1",
@@ -2742,7 +3015,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tiāo",
     "hanzi": "挑",
-    "zuci": "挑水"
+    "zuci": "挑水",
+    "liju": "爷爷年轻时挑水上山。"
   },
   {
     "id": "t-iao-2",
@@ -2752,7 +3026,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tiáo",
     "hanzi": "条",
-    "zuci": "条件"
+    "zuci": "条件",
+    "liju": "这两个条件都很重要。"
   },
   {
     "id": "t-iao-3",
@@ -2762,7 +3037,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tiǎo",
     "hanzi": "挑",
-    "zuci": "挑战"
+    "zuci": "挑战",
+    "liju": "他勇敢地挑战新任务。"
   },
   {
     "id": "t-iao-4",
@@ -2772,7 +3048,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tiào",
     "hanzi": "跳",
-    "zuci": "跳高"
+    "zuci": "跳高",
+    "liju": "跳高是他的强项。"
   },
   {
     "id": "t-ian-1",
@@ -2782,7 +3059,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tiān",
     "hanzi": "天",
-    "zuci": "天空"
+    "zuci": "天空",
+    "liju": "天空飘着朵朵白云。"
   },
   {
     "id": "t-ian-2",
@@ -2792,7 +3070,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tián",
     "hanzi": "田",
-    "zuci": "田地"
+    "zuci": "田地",
+    "liju": "农民在田地里干活。"
   },
   {
     "id": "t-ian-3",
@@ -2802,7 +3081,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tiǎn",
     "hanzi": "舔",
-    "zuci": "舔一舔"
+    "zuci": "舔一舔",
+    "liju": "小狗舔一舔自己的爪子。"
   },
   {
     "id": "t-ing-1",
@@ -2812,7 +3092,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tīng",
     "hanzi": "听",
-    "zuci": "听见"
+    "zuci": "听见",
+    "liju": "我听见有人在叫我。"
   },
   {
     "id": "t-ing-2",
@@ -2822,7 +3103,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tíng",
     "hanzi": "停",
-    "zuci": "停止"
+    "zuci": "停止",
+    "liju": "雨终于停了。"
   },
   {
     "id": "t-ing-3",
@@ -2832,7 +3114,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǐng",
     "hanzi": "挺",
-    "zuci": "挺立"
+    "zuci": "挺立",
+    "liju": "松树在风中挺立。"
   },
   {
     "id": "t-ing-4",
@@ -2842,7 +3125,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tìng",
     "hanzi": "梃",
-    "zuci": "梃子"
+    "zuci": "梃子",
+    "liju": "他用梃子敲打地面。"
   },
   {
     "id": "t-u-1",
@@ -2852,7 +3136,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tū",
     "hanzi": "突",
-    "zuci": "突然"
+    "zuci": "突然",
+    "liju": "外面突然下起大雨。"
   },
   {
     "id": "t-u-2",
@@ -2862,7 +3147,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tú",
     "hanzi": "图",
-    "zuci": "图片"
+    "zuci": "图片",
+    "liju": "书里的图片很漂亮。"
   },
   {
     "id": "t-u-3",
@@ -2872,7 +3158,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tǔ",
     "hanzi": "土",
-    "zuci": "土地"
+    "zuci": "土地",
+    "liju": "这块土地很肥沃。"
   },
   {
     "id": "t-u-4",
@@ -2882,7 +3169,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tù",
     "hanzi": "兔",
-    "zuci": "兔子"
+    "zuci": "兔子",
+    "liju": "兔子在草地上吃草。"
   },
   {
     "id": "t-uo-1",
@@ -2892,7 +3180,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tuō",
     "hanzi": "拖",
-    "zuci": "拖拉"
+    "zuci": "拖拉",
+    "liju": "不要拖拉，快行动。"
   },
   {
     "id": "t-uo-2",
@@ -2902,7 +3191,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tuó",
     "hanzi": "驼",
-    "zuci": "驼背"
+    "zuci": "驼背",
+    "liju": "老爷爷有点驼背。"
   },
   {
     "id": "t-uo-3",
@@ -2912,7 +3202,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tuǒ",
     "hanzi": "妥",
-    "zuci": "妥当"
+    "zuci": "妥当",
+    "liju": "事情已经安排妥当。"
   },
   {
     "id": "t-uo-4",
@@ -2922,7 +3213,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tuò",
     "hanzi": "拓",
-    "zuci": "开拓"
+    "zuci": "开拓",
+    "liju": "他们要开拓新市场。"
   },
   {
     "id": "t-ui-1",
@@ -2932,7 +3224,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tuī",
     "hanzi": "推",
-    "zuci": "推动"
+    "zuci": "推动",
+    "liju": "大家推动了大石头。"
   },
   {
     "id": "t-ui-2",
@@ -2942,7 +3235,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tuí",
     "hanzi": "颓",
-    "zuci": "颓废"
+    "zuci": "颓废",
+    "liju": "不要整天颓废不振。"
   },
   {
     "id": "t-ui-3",
@@ -2952,7 +3246,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "tuǐ",
     "hanzi": "腿",
-    "zuci": "大腿"
+    "zuci": "大腿",
+    "liju": "他的大腿受伤了。"
   },
   {
     "id": "t-ui-4",
@@ -2962,7 +3257,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tuì",
     "hanzi": "退",
-    "zuci": "退步"
+    "zuci": "退步",
+    "liju": "这学期他的成绩退步了。"
   },
   {
     "id": "t-uan-2",
@@ -2972,7 +3268,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tuán",
     "hanzi": "团",
-    "zuci": "团结"
+    "zuci": "团结",
+    "liju": "团结就是力量。"
   },
   {
     "id": "t-un-1",
@@ -2982,7 +3279,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "tūn",
     "hanzi": "吞",
-    "zuci": "吞下"
+    "zuci": "吞下",
+    "liju": "他一口吞下药丸。"
   },
   {
     "id": "t-un-2",
@@ -2992,7 +3290,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "tún",
     "hanzi": "屯",
-    "zuci": "屯子"
+    "zuci": "屯子",
+    "liju": "这个屯子不大。"
   },
   {
     "id": "t-un-4",
@@ -3002,7 +3301,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "tùn",
     "hanzi": "褪",
-    "zuci": "褪色"
+    "zuci": "褪色",
+    "liju": "这件衣服洗了几次褪色了。"
   },
   {
     "id": "n-a-2",
@@ -3012,7 +3312,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ná",
     "hanzi": "拿",
-    "zuci": "拿来"
+    "zuci": "拿来",
+    "liju": "请把书拿来给我看。"
   },
   {
     "id": "n-a-3",
@@ -3022,7 +3323,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǎ",
     "hanzi": "哪",
-    "zuci": "哪里"
+    "zuci": "哪里",
+    "liju": "你知道哪里有好吃的？"
   },
   {
     "id": "n-a-4",
@@ -3032,7 +3334,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nà",
     "hanzi": "那",
-    "zuci": "那里"
+    "zuci": "那里",
+    "liju": "那里就是我们学校。"
   },
   {
     "id": "n-e-4",
@@ -3042,7 +3345,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nè",
     "hanzi": "讷",
-    "zuci": "木讷"
+    "zuci": "木讷",
+    "liju": "他性格比较木讷。"
   },
   {
     "id": "n-ai-3",
@@ -3052,7 +3356,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǎi",
     "hanzi": "奶",
-    "zuci": "牛奶"
+    "zuci": "牛奶",
+    "liju": "每天早上喝一杯牛奶。"
   },
   {
     "id": "n-ai-4",
@@ -3062,7 +3367,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nài",
     "hanzi": "耐",
-    "zuci": "耐心"
+    "zuci": "耐心",
+    "liju": "做事情要有耐心。"
   },
   {
     "id": "n-ei-4",
@@ -3072,7 +3378,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nèi",
     "hanzi": "内",
-    "zuci": "内心"
+    "zuci": "内心",
+    "liju": "她的内心很善良。"
   },
   {
     "id": "n-ao-3",
@@ -3082,7 +3389,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǎo",
     "hanzi": "脑",
-    "zuci": "大脑"
+    "zuci": "大脑",
+    "liju": "大脑需要经常思考。"
   },
   {
     "id": "n-ao-4",
@@ -3092,7 +3400,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nào",
     "hanzi": "闹",
-    "zuci": "热闹"
+    "zuci": "热闹",
+    "liju": "过节时街上很热闹。"
   },
   {
     "id": "n-ou-4",
@@ -3102,7 +3411,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nòu",
     "hanzi": "耨",
-    "zuci": "耨耕"
+    "zuci": "耨耕",
+    "liju": "古代农民用耨耕除草。"
   },
   {
     "id": "n-an-2",
@@ -3112,7 +3422,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "nán",
     "hanzi": "男",
-    "zuci": "男生"
+    "zuci": "男生",
+    "liju": "我们班有二十个男生。"
   },
   {
     "id": "n-an-4",
@@ -3122,7 +3433,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nàn",
     "hanzi": "难",
-    "zuci": "灾难"
+    "zuci": "灾难",
+    "liju": "地震是一场大灾难。"
   },
   {
     "id": "n-ang-2",
@@ -3132,7 +3444,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "náng",
     "hanzi": "囊",
-    "zuci": "胶囊"
+    "zuci": "胶囊",
+    "liju": "这种药是胶囊装的。"
   },
   {
     "id": "n-eng-2",
@@ -3142,7 +3455,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "néng",
     "hanzi": "能",
-    "zuci": "能力"
+    "zuci": "能力",
+    "liju": "他的学习能力很强。"
   },
   {
     "id": "n-i-2",
@@ -3152,7 +3466,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ní",
     "hanzi": "泥",
-    "zuci": "泥土"
+    "zuci": "泥土",
+    "liju": "雨后泥土很湿润。"
   },
   {
     "id": "n-i-3",
@@ -3162,7 +3477,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǐ",
     "hanzi": "你",
-    "zuci": "你好"
+    "zuci": "你好",
+    "liju": "你好，很高兴认识你。"
   },
   {
     "id": "n-i-4",
@@ -3172,7 +3488,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nì",
     "hanzi": "腻",
-    "zuci": "油腻"
+    "zuci": "油腻",
+    "liju": "不要吃太多油腻食物。"
   },
   {
     "id": "n-ian-2",
@@ -3182,7 +3499,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "nián",
     "hanzi": "年",
-    "zuci": "新年"
+    "zuci": "新年",
+    "liju": "新年到了，大家快乐。"
   },
   {
     "id": "n-ian-3",
@@ -3192,7 +3510,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "niǎn",
     "hanzi": "碾",
-    "zuci": "碾压"
+    "zuci": "碾压",
+    "liju": "车轮碾压了路面。"
   },
   {
     "id": "n-ian-4",
@@ -3202,7 +3521,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "niàn",
     "hanzi": "念",
-    "zuci": "想念"
+    "zuci": "想念",
+    "liju": "我很想念远方的亲人。"
   },
   {
     "id": "n-iang-2",
@@ -3212,7 +3532,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "niáng",
     "hanzi": "娘",
-    "zuci": "姑娘"
+    "zuci": "姑娘",
+    "liju": "这位姑娘很漂亮。"
   },
   {
     "id": "n-iang-4",
@@ -3222,7 +3543,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "niàng",
     "hanzi": "酿",
-    "zuci": "酿酒"
+    "zuci": "酿酒",
+    "liju": "爷爷自己酿酒喝。"
   },
   {
     "id": "n-iao-3",
@@ -3232,7 +3554,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "niǎo",
     "hanzi": "鸟",
-    "zuci": "小鸟"
+    "zuci": "小鸟",
+    "liju": "小鸟在树上唱歌。"
   },
   {
     "id": "n-iao-4",
@@ -3242,7 +3565,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "niào",
     "hanzi": "尿",
-    "zuci": "小便"
+    "zuci": "小便",
+    "liju": "宝宝要小便了。"
   },
   {
     "id": "n-ie-4",
@@ -3252,7 +3576,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "niè",
     "hanzi": "捏",
-    "zuci": "捏住"
+    "zuci": "捏住",
+    "liju": "他捏住鼻子潜水。"
   },
   {
     "id": "n-in-2",
@@ -3262,7 +3587,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "nín",
     "hanzi": "您",
-    "zuci": "您好"
+    "zuci": "您好",
+    "liju": "您好，请问您找谁？"
   },
   {
     "id": "n-ing-2",
@@ -3272,7 +3598,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "níng",
     "hanzi": "宁",
-    "zuci": "宁静"
+    "zuci": "宁静",
+    "liju": "夜晚的村子很宁静。"
   },
   {
     "id": "n-ing-3",
@@ -3282,7 +3609,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǐng",
     "hanzi": "拧",
-    "zuci": "拧开"
+    "zuci": "拧开",
+    "liju": "把瓶盖拧开喝一口。"
   },
   {
     "id": "n-ing-4",
@@ -3292,7 +3620,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nìng",
     "hanzi": "宁",
-    "zuci": "宁可"
+    "zuci": "宁可",
+    "liju": "他宁可走路也不坐车。"
   },
   {
     "id": "n-u-2",
@@ -3302,7 +3631,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "nú",
     "hanzi": "奴",
-    "zuci": "奴隶"
+    "zuci": "奴隶",
+    "liju": "奴隶制早就废除了。"
   },
   {
     "id": "n-u-3",
@@ -3312,7 +3642,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǔ",
     "hanzi": "努",
-    "zuci": "努力"
+    "zuci": "努力",
+    "liju": "我们要努力学习。"
   },
   {
     "id": "n-u-4",
@@ -3322,7 +3653,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nù",
     "hanzi": "怒",
-    "zuci": "愤怒"
+    "zuci": "愤怒",
+    "liju": "他愤怒地摔了杯子。"
   },
   {
     "id": "n-uo-2",
@@ -3332,7 +3664,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "nuó",
     "hanzi": "挪",
-    "zuci": "挪动"
+    "zuci": "挪动",
+    "liju": "把椅子挪动一下。"
   },
   {
     "id": "n-uo-4",
@@ -3342,7 +3675,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nuò",
     "hanzi": "诺",
-    "zuci": "诺言"
+    "zuci": "诺言",
+    "liju": "他信守了自己的诺言。"
   },
   {
     "id": "n-uan-3",
@@ -3352,7 +3686,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nuǎn",
     "hanzi": "暖",
-    "zuci": "温暖"
+    "zuci": "温暖",
+    "liju": "阳光照在身上很温暖。"
   },
   {
     "id": "n-ü-3",
@@ -3362,7 +3697,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "nǚ",
     "hanzi": "女",
-    "zuci": "女生"
+    "zuci": "女生",
+    "liju": "我们班女生比男生多。"
   },
   {
     "id": "n-üe-4",
@@ -3372,7 +3708,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "nüè",
     "hanzi": "虐",
-    "zuci": "虐待"
+    "zuci": "虐待",
+    "liju": "不能虐待小动物。"
   },
   {
     "id": "l-a-1",
@@ -3382,7 +3719,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "lā",
     "hanzi": "拉",
-    "zuci": "拉手"
+    "zuci": "拉手",
+    "liju": "两个小朋友拉手过马路。"
   },
   {
     "id": "l-a-2",
@@ -3392,7 +3730,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lá",
     "hanzi": "旯",
-    "zuci": "旮旯"
+    "zuci": "旮旯",
+    "liju": "墙角旮旯有只蜘蛛。"
   },
   {
     "id": "l-a-3",
@@ -3402,7 +3741,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǎ",
     "hanzi": "喇",
-    "zuci": "喇叭"
+    "zuci": "喇叭",
+    "liju": "货车按喇叭提醒行人。"
   },
   {
     "id": "l-a-4",
@@ -3412,7 +3752,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "là",
     "hanzi": "辣",
-    "zuci": "辣椒"
+    "zuci": "辣椒",
+    "liju": "四川人爱吃辣椒。"
   },
   {
     "id": "l-e-4",
@@ -3422,7 +3763,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lè",
     "hanzi": "乐",
-    "zuci": "快乐"
+    "zuci": "快乐",
+    "liju": "祝你每天快乐。"
   },
   {
     "id": "l-ai-2",
@@ -3432,7 +3774,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lái",
     "hanzi": "来",
-    "zuci": "来到"
+    "zuci": "来到",
+    "liju": "春天来到了我们身边。"
   },
   {
     "id": "l-ai-4",
@@ -3442,7 +3785,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lài",
     "hanzi": "赖",
-    "zuci": "无赖"
+    "zuci": "无赖",
+    "liju": "他经常耍无赖。"
   },
   {
     "id": "l-ei-2",
@@ -3452,7 +3796,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "léi",
     "hanzi": "雷",
-    "zuci": "雷声"
+    "zuci": "雷声",
+    "liju": "雷声过后下起了雨。"
   },
   {
     "id": "l-ei-3",
@@ -3462,7 +3807,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lěi",
     "hanzi": "垒",
-    "zuci": "堡垒"
+    "zuci": "堡垒",
+    "liju": "这座堡垒很坚固。"
   },
   {
     "id": "l-ei-4",
@@ -3472,7 +3818,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lèi",
     "hanzi": "类",
-    "zuci": "分类"
+    "zuci": "分类",
+    "liju": "学习垃圾分类知识。"
   },
   {
     "id": "l-ao-3",
@@ -3482,7 +3829,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǎo",
     "hanzi": "老",
-    "zuci": "老人"
+    "zuci": "老人",
+    "liju": "老人过马路要扶一下。"
   },
   {
     "id": "l-ao-4",
@@ -3492,7 +3840,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lào",
     "hanzi": "烙",
-    "zuci": "烙印"
+    "zuci": "烙印",
+    "liju": "那个烙印还在衣服上。"
   },
   {
     "id": "l-ou-2",
@@ -3502,7 +3851,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lóu",
     "hanzi": "楼",
-    "zuci": "楼房"
+    "zuci": "楼房",
+    "liju": "城里到处是高楼。"
   },
   {
     "id": "l-ou-3",
@@ -3512,7 +3862,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǒu",
     "hanzi": "搂",
-    "zuci": "搂抱"
+    "zuci": "搂抱",
+    "liju": "妈妈搂抱着宝宝。"
   },
   {
     "id": "l-ou-4",
@@ -3522,7 +3873,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lòu",
     "hanzi": "漏",
-    "zuci": "漏水"
+    "zuci": "漏水",
+    "liju": "水龙头漏水了。"
   },
   {
     "id": "l-an-2",
@@ -3532,7 +3884,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lán",
     "hanzi": "兰",
-    "zuci": "兰花"
+    "zuci": "兰花",
+    "liju": "兰花散发淡淡香气。"
   },
   {
     "id": "l-an-3",
@@ -3542,7 +3895,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǎn",
     "hanzi": "懒",
-    "zuci": "懒惰"
+    "zuci": "懒惰",
+    "liju": "懒惰的人不会成功。"
   },
   {
     "id": "l-an-4",
@@ -3552,7 +3906,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "làn",
     "hanzi": "烂",
-    "zuci": "烂掉"
+    "zuci": "烂掉",
+    "liju": "水果放久了会烂掉。"
   },
   {
     "id": "l-ang-2",
@@ -3562,7 +3917,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "láng",
     "hanzi": "狼",
-    "zuci": "大灰狼"
+    "zuci": "大灰狼",
+    "liju": "大灰狼想吃小兔子。"
   },
   {
     "id": "l-ang-3",
@@ -3572,7 +3928,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǎng",
     "hanzi": "朗",
-    "zuci": "朗读"
+    "zuci": "朗读",
+    "liju": "早读课我们朗读课文。"
   },
   {
     "id": "l-ang-4",
@@ -3582,7 +3939,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "làng",
     "hanzi": "浪",
-    "zuci": "浪花"
+    "zuci": "浪花",
+    "liju": "海水拍打着浪花。"
   },
   {
     "id": "l-eng-3",
@@ -3592,7 +3950,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lěng",
     "hanzi": "冷",
-    "zuci": "寒冷"
+    "zuci": "寒冷",
+    "liju": "冬天非常寒冷。"
   },
   {
     "id": "l-eng-4",
@@ -3602,7 +3961,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lèng",
     "hanzi": "愣",
-    "zuci": "发愣"
+    "zuci": "发愣",
+    "liju": "他听到消息后发愣。"
   },
   {
     "id": "l-i-2",
@@ -3612,7 +3972,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lí",
     "hanzi": "梨",
-    "zuci": "梨子"
+    "zuci": "梨子",
+    "liju": "梨子很甜又解渴。"
   },
   {
     "id": "l-i-3",
@@ -3622,7 +3983,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǐ",
     "hanzi": "里",
-    "zuci": "里面"
+    "zuci": "里面",
+    "liju": "抽屉里面有什么？"
   },
   {
     "id": "l-i-4",
@@ -3632,7 +3994,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lì",
     "hanzi": "力",
-    "zuci": "力气"
+    "zuci": "力气",
+    "liju": "他力气很大能搬动石头。"
   },
   {
     "id": "l-ia-3",
@@ -3642,7 +4005,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "liǎ",
     "hanzi": "俩",
-    "zuci": "俩人"
+    "zuci": "俩人",
+    "liju": "他们俩人一起去上学。"
   },
   {
     "id": "l-ie-4",
@@ -3652,7 +4016,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "liè",
     "hanzi": "列",
-    "zuci": "排列"
+    "zuci": "排列",
+    "liju": "大家排队排列整齐。"
   },
   {
     "id": "l-iao-2",
@@ -3662,7 +4027,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "liáo",
     "hanzi": "聊",
-    "zuci": "聊天"
+    "zuci": "聊天",
+    "liju": "我和朋友在微信聊天。"
   },
   {
     "id": "l-iao-3",
@@ -3672,7 +4038,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "liǎo",
     "hanzi": "了",
-    "zuci": "了解"
+    "zuci": "了解",
+    "liju": "我们需要了解情况。"
   },
   {
     "id": "l-iao-4",
@@ -3682,7 +4049,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "liào",
     "hanzi": "料",
-    "zuci": "材料"
+    "zuci": "材料",
+    "liju": "做手工需要很多材料。"
   },
   {
     "id": "l-iu-2",
@@ -3692,7 +4060,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "liú",
     "hanzi": "流",
-    "zuci": "流水"
+    "zuci": "流水",
+    "liju": "溪水哗哗地流淌。"
   },
   {
     "id": "l-iu-3",
@@ -3702,7 +4071,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "liǔ",
     "hanzi": "柳",
-    "zuci": "柳树"
+    "zuci": "柳树",
+    "liju": "河边种了很多柳树。"
   },
   {
     "id": "l-iu-4",
@@ -3712,7 +4082,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "liù",
     "hanzi": "六",
-    "zuci": "六个"
+    "zuci": "六个",
+    "liju": "盘子里有六个苹果。"
   },
   {
     "id": "l-ian-2",
@@ -3722,7 +4093,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lián",
     "hanzi": "连",
-    "zuci": "连续"
+    "zuci": "连续",
+    "liju": "连续几天都在下雨。"
   },
   {
     "id": "l-ian-3",
@@ -3732,7 +4104,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "liǎn",
     "hanzi": "脸",
-    "zuci": "脸蛋"
+    "zuci": "脸蛋",
+    "liju": "她的脸蛋红红的。"
   },
   {
     "id": "l-ian-4",
@@ -3742,7 +4115,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "liàn",
     "hanzi": "练",
-    "zuci": "练习"
+    "zuci": "练习",
+    "liju": "每天练习钢琴一小时。"
   },
   {
     "id": "l-in-2",
@@ -3752,7 +4126,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lín",
     "hanzi": "林",
-    "zuci": "树林"
+    "zuci": "树林",
+    "liju": "树林里有很多鸟儿。"
   },
   {
     "id": "l-in-3",
@@ -3762,7 +4137,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǐn",
     "hanzi": "凛",
-    "zuci": "凛冽"
+    "zuci": "凛冽",
+    "liju": "寒风吹得凛冽刺骨。"
   },
   {
     "id": "l-in-4",
@@ -3772,7 +4148,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lìn",
     "hanzi": "吝",
-    "zuci": "吝啬"
+    "zuci": "吝啬",
+    "liju": "对朋友不要吝啬。"
   },
   {
     "id": "l-iang-2",
@@ -3782,7 +4159,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "liáng",
     "hanzi": "良",
-    "zuci": "良好"
+    "zuci": "良好",
+    "liju": "他养成了良好的习惯。"
   },
   {
     "id": "l-iang-3",
@@ -3792,7 +4170,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "liǎng",
     "hanzi": "两",
-    "zuci": "两个"
+    "zuci": "两个",
+    "liju": "我有两个好朋友。"
   },
   {
     "id": "l-iang-4",
@@ -3802,7 +4181,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "liàng",
     "hanzi": "亮",
-    "zuci": "明亮"
+    "zuci": "明亮",
+    "liju": "教室很明亮干净。"
   },
   {
     "id": "l-ing-2",
@@ -3812,7 +4192,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "líng",
     "hanzi": "灵",
-    "zuci": "灵敏"
+    "zuci": "灵敏",
+    "liju": "猫的动作非常灵敏。"
   },
   {
     "id": "l-ing-3",
@@ -3822,7 +4203,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǐng",
     "hanzi": "领",
-    "zuci": "带领"
+    "zuci": "带领",
+    "liju": "老师带领我们做游戏。"
   },
   {
     "id": "l-ing-4",
@@ -3832,7 +4214,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lìng",
     "hanzi": "令",
-    "zuci": "命令"
+    "zuci": "命令",
+    "liju": "班长下达了集合命令。"
   },
   {
     "id": "l-u-2",
@@ -3842,7 +4225,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lú",
     "hanzi": "炉",
-    "zuci": "炉子"
+    "zuci": "炉子",
+    "liju": "炉子里火烧得很旺。"
   },
   {
     "id": "l-u-3",
@@ -3852,7 +4236,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǔ",
     "hanzi": "鲁",
-    "zuci": "鲁莽"
+    "zuci": "鲁莽",
+    "liju": "做事情不能鲁莽。"
   },
   {
     "id": "l-u-4",
@@ -3862,7 +4247,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lù",
     "hanzi": "路",
-    "zuci": "马路"
+    "zuci": "马路",
+    "liju": "过马路要注意安全。"
   },
   {
     "id": "l-uo-2",
@@ -3872,7 +4258,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "luó",
     "hanzi": "罗",
-    "zuci": "罗列"
+    "zuci": "罗列",
+    "liju": "他罗列了很多理由。"
   },
   {
     "id": "l-uo-3",
@@ -3882,7 +4269,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "luǒ",
     "hanzi": "裸",
-    "zuci": "裸露"
+    "zuci": "裸露",
+    "liju": "树根裸露在地面上。"
   },
   {
     "id": "l-uo-4",
@@ -3892,7 +4280,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "luò",
     "hanzi": "落",
-    "zuci": "落叶"
+    "zuci": "落叶",
+    "liju": "秋天树叶落了。"
   },
   {
     "id": "l-uan-4",
@@ -3902,7 +4291,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "luàn",
     "hanzi": "乱",
-    "zuci": "混乱"
+    "zuci": "混乱",
+    "liju": "考场秩序不乱。"
   },
   {
     "id": "l-un-2",
@@ -3912,7 +4302,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lún",
     "hanzi": "轮",
-    "zuci": "车轮"
+    "zuci": "车轮",
+    "liju": "车轮转得飞快。"
   },
   {
     "id": "l-un-4",
@@ -3922,7 +4313,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lùn",
     "hanzi": "论",
-    "zuci": "讨论"
+    "zuci": "讨论",
+    "liju": "同学们在讨论问题。"
   },
   {
     "id": "l-ü-2",
@@ -3932,7 +4324,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "lǘ",
     "hanzi": "驴",
-    "zuci": "毛驴"
+    "zuci": "毛驴",
+    "liju": "毛驴驮着货物上山。"
   },
   {
     "id": "l-ü-3",
@@ -3942,7 +4335,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "lǚ",
     "hanzi": "旅",
-    "zuci": "旅行"
+    "zuci": "旅行",
+    "liju": "寒假我们计划去旅行。"
   },
   {
     "id": "l-ü-4",
@@ -3952,7 +4346,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lǜ",
     "hanzi": "绿",
-    "zuci": "绿色"
+    "zuci": "绿色",
+    "liju": "春天的田野一片绿色。"
   },
   {
     "id": "l-üe-4",
@@ -3962,7 +4357,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "lüè",
     "hanzi": "略",
-    "zuci": "省略"
+    "zuci": "省略",
+    "liju": "老师让我们省略多余字。"
   },
   {
     "id": "g-a-1",
@@ -3972,7 +4368,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gā",
     "hanzi": "嘎",
-    "zuci": "嘎嘎"
+    "zuci": "嘎嘎",
+    "liju": "鸭子在水里嘎嘎叫。"
   },
   {
     "id": "g-e-2",
@@ -3982,7 +4379,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "gé",
     "hanzi": "格",
-    "zuci": "格子"
+    "zuci": "格子",
+    "liju": "他穿着格子衬衫去上学。"
   },
   {
     "id": "g-e-3",
@@ -3992,7 +4390,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gě",
     "hanzi": "葛",
-    "zuci": "葛根"
+    "zuci": "葛根",
+    "liju": "中医用葛根做药材。"
   },
   {
     "id": "g-e-4",
@@ -4002,7 +4401,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gè",
     "hanzi": "个",
-    "zuci": "一个"
+    "zuci": "一个",
+    "liju": "我有一个幸福的家庭。"
   },
   {
     "id": "g-ai-1",
@@ -4012,7 +4412,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gāi",
     "hanzi": "该",
-    "zuci": "应该"
+    "zuci": "应该",
+    "liju": "你应该按时完成作业。"
   },
   {
     "id": "g-ai-3",
@@ -4022,7 +4423,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǎi",
     "hanzi": "改",
-    "zuci": "改正"
+    "zuci": "改正",
+    "liju": "老师让他改正错误。"
   },
   {
     "id": "g-ai-4",
@@ -4032,7 +4434,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gài",
     "hanzi": "盖",
-    "zuci": "盖子"
+    "zuci": "盖子",
+    "liju": "锅的盖子掉地上了。"
   },
   {
     "id": "g-ei-3",
@@ -4042,7 +4445,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gěi",
     "hanzi": "给",
-    "zuci": "送给"
+    "zuci": "送给",
+    "liju": "妈妈送给我的生日礼物。"
   },
   {
     "id": "g-ao-1",
@@ -4052,7 +4456,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gāo",
     "hanzi": "高",
-    "zuci": "高兴"
+    "zuci": "高兴",
+    "liju": "今天考试得了满分真高兴。"
   },
   {
     "id": "g-ao-3",
@@ -4062,7 +4467,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǎo",
     "hanzi": "搞",
-    "zuci": "搞笑"
+    "zuci": "搞笑",
+    "liju": "他总爱说搞笑的话。"
   },
   {
     "id": "g-ao-4",
@@ -4072,7 +4478,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gào",
     "hanzi": "告",
-    "zuci": "告诉"
+    "zuci": "告诉",
+    "liju": "请你告诉他这件事。"
   },
   {
     "id": "g-ou-1",
@@ -4082,7 +4489,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gōu",
     "hanzi": "沟",
-    "zuci": "水沟"
+    "zuci": "水沟",
+    "liju": "水沟里有好多小蝌蚪。"
   },
   {
     "id": "g-ou-3",
@@ -4092,7 +4500,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǒu",
     "hanzi": "狗",
-    "zuci": "小狗"
+    "zuci": "小狗",
+    "liju": "邻居家的小狗很可爱。"
   },
   {
     "id": "g-ou-4",
@@ -4102,7 +4511,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gòu",
     "hanzi": "够",
-    "zuci": "足够"
+    "zuci": "足够",
+    "liju": "这些食物足够我们吃。"
   },
   {
     "id": "g-an-1",
@@ -4112,7 +4522,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gān",
     "hanzi": "干",
-    "zuci": "干净"
+    "zuci": "干净",
+    "liju": "妈妈把家里打扫得很干净。"
   },
   {
     "id": "g-an-3",
@@ -4122,7 +4533,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǎn",
     "hanzi": "感",
-    "zuci": "感动"
+    "zuci": "感动",
+    "liju": "这个故事让我很感动。"
   },
   {
     "id": "g-an-4",
@@ -4132,7 +4544,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gàn",
     "hanzi": "干",
-    "zuci": "干活"
+    "zuci": "干活",
+    "liju": "爸爸在院子里干活。"
   },
   {
     "id": "g-en-1",
@@ -4142,7 +4555,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gēn",
     "hanzi": "根",
-    "zuci": "根本"
+    "zuci": "根本",
+    "liju": "这个问题根本不难。"
   },
   {
     "id": "g-en-3",
@@ -4152,7 +4566,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gěn",
     "hanzi": "艮",
-    "zuci": "艮直"
+    "zuci": "艮直",
+    "liju": "他性格艮直从不拐弯。"
   },
   {
     "id": "g-en-4",
@@ -4162,7 +4577,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gèn",
     "hanzi": "亘",
-    "zuci": "亘古"
+    "zuci": "亘古",
+    "liju": "亘古以来山川依旧。"
   },
   {
     "id": "g-ang-1",
@@ -4172,7 +4588,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gāng",
     "hanzi": "刚",
-    "zuci": "刚才"
+    "zuci": "刚才",
+    "liju": "刚才有人来找你。"
   },
   {
     "id": "g-ang-3",
@@ -4182,7 +4599,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǎng",
     "hanzi": "港",
-    "zuci": "港口"
+    "zuci": "港口",
+    "liju": "轮船停靠在港口。"
   },
   {
     "id": "g-ang-4",
@@ -4192,7 +4610,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gàng",
     "hanzi": "杠",
-    "zuci": "杠杆"
+    "zuci": "杠杆",
+    "liju": "他用杠杆搬动石头。"
   },
   {
     "id": "g-eng-1",
@@ -4202,7 +4621,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gēng",
     "hanzi": "更",
-    "zuci": "更加"
+    "zuci": "更加",
+    "liju": "我们要更加努力学习。"
   },
   {
     "id": "g-eng-3",
@@ -4212,7 +4632,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gěng",
     "hanzi": "耿",
-    "zuci": "耿直"
+    "zuci": "耿直",
+    "liju": "他是个耿直的人。"
   },
   {
     "id": "g-eng-4",
@@ -4222,7 +4643,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gèng",
     "hanzi": "更",
-    "zuci": "更好"
+    "zuci": "更好",
+    "liju": "明天天气会更好。"
   },
   {
     "id": "g-u-1",
@@ -4232,7 +4654,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "gū",
     "hanzi": "姑",
-    "zuci": "姑娘"
+    "zuci": "姑娘",
+    "liju": "那位姑娘唱歌很好听。"
   },
   {
     "id": "g-u-3",
@@ -4242,7 +4665,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǔ",
     "hanzi": "古",
-    "zuci": "古代"
+    "zuci": "古代",
+    "liju": "古代有很多伟大的诗人。"
   },
   {
     "id": "g-u-4",
@@ -4252,7 +4676,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gù",
     "hanzi": "故",
-    "zuci": "故事"
+    "zuci": "故事",
+    "liju": "妈妈每天晚上讲故事。"
   },
   {
     "id": "g-ua-1",
@@ -4262,7 +4687,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guā",
     "hanzi": "瓜",
-    "zuci": "西瓜"
+    "zuci": "西瓜",
+    "liju": "夏天吃西瓜最解渴。"
   },
   {
     "id": "g-ua-3",
@@ -4272,7 +4698,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǎ",
     "hanzi": "寡",
-    "zuci": "寡妇"
+    "zuci": "寡妇",
+    "liju": "那位寡妇独自养大孩子。"
   },
   {
     "id": "g-ua-4",
@@ -4282,7 +4709,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guà",
     "hanzi": "挂",
-    "zuci": "挂在"
+    "zuci": "挂在",
+    "liju": "书包挂在椅子后面。"
   },
   {
     "id": "g-uo-1",
@@ -4292,7 +4720,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guō",
     "hanzi": "锅",
-    "zuci": "铁锅"
+    "zuci": "铁锅",
+    "liju": "奶奶用铁锅炖排骨。"
   },
   {
     "id": "g-uo-2",
@@ -4302,7 +4731,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "guó",
     "hanzi": "国",
-    "zuci": "国家"
+    "zuci": "国家",
+    "liju": "我们热爱自己的国家。"
   },
   {
     "id": "g-uo-3",
@@ -4312,7 +4742,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǒ",
     "hanzi": "果",
-    "zuci": "果子"
+    "zuci": "果子",
+    "liju": "树上的果子熟了。"
   },
   {
     "id": "g-uo-4",
@@ -4322,7 +4753,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guò",
     "hanzi": "过",
-    "zuci": "过去"
+    "zuci": "过去",
+    "liju": "火车从桥上经过。"
   },
   {
     "id": "g-uai-1",
@@ -4332,7 +4764,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guāi",
     "hanzi": "乖",
-    "zuci": "乖乖"
+    "zuci": "乖乖",
+    "liju": "小兔子乖乖地吃草。"
   },
   {
     "id": "g-uai-3",
@@ -4342,7 +4775,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǎi",
     "hanzi": "拐",
-    "zuci": "拐弯"
+    "zuci": "拐弯",
+    "liju": "过了红绿灯向右拐弯。"
   },
   {
     "id": "g-uai-4",
@@ -4352,7 +4786,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guài",
     "hanzi": "怪",
-    "zuci": "奇怪"
+    "zuci": "奇怪",
+    "liju": "今天他说话很奇怪。"
   },
   {
     "id": "g-ui-1",
@@ -4362,7 +4797,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guī",
     "hanzi": "归",
-    "zuci": "归来"
+    "zuci": "归来",
+    "liju": "爸爸出差归来了。"
   },
   {
     "id": "g-ui-3",
@@ -4372,7 +4808,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǐ",
     "hanzi": "鬼",
-    "zuci": "鬼怪"
+    "zuci": "鬼怪",
+    "liju": "他怕黑怕鬼怪。"
   },
   {
     "id": "g-ui-4",
@@ -4382,7 +4819,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guì",
     "hanzi": "贵",
-    "zuci": "贵宾"
+    "zuci": "贵宾",
+    "liju": "贵宾们正在参观校园。"
   },
   {
     "id": "g-uan-1",
@@ -4392,7 +4830,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guān",
     "hanzi": "关",
-    "zuci": "关门"
+    "zuci": "关门",
+    "liju": "离开时请关好门。"
   },
   {
     "id": "g-uan-3",
@@ -4402,7 +4841,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǎn",
     "hanzi": "管",
-    "zuci": "管理"
+    "zuci": "管理",
+    "liju": "班长负责管理班级纪律。"
   },
   {
     "id": "g-uan-4",
@@ -4412,7 +4852,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guàn",
     "hanzi": "惯",
-    "zuci": "习惯"
+    "zuci": "习惯",
+    "liju": "我习惯早起锻炼身体。"
   },
   {
     "id": "g-un-3",
@@ -4422,7 +4863,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "gǔn",
     "hanzi": "滚",
-    "zuci": "滚动"
+    "zuci": "滚动",
+    "liju": "球滚到墙角去了。"
   },
   {
     "id": "g-un-4",
@@ -4432,7 +4874,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "gùn",
     "hanzi": "棍",
-    "zuci": "木棍"
+    "zuci": "木棍",
+    "liju": "他捡起木棍当拐杖。"
   },
   {
     "id": "g-uang-1",
@@ -4442,7 +4885,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "guāng",
     "hanzi": "光",
-    "zuci": "光明"
+    "zuci": "光明",
+    "liju": "太阳带来了光明和温暖。"
   },
   {
     "id": "g-uang-3",
@@ -4452,7 +4896,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "guǎng",
     "hanzi": "广",
-    "zuci": "广大"
+    "zuci": "广大",
+    "liju": "广大市民都很支持。"
   },
   {
     "id": "g-uang-4",
@@ -4462,7 +4907,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "guàng",
     "hanzi": "逛",
-    "zuci": "逛街"
+    "zuci": "逛街",
+    "liju": "周末我和妈妈去逛街。"
   },
   {
     "id": "k-a-3",
@@ -4472,7 +4918,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǎ",
     "hanzi": "卡",
-    "zuci": "卡片"
+    "zuci": "卡片",
+    "liju": "他收到了一张节日卡片。"
   },
   {
     "id": "k-e-1",
@@ -4482,7 +4929,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kē",
     "hanzi": "科",
-    "zuci": "科学"
+    "zuci": "科学",
+    "liju": "我们要从小学习科学知识。"
   },
   {
     "id": "k-e-3",
@@ -4492,7 +4940,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kě",
     "hanzi": "可",
-    "zuci": "可以"
+    "zuci": "可以",
+    "liju": "现在你可以出去玩了。"
   },
   {
     "id": "k-e-4",
@@ -4502,7 +4951,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kè",
     "hanzi": "克",
-    "zuci": "克服"
+    "zuci": "克服",
+    "liju": "我们要克服困难向前走。"
   },
   {
     "id": "k-ai-1",
@@ -4512,7 +4962,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kāi",
     "hanzi": "开",
-    "zuci": "开门"
+    "zuci": "开门",
+    "liju": "他听见敲门声赶紧开门。"
   },
   {
     "id": "k-ai-3",
@@ -4522,7 +4973,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǎi",
     "hanzi": "凯",
-    "zuci": "凯旋"
+    "zuci": "凯旋",
+    "liju": "战士们胜利凯旋归来。"
   },
   {
     "id": "k-ai-4",
@@ -4532,7 +4984,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kài",
     "hanzi": "忾",
-    "zuci": "同仇敌忾"
+    "zuci": "同仇敌忾",
+    "liju": "大家同仇敌忾抗击敌人。"
   },
   {
     "id": "k-ao-3",
@@ -4542,7 +4995,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǎo",
     "hanzi": "考",
-    "zuci": "考试"
+    "zuci": "考试",
+    "liju": "期末考试马上就要到了。"
   },
   {
     "id": "k-ao-4",
@@ -4552,7 +5006,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kào",
     "hanzi": "靠",
-    "zuci": "靠近"
+    "zuci": "靠近",
+    "liju": "请不要太靠近危险区域。"
   },
   {
     "id": "k-ou-1",
@@ -4562,7 +5017,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kōu",
     "hanzi": "抠",
-    "zuci": "抠门"
+    "zuci": "抠门",
+    "liju": "那个人很抠门舍不得花钱。"
   },
   {
     "id": "k-ou-3",
@@ -4572,7 +5028,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǒu",
     "hanzi": "口",
-    "zuci": "口水"
+    "zuci": "口水",
+    "liju": "他馋得流出了口水。"
   },
   {
     "id": "k-ou-4",
@@ -4582,7 +5039,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kòu",
     "hanzi": "扣",
-    "zuci": "扣子"
+    "zuci": "扣子",
+    "liju": "我的外套掉了一颗扣子。"
   },
   {
     "id": "k-an-3",
@@ -4592,7 +5050,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǎn",
     "hanzi": "砍",
-    "zuci": "砍树"
+    "zuci": "砍树",
+    "liju": "工人拿着斧头砍树。"
   },
   {
     "id": "k-an-4",
@@ -4602,7 +5061,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kàn",
     "hanzi": "看",
-    "zuci": "看见"
+    "zuci": "看见",
+    "liju": "我看见小鸟飞过窗口。"
   },
   {
     "id": "k-en-3",
@@ -4612,7 +5072,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kěn",
     "hanzi": "肯",
-    "zuci": "肯定"
+    "zuci": "肯定",
+    "liju": "我肯定他今天会来。"
   },
   {
     "id": "k-en-4",
@@ -4622,7 +5083,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kèn",
     "hanzi": "啃",
-    "zuci": "啃骨头"
+    "zuci": "啃骨头",
+    "liju": "小狗啃骨头啃得很香。"
   },
   {
     "id": "k-eng-1",
@@ -4632,7 +5094,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kēng",
     "hanzi": "坑",
-    "zuci": "土坑"
+    "zuci": "土坑",
+    "liju": "路上有个大土坑。"
   },
   {
     "id": "k-u-1",
@@ -4642,7 +5105,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kū",
     "hanzi": "哭",
-    "zuci": "哭泣"
+    "zuci": "哭泣",
+    "liju": "她躲在角落里哭泣。"
   },
   {
     "id": "k-u-3",
@@ -4652,7 +5116,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǔ",
     "hanzi": "苦",
-    "zuci": "辛苦"
+    "zuci": "辛苦",
+    "liju": "妈妈每天工作很辛苦。"
   },
   {
     "id": "k-u-4",
@@ -4662,7 +5127,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kù",
     "hanzi": "裤",
-    "zuci": "裤子"
+    "zuci": "裤子",
+    "liju": "他的裤子弄脏了。"
   },
   {
     "id": "k-ua-1",
@@ -4672,7 +5138,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kuā",
     "hanzi": "夸",
-    "zuci": "夸奖"
+    "zuci": "夸奖",
+    "liju": "老师经常夸奖他进步大。"
   },
   {
     "id": "k-ua-3",
@@ -4682,7 +5149,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kuǎ",
     "hanzi": "垮",
-    "zuci": "垮台"
+    "zuci": "垮台",
+    "liju": "那座旧桥终于垮台了。"
   },
   {
     "id": "k-ua-4",
@@ -4692,7 +5160,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kuà",
     "hanzi": "跨",
-    "zuci": "跨步"
+    "zuci": "跨步",
+    "liju": "他一大步跨过水坑。"
   },
   {
     "id": "k-uo-4",
@@ -4702,7 +5171,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kuò",
     "hanzi": "阔",
-    "zuci": "广阔"
+    "zuci": "广阔",
+    "liju": "草原上广阔无垠。"
   },
   {
     "id": "k-uai-4",
@@ -4712,7 +5182,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kuài",
     "hanzi": "快",
-    "zuci": "快乐"
+    "zuci": "快乐",
+    "liju": "假期里我过得很快乐。"
   },
   {
     "id": "k-ui-1",
@@ -4722,7 +5193,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kuī",
     "hanzi": "亏",
-    "zuci": "吃亏"
+    "zuci": "吃亏",
+    "liju": "做人不能总想着不吃亏。"
   },
   {
     "id": "k-ui-3",
@@ -4732,7 +5204,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kuǐ",
     "hanzi": "傀",
-    "zuci": "傀儡"
+    "zuci": "傀儡",
+    "liju": "他只是个傀儡而已。"
   },
   {
     "id": "k-ui-4",
@@ -4742,7 +5215,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kuì",
     "hanzi": "愧",
-    "zuci": "惭愧"
+    "zuci": "惭愧",
+    "liju": "考试没考好他很惭愧。"
   },
   {
     "id": "k-uan-1",
@@ -4752,7 +5226,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kuān",
     "hanzi": "宽",
-    "zuci": "宽容"
+    "zuci": "宽容",
+    "liju": "我们要学会宽容别人。"
   },
   {
     "id": "k-uan-3",
@@ -4762,7 +5237,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kuǎn",
     "hanzi": "款",
-    "zuci": "款式"
+    "zuci": "款式",
+    "liju": "这件衣服款式很新颖。"
   },
   {
     "id": "k-un-1",
@@ -4772,7 +5248,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kūn",
     "hanzi": "昆",
-    "zuci": "昆虫"
+    "zuci": "昆虫",
+    "liju": "花园里有很多小昆虫。"
   },
   {
     "id": "k-un-3",
@@ -4782,7 +5259,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "kǔn",
     "hanzi": "捆",
-    "zuci": "捆绑"
+    "zuci": "捆绑",
+    "liju": "他用绳子捆住了箱子。"
   },
   {
     "id": "k-un-4",
@@ -4792,7 +5270,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kùn",
     "hanzi": "困",
-    "zuci": "困难"
+    "zuci": "困难",
+    "liju": "遇到困难不要放弃。"
   },
   {
     "id": "k-uang-1",
@@ -4802,7 +5281,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "kuāng",
     "hanzi": "筐",
-    "zuci": "箩筐"
+    "zuci": "箩筐",
+    "liju": "奶奶用箩筐装蔬菜。"
   },
   {
     "id": "k-uang-2",
@@ -4812,7 +5292,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "kuáng",
     "hanzi": "狂",
-    "zuci": "疯狂"
+    "zuci": "疯狂",
+    "liju": "球迷们疯狂地欢呼。"
   },
   {
     "id": "k-uang-4",
@@ -4822,7 +5303,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "kuàng",
     "hanzi": "矿",
-    "zuci": "矿物"
+    "zuci": "矿物",
+    "liju": "大山里埋藏了很多矿物。"
   },
   {
     "id": "h-a-1",
@@ -4832,7 +5314,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hā",
     "hanzi": "哈",
-    "zuci": "哈哈"
+    "zuci": "哈哈",
+    "liju": "听了笑话他哈哈大笑。"
   },
   {
     "id": "h-a-2",
@@ -4842,7 +5325,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "há",
     "hanzi": "蛤",
-    "zuci": "蛤蟆"
+    "zuci": "蛤蟆",
+    "liju": "青蛙和蛤蟆都是益虫。"
   },
   {
     "id": "h-a-3",
@@ -4852,7 +5336,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǎ",
     "hanzi": "哈",
-    "zuci": "哈巴狗"
+    "zuci": "哈巴狗",
+    "liju": "邻居家养了一只哈巴狗。"
   },
   {
     "id": "h-a-4",
@@ -4862,7 +5347,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hà",
     "hanzi": "哈",
-    "zuci": "哈腰"
+    "zuci": "哈腰",
+    "liju": "他彬彬有礼地哈腰致谢。"
   },
   {
     "id": "h-e-1",
@@ -4872,7 +5358,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hē",
     "hanzi": "喝",
-    "zuci": "喝水"
+    "zuci": "喝水",
+    "liju": "运动后要多喝水。"
   },
   {
     "id": "h-e-2",
@@ -4882,7 +5369,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hé",
     "hanzi": "河",
-    "zuci": "河水"
+    "zuci": "河水",
+    "liju": "河水清澈得见底。"
   },
   {
     "id": "h-e-4",
@@ -4892,7 +5380,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hè",
     "hanzi": "贺",
-    "zuci": "祝贺"
+    "zuci": "祝贺",
+    "liju": "大家祝贺他取得好成绩。"
   },
   {
     "id": "h-ai-2",
@@ -4902,7 +5391,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hái",
     "hanzi": "还",
-    "zuci": "还有"
+    "zuci": "还有",
+    "liju": "还有十分钟就放学了。"
   },
   {
     "id": "h-ai-3",
@@ -4912,7 +5402,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǎi",
     "hanzi": "海",
-    "zuci": "大海"
+    "zuci": "大海",
+    "liju": "我从小向往去看大海。"
   },
   {
     "id": "h-ai-4",
@@ -4922,7 +5413,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hài",
     "hanzi": "害",
-    "zuci": "害怕"
+    "zuci": "害怕",
+    "liju": "妹妹害怕黑暗的房间。"
   },
   {
     "id": "h-ei-1",
@@ -4932,7 +5424,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hēi",
     "hanzi": "黑",
-    "zuci": "黑色"
+    "zuci": "黑色",
+    "liju": "他穿着一件黑色外套。"
   },
   {
     "id": "h-ao-1",
@@ -4942,7 +5435,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hāo",
     "hanzi": "蒿",
-    "zuci": "蒿草"
+    "zuci": "蒿草",
+    "liju": "山坡上长满了蒿草。"
   },
   {
     "id": "h-ao-2",
@@ -4952,7 +5446,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "háo",
     "hanzi": "号",
-    "zuci": "号叫"
+    "zuci": "号叫",
+    "liju": "狼在夜里发出号叫声。"
   },
   {
     "id": "h-ao-3",
@@ -4962,7 +5457,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǎo",
     "hanzi": "好",
-    "zuci": "好事"
+    "zuci": "好事",
+    "liju": "他做了很多好事。"
   },
   {
     "id": "h-ao-4",
@@ -4972,7 +5468,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hào",
     "hanzi": "号",
-    "zuci": "号码"
+    "zuci": "号码",
+    "liju": "请写下你的电话号码。"
   },
   {
     "id": "h-ou-2",
@@ -4982,7 +5479,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hóu",
     "hanzi": "侯",
-    "zuci": "侯爵"
+    "zuci": "侯爵",
+    "liju": "古代侯爵地位很高。"
   },
   {
     "id": "h-ou-3",
@@ -4992,7 +5490,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǒu",
     "hanzi": "吼",
-    "zuci": "吼叫"
+    "zuci": "吼叫",
+    "liju": "狮子在山林里吼叫。"
   },
   {
     "id": "h-ou-4",
@@ -5002,7 +5501,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hòu",
     "hanzi": "后",
-    "zuci": "后面"
+    "zuci": "后面",
+    "liju": "请排在我的后面。"
   },
   {
     "id": "h-an-2",
@@ -5012,7 +5512,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hán",
     "hanzi": "寒",
-    "zuci": "寒冷"
+    "zuci": "寒冷",
+    "liju": "北方的冬天非常寒冷。"
   },
   {
     "id": "h-an-3",
@@ -5022,7 +5523,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǎn",
     "hanzi": "喊",
-    "zuci": "喊叫"
+    "zuci": "喊叫",
+    "liju": "他在操场上大声喊叫。"
   },
   {
     "id": "h-an-4",
@@ -5032,7 +5534,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hàn",
     "hanzi": "汉",
-    "zuci": "汉语"
+    "zuci": "汉语",
+    "liju": "他正在学习汉语。"
   },
   {
     "id": "h-en-3",
@@ -5042,7 +5545,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hěn",
     "hanzi": "很",
-    "zuci": "很多"
+    "zuci": "很多",
+    "liju": "公园里有很多花。"
   },
   {
     "id": "h-en-4",
@@ -5052,7 +5556,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hèn",
     "hanzi": "恨",
-    "zuci": "仇恨"
+    "zuci": "仇恨",
+    "liju": "仇恨会让人失去理智。"
   },
   {
     "id": "h-ang-2",
@@ -5062,7 +5567,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "háng",
     "hanzi": "航",
-    "zuci": "航海"
+    "zuci": "航海",
+    "liju": "他梦想着航海环游世界。"
   },
   {
     "id": "h-ang-4",
@@ -5072,7 +5578,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hàng",
     "hanzi": "巷",
-    "zuci": "巷道"
+    "zuci": "巷道",
+    "liju": "这个巷道很窄。"
   },
   {
     "id": "h-eng-1",
@@ -5082,7 +5589,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hēng",
     "hanzi": "哼",
-    "zuci": "哼唱"
+    "zuci": "哼唱",
+    "liju": "他一边哼唱一边走路。"
   },
   {
     "id": "h-eng-2",
@@ -5092,7 +5600,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "héng",
     "hanzi": "横",
-    "zuci": "横线"
+    "zuci": "横线",
+    "liju": "在横线上写上答案。"
   },
   {
     "id": "h-u-1",
@@ -5102,7 +5611,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hū",
     "hanzi": "乎",
-    "zuci": "在乎"
+    "zuci": "在乎",
+    "liju": "他很在乎朋友的意见。"
   },
   {
     "id": "h-u-2",
@@ -5112,7 +5622,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hú",
     "hanzi": "胡",
-    "zuci": "胡椒"
+    "zuci": "胡椒",
+    "liju": "汤里放点胡椒更好喝。"
   },
   {
     "id": "h-u-3",
@@ -5122,7 +5633,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "hǔ",
     "hanzi": "虎",
-    "zuci": "老虎"
+    "zuci": "老虎",
+    "liju": "老虎是森林之王。"
   },
   {
     "id": "h-u-4",
@@ -5132,7 +5644,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hù",
     "hanzi": "户",
-    "zuci": "户口"
+    "zuci": "户口",
+    "liju": "他刚去办了户口迁移。"
   },
   {
     "id": "h-ua-1",
@@ -5142,7 +5655,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "huā",
     "hanzi": "花",
-    "zuci": "花朵"
+    "zuci": "花朵",
+    "liju": "花园里的花朵真漂亮。"
   },
   {
     "id": "h-ua-2",
@@ -5152,7 +5666,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huá",
     "hanzi": "华",
-    "zuci": "中华"
+    "zuci": "中华",
+    "liju": "中华文化博大精深。"
   },
   {
     "id": "h-ua-4",
@@ -5162,7 +5677,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huà",
     "hanzi": "画",
-    "zuci": "画画"
+    "zuci": "画画",
+    "liju": "妹妹喜欢画画。"
   },
   {
     "id": "h-uo-1",
@@ -5172,7 +5688,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "huō",
     "hanzi": "豁",
-    "zuci": "豁口"
+    "zuci": "豁口",
+    "liju": "墙上有个小豁口。"
   },
   {
     "id": "h-uo-2",
@@ -5182,7 +5699,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huó",
     "hanzi": "活",
-    "zuci": "生活"
+    "zuci": "生活",
+    "liju": "现在的日子越过越好。"
   },
   {
     "id": "h-uo-3",
@@ -5192,7 +5710,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "huǒ",
     "hanzi": "火",
-    "zuci": "大火"
+    "zuci": "大火",
+    "liju": "消防员很快扑灭了大火。"
   },
   {
     "id": "h-uo-4",
@@ -5202,7 +5721,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huò",
     "hanzi": "或",
-    "zuci": "或者"
+    "zuci": "或者",
+    "liju": "你想喝茶或者喝水？"
   },
   {
     "id": "h-uai-2",
@@ -5212,7 +5732,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huái",
     "hanzi": "怀",
-    "zuci": "怀念"
+    "zuci": "怀念",
+    "liju": "他非常怀念家乡。"
   },
   {
     "id": "h-uai-4",
@@ -5222,7 +5743,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huài",
     "hanzi": "坏",
-    "zuci": "坏人"
+    "zuci": "坏人",
+    "liju": "我们要分清好人和坏人。"
   },
   {
     "id": "h-ui-1",
@@ -5232,7 +5754,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "huī",
     "hanzi": "灰",
-    "zuci": "灰色"
+    "zuci": "灰色",
+    "liju": "今天天空是灰色的。"
   },
   {
     "id": "h-ui-2",
@@ -5242,7 +5765,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huí",
     "hanzi": "回",
-    "zuci": "回家"
+    "zuci": "回家",
+    "liju": "放学后我要快点回家。"
   },
   {
     "id": "h-ui-3",
@@ -5252,7 +5776,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "huǐ",
     "hanzi": "毁",
-    "zuci": "毁灭"
+    "zuci": "毁灭",
+    "liju": "洪水毁灭了村庄。"
   },
   {
     "id": "h-ui-4",
@@ -5262,7 +5787,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huì",
     "hanzi": "会",
-    "zuci": "开会"
+    "zuci": "开会",
+    "liju": "下午三点我们要开会。"
   },
   {
     "id": "h-uan-1",
@@ -5272,7 +5798,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "huān",
     "hanzi": "欢",
-    "zuci": "欢乐"
+    "zuci": "欢乐",
+    "liju": "节日里到处是欢乐。"
   },
   {
     "id": "h-uan-2",
@@ -5282,7 +5809,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huán",
     "hanzi": "还",
-    "zuci": "还书"
+    "zuci": "还书",
+    "liju": "去图书馆别忘了还书。"
   },
   {
     "id": "h-uan-3",
@@ -5292,7 +5820,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "huǎn",
     "hanzi": "缓",
-    "zuci": "缓慢"
+    "zuci": "缓慢",
+    "liju": "老人走路很缓慢。"
   },
   {
     "id": "h-uan-4",
@@ -5302,7 +5831,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huàn",
     "hanzi": "换",
-    "zuci": "换来"
+    "zuci": "换来",
+    "liju": "他用自己的笔换了橡皮。"
   },
   {
     "id": "h-un-1",
@@ -5312,7 +5842,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "hūn",
     "hanzi": "婚",
-    "zuci": "婚姻"
+    "zuci": "婚姻",
+    "liju": "婚姻需要两个人经营。"
   },
   {
     "id": "h-un-2",
@@ -5322,7 +5853,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "hún",
     "hanzi": "魂",
-    "zuci": "灵魂"
+    "zuci": "灵魂",
+    "liju": "人要有高贵的灵魂。"
   },
   {
     "id": "h-un-4",
@@ -5332,7 +5864,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "hùn",
     "hanzi": "混",
-    "zuci": "混合"
+    "zuci": "混合",
+    "liju": "把颜料混合在一起。"
   },
   {
     "id": "h-uang-1",
@@ -5342,7 +5875,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "huāng",
     "hanzi": "荒",
-    "zuci": "荒凉"
+    "zuci": "荒凉",
+    "liju": "那片荒地很荒凉。"
   },
   {
     "id": "h-uang-2",
@@ -5352,7 +5886,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "huáng",
     "hanzi": "黄",
-    "zuci": "黄色"
+    "zuci": "黄色",
+    "liju": "秋天的树叶变成黄色。"
   },
   {
     "id": "h-uang-3",
@@ -5362,7 +5897,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "huǎng",
     "hanzi": "晃",
-    "zuci": "晃眼"
+    "zuci": "晃眼",
+    "liju": "太阳光照得晃眼。"
   },
   {
     "id": "h-uang-4",
@@ -5372,7 +5908,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "huàng",
     "hanzi": "晃",
-    "zuci": "晃动"
+    "zuci": "晃动",
+    "liju": "风把树枝吹得晃动。"
   },
   {
     "id": "j-i-1",
@@ -5382,7 +5919,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jī",
     "hanzi": "机",
-    "zuci": "飞机"
+    "zuci": "飞机",
+    "liju": "飞机在蓝天上飞翔。"
   },
   {
     "id": "j-i-2",
@@ -5392,7 +5930,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "jí",
     "hanzi": "极",
-    "zuci": "极其"
+    "zuci": "极其",
+    "liju": "这个问题极其重要。"
   },
   {
     "id": "j-i-3",
@@ -5402,7 +5941,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jǐ",
     "hanzi": "几",
-    "zuci": "几个"
+    "zuci": "几个",
+    "liju": "我们需要几个帮手。"
   },
   {
     "id": "j-i-4",
@@ -5412,7 +5952,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jì",
     "hanzi": "计",
-    "zuci": "计算"
+    "zuci": "计算",
+    "liju": "他计算得又快又准。"
   },
   {
     "id": "j-ia-1",
@@ -5422,7 +5963,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiā",
     "hanzi": "加",
-    "zuci": "加法"
+    "zuci": "加法",
+    "liju": "大家正在学加法。"
   },
   {
     "id": "j-ia-3",
@@ -5432,7 +5974,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǎ",
     "hanzi": "甲",
-    "zuci": "甲虫"
+    "zuci": "甲虫",
+    "liju": "甲虫在树上爬来爬去。"
   },
   {
     "id": "j-ia-4",
@@ -5442,7 +5985,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jià",
     "hanzi": "价",
-    "zuci": "价格"
+    "zuci": "价格",
+    "liju": "这件衣服价格不贵。"
   },
   {
     "id": "j-ie-1",
@@ -5452,7 +5996,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiē",
     "hanzi": "节",
-    "zuci": "节日"
+    "zuci": "节日",
+    "liju": "春节是我们最快乐的节日。"
   },
   {
     "id": "j-ie-2",
@@ -5462,7 +6007,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "jié",
     "hanzi": "结",
-    "zuci": "结果"
+    "zuci": "结果",
+    "liju": "结果和我想的不一样。"
   },
   {
     "id": "j-ie-3",
@@ -5472,7 +6018,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiě",
     "hanzi": "解",
-    "zuci": "解开"
+    "zuci": "解开",
+    "liju": "你能帮我解开这个结吗？"
   },
   {
     "id": "j-ie-4",
@@ -5482,7 +6029,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jiè",
     "hanzi": "界",
-    "zuci": "世界"
+    "zuci": "世界",
+    "liju": "世界那么大我想去看看。"
   },
   {
     "id": "j-iao-1",
@@ -5492,7 +6040,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiāo",
     "hanzi": "交",
-    "zuci": "交通"
+    "zuci": "交通",
+    "liju": "上下班时间交通很堵。"
   },
   {
     "id": "j-iao-3",
@@ -5502,7 +6051,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǎo",
     "hanzi": "角",
-    "zuci": "角度"
+    "zuci": "角度",
+    "liju": "他换了一个角度思考问题。"
   },
   {
     "id": "j-iao-4",
@@ -5512,7 +6062,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jiào",
     "hanzi": "叫",
-    "zuci": "叫喊"
+    "zuci": "叫喊",
+    "liju": "他大声叫喊我的名字。"
   },
   {
     "id": "j-iu-3",
@@ -5522,7 +6073,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǔ",
     "hanzi": "九",
-    "zuci": "九个"
+    "zuci": "九个",
+    "liju": "树上还有九个苹果。"
   },
   {
     "id": "j-iu-4",
@@ -5532,7 +6084,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jiù",
     "hanzi": "救",
-    "zuci": "救命"
+    "zuci": "救命",
+    "liju": "他大喊救命！"
   },
   {
     "id": "j-ian-1",
@@ -5542,7 +6095,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiān",
     "hanzi": "间",
-    "zuci": "中间"
+    "zuci": "中间",
+    "liju": "我坐在教室中间位置。"
   },
   {
     "id": "j-ian-3",
@@ -5552,7 +6106,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǎn",
     "hanzi": "检",
-    "zuci": "检查"
+    "zuci": "检查",
+    "liju": "老师检查了我们的作业。"
   },
   {
     "id": "j-ian-4",
@@ -5562,7 +6117,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jiàn",
     "hanzi": "建",
-    "zuci": "建设"
+    "zuci": "建设",
+    "liju": "大家一起建设美丽校园。"
   },
   {
     "id": "j-in-1",
@@ -5572,7 +6128,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jīn",
     "hanzi": "金",
-    "zuci": "金色"
+    "zuci": "金色",
+    "liju": "阳光洒下金色光芒。"
   },
   {
     "id": "j-in-3",
@@ -5582,7 +6139,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jǐn",
     "hanzi": "紧",
-    "zuci": "紧张"
+    "zuci": "紧张",
+    "liju": "考试前他有点紧张。"
   },
   {
     "id": "j-in-4",
@@ -5592,7 +6150,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jìn",
     "hanzi": "近",
-    "zuci": "附近"
+    "zuci": "附近",
+    "liju": "我家附近有个大超市。"
   },
   {
     "id": "j-iang-1",
@@ -5602,7 +6161,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiāng",
     "hanzi": "江",
-    "zuci": "江河"
+    "zuci": "江河",
+    "liju": "江河流入大海。"
   },
   {
     "id": "j-iang-3",
@@ -5612,7 +6172,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǎng",
     "hanzi": "讲",
-    "zuci": "讲话"
+    "zuci": "讲话",
+    "liju": "老师正在讲台上讲话。"
   },
   {
     "id": "j-iang-4",
@@ -5622,7 +6183,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jiàng",
     "hanzi": "匠",
-    "zuci": "工匠"
+    "zuci": "工匠",
+    "liju": "工匠的手艺非常好。"
   },
   {
     "id": "j-ing-1",
@@ -5632,7 +6194,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jīng",
     "hanzi": "经",
-    "zuci": "经过"
+    "zuci": "经过",
+    "liju": "火车经过一片田野。"
   },
   {
     "id": "j-ing-3",
@@ -5642,7 +6205,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jǐng",
     "hanzi": "景",
-    "zuci": "风景"
+    "zuci": "风景",
+    "liju": "这里的风景真美。"
   },
   {
     "id": "j-ing-4",
@@ -5652,7 +6216,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jìng",
     "hanzi": "静",
-    "zuci": "安静"
+    "zuci": "安静",
+    "liju": "教室里很安静。"
   },
   {
     "id": "j-iong-1",
@@ -5662,7 +6227,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jiōng",
     "hanzi": "扃",
-    "zuci": "扃门"
+    "zuci": "扃门",
+    "liju": "他敲了敲扃门。"
   },
   {
     "id": "j-iong-3",
@@ -5672,7 +6238,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jiǒng",
     "hanzi": "炯",
-    "zuci": "炯炯"
+    "zuci": "炯炯",
+    "liju": "他的眼睛炯炯有神。"
   },
   {
     "id": "j-u-1",
@@ -5682,7 +6249,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jū",
     "hanzi": "居",
-    "zuci": "居住"
+    "zuci": "居住",
+    "liju": "我居住在城市里。"
   },
   {
     "id": "j-u-2",
@@ -5692,7 +6260,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "jú",
     "hanzi": "局",
-    "zuci": "局长"
+    "zuci": "局长",
+    "liju": "局长要检查工作。"
   },
   {
     "id": "j-u-3",
@@ -5702,7 +6271,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "jǔ",
     "hanzi": "举",
-    "zuci": "举行"
+    "zuci": "举行",
+    "liju": "学校举行运动会。"
   },
   {
     "id": "j-u-4",
@@ -5712,7 +6282,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jù",
     "hanzi": "句",
-    "zuci": "句子"
+    "zuci": "句子",
+    "liju": "这个句子很长。"
   },
   {
     "id": "j-ue-1",
@@ -5722,7 +6293,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "juē",
     "hanzi": "撅",
-    "zuci": "撅嘴"
+    "zuci": "撅嘴",
+    "liju": "他不高兴地撅嘴了。"
   },
   {
     "id": "j-ue-2",
@@ -5732,7 +6304,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "jué",
     "hanzi": "觉",
-    "zuci": "觉得"
+    "zuci": "觉得",
+    "liju": "我觉得你说得对。"
   },
   {
     "id": "j-ue-4",
@@ -5742,7 +6315,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "juè",
     "hanzi": "倔",
-    "zuci": "倔强"
+    "zuci": "倔强",
+    "liju": "他性格很倔强。"
   },
   {
     "id": "j-uan-1",
@@ -5752,7 +6326,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "juān",
     "hanzi": "捐",
-    "zuci": "捐款"
+    "zuci": "捐款",
+    "liju": "大家一起为灾区捐款。"
   },
   {
     "id": "j-uan-3",
@@ -5762,7 +6337,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "juǎn",
     "hanzi": "卷",
-    "zuci": "卷起"
+    "zuci": "卷起",
+    "liju": "风把沙子卷起来。"
   },
   {
     "id": "j-uan-4",
@@ -5772,7 +6348,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "juàn",
     "hanzi": "倦",
-    "zuci": "疲倦"
+    "zuci": "疲倦",
+    "liju": "他疲倦地躺在床上。"
   },
   {
     "id": "j-un-1",
@@ -5782,7 +6359,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "jūn",
     "hanzi": "军",
-    "zuci": "军人"
+    "zuci": "军人",
+    "liju": "军人是国家的骄傲。"
   },
   {
     "id": "j-un-4",
@@ -5792,7 +6370,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "jùn",
     "hanzi": "俊",
-    "zuci": "英俊"
+    "zuci": "英俊",
+    "liju": "哥哥长得英俊帅气。"
   },
   {
     "id": "q-i-1",
@@ -5802,7 +6381,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qī",
     "hanzi": "七",
-    "zuci": "七个"
+    "zuci": "七个",
+    "liju": "桌上有七个橘子。"
   },
   {
     "id": "q-i-2",
@@ -5812,7 +6392,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qí",
     "hanzi": "奇",
-    "zuci": "奇怪"
+    "zuci": "奇怪",
+    "liju": "今天他穿得真奇怪。"
   },
   {
     "id": "q-i-3",
@@ -5822,7 +6403,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qǐ",
     "hanzi": "起",
-    "zuci": "起来"
+    "zuci": "起来",
+    "liju": "早睡早起身体好。"
   },
   {
     "id": "q-i-4",
@@ -5832,7 +6414,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qì",
     "hanzi": "气",
-    "zuci": "空气"
+    "zuci": "空气",
+    "liju": "山里的空气很新鲜。"
   },
   {
     "id": "q-ia-1",
@@ -5842,7 +6425,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiā",
     "hanzi": "掐",
-    "zuci": "掐花"
+    "zuci": "掐花",
+    "liju": "不要随意掐花。"
   },
   {
     "id": "q-ia-4",
@@ -5852,7 +6436,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qià",
     "hanzi": "恰",
-    "zuci": "恰好"
+    "zuci": "恰好",
+    "liju": "他恰好路过这里。"
   },
   {
     "id": "q-ie-1",
@@ -5862,7 +6447,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiē",
     "hanzi": "切",
-    "zuci": "切开"
+    "zuci": "切开",
+    "liju": "把西瓜切开来吃。"
   },
   {
     "id": "q-ie-4",
@@ -5872,7 +6458,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qiè",
     "hanzi": "切",
-    "zuci": "一切"
+    "zuci": "一切",
+    "liju": "一切困难都能克服。"
   },
   {
     "id": "q-iao-1",
@@ -5882,7 +6469,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiāo",
     "hanzi": "敲",
-    "zuci": "敲门"
+    "zuci": "敲门",
+    "liju": "有人在外面敲门。"
   },
   {
     "id": "q-iao-2",
@@ -5892,7 +6480,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qiáo",
     "hanzi": "桥",
-    "zuci": "桥梁"
+    "zuci": "桥梁",
+    "liju": "这座桥有百年历史。"
   },
   {
     "id": "q-iao-3",
@@ -5902,7 +6491,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qiǎo",
     "hanzi": "巧",
-    "zuci": "巧妙"
+    "zuci": "巧妙",
+    "liju": "他巧妙地解决了问题。"
   },
   {
     "id": "q-iao-4",
@@ -5912,7 +6502,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qiào",
     "hanzi": "俏",
-    "zuci": "俏皮"
+    "zuci": "俏皮",
+    "liju": "她说话很俏皮。"
   },
   {
     "id": "q-iu-1",
@@ -5922,7 +6513,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiū",
     "hanzi": "秋",
-    "zuci": "秋天"
+    "zuci": "秋天",
+    "liju": "秋天是丰收的季节。"
   },
   {
     "id": "q-iu-2",
@@ -5932,7 +6524,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qiú",
     "hanzi": "球",
-    "zuci": "足球"
+    "zuci": "足球",
+    "liju": "同学们爱踢足球。"
   },
   {
     "id": "q-ian-1",
@@ -5942,7 +6535,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiān",
     "hanzi": "千",
-    "zuci": "千万"
+    "zuci": "千万",
+    "liju": "千万要小心过马路。"
   },
   {
     "id": "q-ian-2",
@@ -5952,7 +6546,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qián",
     "hanzi": "钱",
-    "zuci": "金钱"
+    "zuci": "金钱",
+    "liju": "金钱不是万能的。"
   },
   {
     "id": "q-ian-3",
@@ -5962,7 +6557,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qiǎn",
     "hanzi": "浅",
-    "zuci": "浅色"
+    "zuci": "浅色",
+    "liju": "她穿了一件浅色上衣。"
   },
   {
     "id": "q-ian-4",
@@ -5972,7 +6568,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qiàn",
     "hanzi": "欠",
-    "zuci": "欠债"
+    "zuci": "欠债",
+    "liju": "他欠债还清了。"
   },
   {
     "id": "q-in-1",
@@ -5982,7 +6579,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qīn",
     "hanzi": "亲",
-    "zuci": "亲人"
+    "zuci": "亲人",
+    "liju": "过年要回家看亲人。"
   },
   {
     "id": "q-in-2",
@@ -5992,7 +6590,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qín",
     "hanzi": "勤",
-    "zuci": "勤劳"
+    "zuci": "勤劳",
+    "liju": "勤劳的人能致富。"
   },
   {
     "id": "q-in-3",
@@ -6002,7 +6601,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qǐn",
     "hanzi": "寝",
-    "zuci": "寝室"
+    "zuci": "寝室",
+    "liju": "寝室里很整洁。"
   },
   {
     "id": "q-in-4",
@@ -6012,7 +6612,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qìn",
     "hanzi": "沁",
-    "zuci": "沁人"
+    "zuci": "沁人",
+    "liju": "花香沁人心脾。"
   },
   {
     "id": "q-iang-1",
@@ -6022,7 +6623,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qiāng",
     "hanzi": "枪",
-    "zuci": "手枪"
+    "zuci": "手枪",
+    "liju": "警察拿着手枪。"
   },
   {
     "id": "q-iang-2",
@@ -6032,7 +6634,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qiáng",
     "hanzi": "强",
-    "zuci": "强大"
+    "zuci": "强大",
+    "liju": "祖国越来越强大。"
   },
   {
     "id": "q-iang-3",
@@ -6042,7 +6645,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qiǎng",
     "hanzi": "抢",
-    "zuci": "抢先"
+    "zuci": "抢先",
+    "liju": "他抢先回答了问题。"
   },
   {
     "id": "q-iang-4",
@@ -6052,7 +6656,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qiàng",
     "hanzi": "呛",
-    "zuci": "呛人"
+    "zuci": "呛人",
+    "liju": "油烟味很呛人。"
   },
   {
     "id": "q-ing-1",
@@ -6062,7 +6667,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qīng",
     "hanzi": "青",
-    "zuci": "青色"
+    "zuci": "青色",
+    "liju": "青色的草地很柔软。"
   },
   {
     "id": "q-ing-2",
@@ -6072,7 +6678,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qíng",
     "hanzi": "情",
-    "zuci": "情况"
+    "zuci": "情况",
+    "liju": "情况比想象的复杂。"
   },
   {
     "id": "q-ing-3",
@@ -6082,7 +6689,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qǐng",
     "hanzi": "请",
-    "zuci": "请客"
+    "zuci": "请客",
+    "liju": "今天爸爸请客吃饭。"
   },
   {
     "id": "q-ing-4",
@@ -6092,7 +6700,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qìng",
     "hanzi": "庆",
-    "zuci": "庆祝"
+    "zuci": "庆祝",
+    "liju": "大家庆祝节日快乐。"
   },
   {
     "id": "q-iong-2",
@@ -6102,7 +6711,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qióng",
     "hanzi": "穷",
-    "zuci": "贫穷"
+    "zuci": "贫穷",
+    "liju": "贫穷并不可怕。"
   },
   {
     "id": "q-u-1",
@@ -6112,7 +6722,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "qū",
     "hanzi": "区",
-    "zuci": "地区"
+    "zuci": "地区",
+    "liju": "这个地区很发达。"
   },
   {
     "id": "q-u-2",
@@ -6122,7 +6733,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qú",
     "hanzi": "渠",
-    "zuci": "渠道"
+    "zuci": "渠道",
+    "liju": "水渠里流淌着水。"
   },
   {
     "id": "q-u-3",
@@ -6132,7 +6744,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "qǔ",
     "hanzi": "取",
-    "zuci": "取得"
+    "zuci": "取得",
+    "liju": "他取得了好成绩。"
   },
   {
     "id": "q-u-4",
@@ -6142,7 +6755,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "qù",
     "hanzi": "去",
-    "zuci": "来去"
+    "zuci": "来去",
+    "liju": "他来来去去忙得很。"
   },
   {
     "id": "q-ue-1",
@@ -6152,7 +6766,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "quē",
     "hanzi": "缺",
-    "zuci": "缺少"
+    "zuci": "缺少",
+    "liju": "这杯水缺少一点糖。"
   },
   {
     "id": "q-ue-4",
@@ -6162,7 +6777,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "què",
     "hanzi": "确",
-    "zuci": "确实"
+    "zuci": "确实",
+    "liju": "他确实是个好学生。"
   },
   {
     "id": "q-uan-2",
@@ -6172,7 +6788,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "quán",
     "hanzi": "全",
-    "zuci": "全部"
+    "zuci": "全部",
+    "liju": "全班同学都来了。"
   },
   {
     "id": "q-uan-3",
@@ -6182,7 +6799,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "quǎn",
     "hanzi": "犬",
-    "zuci": "犬子"
+    "zuci": "犬子",
+    "liju": "犬子今天生病了。"
   },
   {
     "id": "q-uan-4",
@@ -6192,7 +6810,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "quàn",
     "hanzi": "劝",
-    "zuci": "劝说"
+    "zuci": "劝说",
+    "liju": "他劝说我参加比赛。"
   },
   {
     "id": "q-un-2",
@@ -6202,7 +6821,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "qún",
     "hanzi": "群",
-    "zuci": "群众"
+    "zuci": "群众",
+    "liju": "群众的力量很大。"
   },
   {
     "id": "x-i-1",
@@ -6212,7 +6832,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xī",
     "hanzi": "西",
-    "zuci": "西方"
+    "zuci": "西方",
+    "liju": "太阳从西方落下。"
   },
   {
     "id": "x-i-2",
@@ -6222,7 +6843,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xí",
     "hanzi": "习",
-    "zuci": "习惯"
+    "zuci": "习惯",
+    "liju": "要养成好习惯。"
   },
   {
     "id": "x-i-3",
@@ -6232,7 +6854,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xǐ",
     "hanzi": "洗",
-    "zuci": "洗衣"
+    "zuci": "洗衣",
+    "liju": "妈妈正在洗衣服。"
   },
   {
     "id": "x-i-4",
@@ -6242,7 +6865,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xì",
     "hanzi": "系",
-    "zuci": "系列"
+    "zuci": "系列",
+    "liju": "我喜欢看这个系列动画片。"
   },
   {
     "id": "x-ia-1",
@@ -6252,7 +6876,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiā",
     "hanzi": "瞎",
-    "zuci": "瞎话"
+    "zuci": "瞎话",
+    "liju": "不要听信他的瞎话。"
   },
   {
     "id": "x-ia-2",
@@ -6262,7 +6887,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xiá",
     "hanzi": "峡",
-    "zuci": "峡谷"
+    "zuci": "峡谷",
+    "liju": "峡谷风光真美。"
   },
   {
     "id": "x-ia-4",
@@ -6272,7 +6898,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xià",
     "hanzi": "下",
-    "zuci": "下面"
+    "zuci": "下面",
+    "liju": "请把书放在桌子下面。"
   },
   {
     "id": "x-ie-1",
@@ -6282,7 +6909,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiē",
     "hanzi": "些",
-    "zuci": "一些"
+    "zuci": "一些",
+    "liju": "我有一些好主意。"
   },
   {
     "id": "x-ie-2",
@@ -6292,7 +6920,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xié",
     "hanzi": "协",
-    "zuci": "协助"
+    "zuci": "协助",
+    "liju": "他协助警察抓小偷。"
   },
   {
     "id": "x-ie-3",
@@ -6302,7 +6931,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xiě",
     "hanzi": "写",
-    "zuci": "写字"
+    "zuci": "写字",
+    "liju": "我们每天练习写字。"
   },
   {
     "id": "x-ie-4",
@@ -6312,7 +6942,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xiè",
     "hanzi": "谢",
-    "zuci": "感谢"
+    "zuci": "感谢",
+    "liju": "我要感谢老师的帮助。"
   },
   {
     "id": "x-iao-1",
@@ -6322,7 +6953,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiāo",
     "hanzi": "消",
-    "zuci": "消灭"
+    "zuci": "消灭",
+    "liju": "害虫被消灭了。"
   },
   {
     "id": "x-iao-2",
@@ -6332,7 +6964,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xiáo",
     "hanzi": "淆",
-    "zuci": "混淆"
+    "zuci": "混淆",
+    "liju": "不要把两人混淆了。"
   },
   {
     "id": "x-iao-3",
@@ -6342,7 +6975,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xiǎo",
     "hanzi": "小",
-    "zuci": "大小"
+    "zuci": "大小",
+    "liju": "这件衣服大小正合适。"
   },
   {
     "id": "x-iao-4",
@@ -6352,7 +6986,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xiào",
     "hanzi": "笑",
-    "zuci": "笑脸"
+    "zuci": "笑脸",
+    "liju": "她露出了灿烂的笑脸。"
   },
   {
     "id": "x-iu-1",
@@ -6362,7 +6997,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiū",
     "hanzi": "修",
-    "zuci": "修理"
+    "zuci": "修理",
+    "liju": "爸爸自己修理自行车。"
   },
   {
     "id": "x-iu-3",
@@ -6372,7 +7008,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xiǔ",
     "hanzi": "朽",
-    "zuci": "腐朽"
+    "zuci": "腐朽",
+    "liju": "这块木头腐朽了。"
   },
   {
     "id": "x-iu-4",
@@ -6382,7 +7019,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xiù",
     "hanzi": "秀",
-    "zuci": "优秀"
+    "zuci": "优秀",
+    "liju": "他是一名优秀的学生。"
   },
   {
     "id": "x-ian-1",
@@ -6392,7 +7030,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiān",
     "hanzi": "先",
-    "zuci": "首先"
+    "zuci": "首先",
+    "liju": "首先要完成作业。"
   },
   {
     "id": "x-ian-2",
@@ -6402,7 +7041,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xián",
     "hanzi": "闲",
-    "zuci": "空闲"
+    "zuci": "空闲",
+    "liju": "周末我有空闲时间。"
   },
   {
     "id": "x-ian-3",
@@ -6412,7 +7052,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xiǎn",
     "hanzi": "显",
-    "zuci": "显示"
+    "zuci": "显示",
+    "liju": "屏幕上显示时间。"
   },
   {
     "id": "x-ian-4",
@@ -6422,7 +7063,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xiàn",
     "hanzi": "现",
-    "zuci": "现在"
+    "zuci": "现在",
+    "liju": "现在我们要去操场。"
   },
   {
     "id": "x-in-1",
@@ -6432,7 +7074,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xīn",
     "hanzi": "新",
-    "zuci": "新鲜"
+    "zuci": "新鲜",
+    "liju": "空气很新鲜。"
   },
   {
     "id": "x-in-4",
@@ -6442,7 +7085,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xìn",
     "hanzi": "信",
-    "zuci": "信心"
+    "zuci": "信心",
+    "liju": "我对他很有信心。"
   },
   {
     "id": "x-iang-1",
@@ -6452,7 +7096,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiāng",
     "hanzi": "香",
-    "zuci": "香气"
+    "zuci": "香气",
+    "liju": "花香飘满院子。"
   },
   {
     "id": "x-iang-2",
@@ -6462,7 +7107,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xiáng",
     "hanzi": "祥",
-    "zuci": "吉祥"
+    "zuci": "吉祥",
+    "liju": "祝你新年吉祥如意。"
   },
   {
     "id": "x-iang-3",
@@ -6472,7 +7118,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xiǎng",
     "hanzi": "想",
-    "zuci": "想法"
+    "zuci": "想法",
+    "liju": "这个想法很好。"
   },
   {
     "id": "x-iang-4",
@@ -6482,7 +7129,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xiàng",
     "hanzi": "向",
-    "zuci": "方向"
+    "zuci": "方向",
+    "liju": "他找到了方向。"
   },
   {
     "id": "x-ing-1",
@@ -6492,7 +7140,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xīng",
     "hanzi": "星",
-    "zuci": "星星"
+    "zuci": "星星",
+    "liju": "夜空有许多星星。"
   },
   {
     "id": "x-ing-2",
@@ -6502,7 +7151,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xíng",
     "hanzi": "行",
-    "zuci": "行动"
+    "zuci": "行动",
+    "liju": "行动比空谈重要。"
   },
   {
     "id": "x-ing-3",
@@ -6512,7 +7162,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xǐng",
     "hanzi": "醒",
-    "zuci": "醒来"
+    "zuci": "醒来",
+    "liju": "每天六点醒来。"
   },
   {
     "id": "x-ing-4",
@@ -6522,7 +7173,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xìng",
     "hanzi": "性",
-    "zuci": "性别"
+    "zuci": "性别",
+    "liju": "表格里填上性别。"
   },
   {
     "id": "x-iong-1",
@@ -6532,7 +7184,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xiōng",
     "hanzi": "兄",
-    "zuci": "兄弟"
+    "zuci": "兄弟",
+    "liju": "兄弟俩感情很好。"
   },
   {
     "id": "x-iong-2",
@@ -6542,7 +7195,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xióng",
     "hanzi": "雄",
-    "zuci": "英雄"
+    "zuci": "英雄",
+    "liju": "他是我心中的英雄。"
   },
   {
     "id": "x-u-1",
@@ -6552,7 +7206,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xū",
     "hanzi": "须",
-    "zuci": "必须"
+    "zuci": "必须",
+    "liju": "做事必须认真。"
   },
   {
     "id": "x-u-2",
@@ -6562,7 +7217,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xú",
     "hanzi": "徐",
-    "zuci": "徐徐"
+    "zuci": "徐徐",
+    "liju": "风徐徐吹来很凉爽。"
   },
   {
     "id": "x-u-3",
@@ -6572,7 +7228,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xǔ",
     "hanzi": "许",
-    "zuci": "许多"
+    "zuci": "许多",
+    "liju": "公园里有许多人。"
   },
   {
     "id": "x-u-4",
@@ -6582,7 +7239,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xù",
     "hanzi": "续",
-    "zuci": "继续"
+    "zuci": "继续",
+    "liju": "明天继续上课。"
   },
   {
     "id": "x-ue-1",
@@ -6592,7 +7250,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xuē",
     "hanzi": "削",
-    "zuci": "削皮"
+    "zuci": "削皮",
+    "liju": "削皮时要小心。"
   },
   {
     "id": "x-ue-2",
@@ -6602,7 +7261,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xué",
     "hanzi": "学",
-    "zuci": "学习"
+    "zuci": "学习",
+    "liju": "我们要快乐学习。"
   },
   {
     "id": "x-ue-3",
@@ -6612,7 +7272,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xuě",
     "hanzi": "雪",
-    "zuci": "雪花"
+    "zuci": "雪花",
+    "liju": "雪花从天空飘落。"
   },
   {
     "id": "x-ue-4",
@@ -6622,7 +7283,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xuè",
     "hanzi": "血",
-    "zuci": "血液"
+    "zuci": "血液",
+    "liju": "血液流通很重要。"
   },
   {
     "id": "x-uan-1",
@@ -6632,7 +7294,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "xuān",
     "hanzi": "宣",
-    "zuci": "宣传"
+    "zuci": "宣传",
+    "liju": "宣传交通安全知识。"
   },
   {
     "id": "x-uan-2",
@@ -6642,7 +7305,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xuán",
     "hanzi": "悬",
-    "zuci": "悬挂"
+    "zuci": "悬挂",
+    "liju": "灯笼悬挂在门口。"
   },
   {
     "id": "x-uan-3",
@@ -6652,7 +7316,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "xuǎn",
     "hanzi": "选",
-    "zuci": "选择"
+    "zuci": "选择",
+    "liju": "我选择了红色外套。"
   },
   {
     "id": "x-uan-4",
@@ -6662,7 +7327,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xuàn",
     "hanzi": "炫",
-    "zuci": "炫耀"
+    "zuci": "炫耀",
+    "liju": "不要总炫耀自己。"
   },
   {
     "id": "x-un-2",
@@ -6672,7 +7338,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "xún",
     "hanzi": "寻",
-    "zuci": "寻找"
+    "zuci": "寻找",
+    "liju": "他在寻找丢失的钥匙。"
   },
   {
     "id": "x-un-4",
@@ -6682,7 +7349,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "xùn",
     "hanzi": "训",
-    "zuci": "训练"
+    "zuci": "训练",
+    "liju": "校队每天坚持训练。"
   },
   {
     "id": "zh-a-1",
@@ -6692,7 +7360,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhā",
     "hanzi": "扎",
-    "zuci": "扎针"
+    "zuci": "扎针",
+    "liju": "护士给病人扎针输液。"
   },
   {
     "id": "zh-a-2",
@@ -6702,7 +7371,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhá",
     "hanzi": "炸",
-    "zuci": "炸鱼"
+    "zuci": "炸鱼",
+    "liju": "妈妈做的炸鱼很好吃。"
   },
   {
     "id": "zh-a-3",
@@ -6712,7 +7382,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǎ",
     "hanzi": "眨",
-    "zuci": "眨眼"
+    "zuci": "眨眼",
+    "liju": "他眨了眨眼睛表示明白。"
   },
   {
     "id": "zh-a-4",
@@ -6722,7 +7393,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhà",
     "hanzi": "炸",
-    "zuci": "炸弹"
+    "zuci": "炸弹",
+    "liju": "战士拆除了炸弹。"
   },
   {
     "id": "zh-e-1",
@@ -6732,7 +7404,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhē",
     "hanzi": "遮",
-    "zuci": "遮盖"
+    "zuci": "遮盖",
+    "liju": "乌云遮盖了太阳。"
   },
   {
     "id": "zh-e-2",
@@ -6742,7 +7415,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhé",
     "hanzi": "折",
-    "zuci": "折断"
+    "zuci": "折断",
+    "liju": "大风把树枝折断了。"
   },
   {
     "id": "zh-e-3",
@@ -6752,7 +7426,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhě",
     "hanzi": "者",
-    "zuci": "作者"
+    "zuci": "作者",
+    "liju": "这本书的作者很有名。"
   },
   {
     "id": "zh-e-4",
@@ -6762,7 +7437,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhè",
     "hanzi": "这",
-    "zuci": "这个"
+    "zuci": "这个",
+    "liju": "这个苹果特别甜。"
   },
   {
     "id": "zh-ai-1",
@@ -6772,7 +7448,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhāi",
     "hanzi": "摘",
-    "zuci": "摘下"
+    "zuci": "摘下",
+    "liju": "他摘下帽子擦汗。"
   },
   {
     "id": "zh-ai-2",
@@ -6782,7 +7459,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhái",
     "hanzi": "宅",
-    "zuci": "住宅"
+    "zuci": "住宅",
+    "liju": "新建的住宅很漂亮。"
   },
   {
     "id": "zh-ai-3",
@@ -6792,7 +7470,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǎi",
     "hanzi": "窄",
-    "zuci": "狭窄"
+    "zuci": "狭窄",
+    "liju": "这条小巷很狭窄。"
   },
   {
     "id": "zh-ai-4",
@@ -6802,7 +7481,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhài",
     "hanzi": "债",
-    "zuci": "债务"
+    "zuci": "债务",
+    "liju": "他欠了很多债务。"
   },
   {
     "id": "zh-ao-1",
@@ -6812,7 +7492,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhāo",
     "hanzi": "招",
-    "zuci": "招呼"
+    "zuci": "招呼",
+    "liju": "他热情地打招呼。"
   },
   {
     "id": "zh-ao-2",
@@ -6822,7 +7503,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zháo",
     "hanzi": "着",
-    "zuci": "着急"
+    "zuci": "着急",
+    "liju": "上学快迟到了他很着急。"
   },
   {
     "id": "zh-ao-3",
@@ -6832,7 +7514,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǎo",
     "hanzi": "找",
-    "zuci": "找到"
+    "zuci": "找到",
+    "liju": "我终于找到了钥匙。"
   },
   {
     "id": "zh-ao-4",
@@ -6842,7 +7525,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhào",
     "hanzi": "照",
-    "zuci": "照亮"
+    "zuci": "照亮",
+    "liju": "阳光照亮了大地。"
   },
   {
     "id": "zh-ou-1",
@@ -6852,7 +7536,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhōu",
     "hanzi": "周",
-    "zuci": "周围"
+    "zuci": "周围",
+    "liju": "学校周围种满了大树。"
   },
   {
     "id": "zh-ou-3",
@@ -6862,7 +7547,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǒu",
     "hanzi": "肘",
-    "zuci": "手肘"
+    "zuci": "手肘",
+    "liju": "他的手肘受伤了。"
   },
   {
     "id": "zh-ou-4",
@@ -6872,7 +7558,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhòu",
     "hanzi": "皱",
-    "zuci": "皱纹"
+    "zuci": "皱纹",
+    "liju": "奶奶脸上有很多皱纹。"
   },
   {
     "id": "zh-an-1",
@@ -6882,7 +7569,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhān",
     "hanzi": "占",
-    "zuci": "占有"
+    "zuci": "占有",
+    "liju": "不要占有别人的东西。"
   },
   {
     "id": "zh-an-3",
@@ -6892,7 +7580,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǎn",
     "hanzi": "展",
-    "zuci": "展示"
+    "zuci": "展示",
+    "liju": "他向观众展示作品。"
   },
   {
     "id": "zh-an-4",
@@ -6902,7 +7591,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhàn",
     "hanzi": "站",
-    "zuci": "站台"
+    "zuci": "站台",
+    "liju": "乘客们在站台等车。"
   },
   {
     "id": "zh-en-1",
@@ -6912,7 +7602,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhēn",
     "hanzi": "针",
-    "zuci": "针线"
+    "zuci": "针线",
+    "liju": "妈妈用针线缝衣服。"
   },
   {
     "id": "zh-en-3",
@@ -6922,7 +7613,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhěn",
     "hanzi": "诊",
-    "zuci": "诊所"
+    "zuci": "诊所",
+    "liju": "小区门口有个诊所。"
   },
   {
     "id": "zh-en-4",
@@ -6932,7 +7624,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhèn",
     "hanzi": "阵",
-    "zuci": "阵地"
+    "zuci": "阵地",
+    "liju": "战士们坚守阵地。"
   },
   {
     "id": "zh-ang-1",
@@ -6942,7 +7635,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhāng",
     "hanzi": "张",
-    "zuci": "张开"
+    "zuci": "张开",
+    "liju": "小鸟张开了翅膀。"
   },
   {
     "id": "zh-ang-3",
@@ -6952,7 +7646,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǎng",
     "hanzi": "长",
-    "zuci": "长大"
+    "zuci": "长大",
+    "liju": "我长大后要当老师。"
   },
   {
     "id": "zh-ang-4",
@@ -6962,7 +7657,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhàng",
     "hanzi": "仗",
-    "zuci": "打仗"
+    "zuci": "打仗",
+    "liju": "古代经常打仗。"
   },
   {
     "id": "zh-eng-1",
@@ -6972,7 +7668,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhēng",
     "hanzi": "争",
-    "zuci": "斗争"
+    "zuci": "斗争",
+    "liju": "他勇敢地与坏人斗争。"
   },
   {
     "id": "zh-eng-3",
@@ -6982,7 +7679,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhěng",
     "hanzi": "整",
-    "zuci": "整理"
+    "zuci": "整理",
+    "liju": "她正在整理房间。"
   },
   {
     "id": "zh-eng-4",
@@ -6992,7 +7690,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhèng",
     "hanzi": "正",
-    "zuci": "正在"
+    "zuci": "正在",
+    "liju": "我正在写作业。"
   },
   {
     "id": "zh-i-1",
@@ -7002,7 +7701,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhī",
     "hanzi": "知",
-    "zuci": "知道"
+    "zuci": "知道",
+    "liju": "你知道这道题怎么做吗？"
   },
   {
     "id": "zh-i-2",
@@ -7012,7 +7712,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhí",
     "hanzi": "直",
-    "zuci": "直线"
+    "zuci": "直线",
+    "liju": "在黑板上画一条直线。"
   },
   {
     "id": "zh-i-3",
@@ -7022,7 +7723,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǐ",
     "hanzi": "只",
-    "zuci": "只有"
+    "zuci": "只有",
+    "liju": "只有努力才能成功。"
   },
   {
     "id": "zh-i-4",
@@ -7032,7 +7734,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhì",
     "hanzi": "制",
-    "zuci": "制作"
+    "zuci": "制作",
+    "liju": "他亲手制作了一张贺卡。"
   },
   {
     "id": "zh-u-1",
@@ -7042,7 +7745,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhū",
     "hanzi": "朱",
-    "zuci": "朱红"
+    "zuci": "朱红",
+    "liju": "他穿着一件朱红外套。"
   },
   {
     "id": "zh-u-2",
@@ -7052,7 +7756,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhú",
     "hanzi": "竹",
-    "zuci": "竹子"
+    "zuci": "竹子",
+    "liju": "熊猫最爱吃竹子。"
   },
   {
     "id": "zh-u-3",
@@ -7062,7 +7767,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǔ",
     "hanzi": "主",
-    "zuci": "主人"
+    "zuci": "主人",
+    "liju": "狗能认出自己的主人。"
   },
   {
     "id": "zh-u-4",
@@ -7072,7 +7778,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhù",
     "hanzi": "住",
-    "zuci": "住房"
+    "zuci": "住房",
+    "liju": "城里住房越来越贵。"
   },
   {
     "id": "zh-ua-1",
@@ -7082,7 +7789,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhuā",
     "hanzi": "抓",
-    "zuci": "抓住"
+    "zuci": "抓住",
+    "liju": "警察抓住了小偷。"
   },
   {
     "id": "zh-ua-3",
@@ -7092,7 +7800,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhuǎ",
     "hanzi": "爪",
-    "zuci": "爪子"
+    "zuci": "爪子",
+    "liju": "小猫的爪子很锋利。"
   },
   {
     "id": "zh-uo-1",
@@ -7102,7 +7811,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhuō",
     "hanzi": "桌",
-    "zuci": "桌子"
+    "zuci": "桌子",
+    "liju": "桌上放着一本书。"
   },
   {
     "id": "zh-uo-2",
@@ -7112,7 +7822,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zhuó",
     "hanzi": "着",
-    "zuci": "着想"
+    "zuci": "着想",
+    "liju": "他处处为别人着想。"
   },
   {
     "id": "zh-uai-4",
@@ -7122,7 +7833,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhuài",
     "hanzi": "拽",
-    "zuci": "拽住"
+    "zuci": "拽住",
+    "liju": "她拽住我的衣角不放。"
   },
   {
     "id": "zh-ui-1",
@@ -7132,7 +7844,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhuī",
     "hanzi": "追",
-    "zuci": "追赶"
+    "zuci": "追赶",
+    "liju": "他在追赶前面的同学。"
   },
   {
     "id": "zh-uan-1",
@@ -7142,7 +7855,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhuān",
     "hanzi": "专",
-    "zuci": "专心"
+    "zuci": "专心",
+    "liju": "上课要专心听讲。"
   },
   {
     "id": "zh-uan-3",
@@ -7152,7 +7866,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhuǎn",
     "hanzi": "转",
-    "zuci": "转身"
+    "zuci": "转身",
+    "liju": "他转身走进了教室。"
   },
   {
     "id": "zh-uan-4",
@@ -7162,7 +7877,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhuàn",
     "hanzi": "转",
-    "zuci": "转动"
+    "zuci": "转动",
+    "liju": "地球不停地转动。"
   },
   {
     "id": "zh-un-1",
@@ -7172,7 +7888,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhūn",
     "hanzi": "谆",
-    "zuci": "谆谆"
+    "zuci": "谆谆",
+    "liju": "老师谆谆教导我们。"
   },
   {
     "id": "zh-un-3",
@@ -7182,7 +7899,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zhǔn",
     "hanzi": "准",
-    "zuci": "准备"
+    "zuci": "准备",
+    "liju": "我正在准备考试。"
   },
   {
     "id": "zh-uang-1",
@@ -7192,7 +7910,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zhuāng",
     "hanzi": "装",
-    "zuci": "装点"
+    "zuci": "装点",
+    "liju": "彩灯装点了节日气氛。"
   },
   {
     "id": "zh-uang-4",
@@ -7202,7 +7921,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zhuàng",
     "hanzi": "状",
-    "zuci": "状况"
+    "zuci": "状况",
+    "liju": "我们要了解真实状况。"
   },
   {
     "id": "ch-a-1",
@@ -7212,7 +7932,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chā",
     "hanzi": "差",
-    "zuci": "差别"
+    "zuci": "差别",
+    "liju": "这两张画有明显差别。"
   },
   {
     "id": "ch-a-2",
@@ -7222,7 +7943,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chá",
     "hanzi": "查",
-    "zuci": "检查"
+    "zuci": "检查",
+    "liju": "老师检查全班作业。"
   },
   {
     "id": "ch-a-3",
@@ -7232,7 +7954,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǎ",
     "hanzi": "叉",
-    "zuci": "叉腿"
+    "zuci": "叉腿",
+    "liju": "他叉腿坐在凳子上。"
   },
   {
     "id": "ch-a-4",
@@ -7242,7 +7965,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chà",
     "hanzi": "差",
-    "zuci": "差劲"
+    "zuci": "差劲",
+    "liju": "他的表现有点差劲。"
   },
   {
     "id": "ch-e-1",
@@ -7252,7 +7976,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chē",
     "hanzi": "车",
-    "zuci": "汽车"
+    "zuci": "汽车",
+    "liju": "马路上汽车来来往往。"
   },
   {
     "id": "ch-e-3",
@@ -7262,7 +7987,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chě",
     "hanzi": "扯",
-    "zuci": "拉扯"
+    "zuci": "拉扯",
+    "liju": "别用力拉扯绳子。"
   },
   {
     "id": "ch-e-4",
@@ -7272,7 +7998,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chè",
     "hanzi": "撤",
-    "zuci": "撤销"
+    "zuci": "撤销",
+    "liju": "他撤销了原来的决定。"
   },
   {
     "id": "ch-ai-1",
@@ -7282,7 +8009,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chāi",
     "hanzi": "拆",
-    "zuci": "拆开"
+    "zuci": "拆开",
+    "liju": "他把玩具拆开研究。"
   },
   {
     "id": "ch-ai-2",
@@ -7292,7 +8020,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chái",
     "hanzi": "柴",
-    "zuci": "火柴"
+    "zuci": "火柴",
+    "liju": "用火柴点燃蜡烛。"
   },
   {
     "id": "ch-ao-1",
@@ -7302,7 +8031,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chāo",
     "hanzi": "超",
-    "zuci": "超过"
+    "zuci": "超过",
+    "liju": "他的成绩超过了我。"
   },
   {
     "id": "ch-ao-2",
@@ -7312,7 +8042,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cháo",
     "hanzi": "朝",
-    "zuci": "朝代"
+    "zuci": "朝代",
+    "liju": "唐朝是一个强大的朝代。"
   },
   {
     "id": "ch-ao-3",
@@ -7322,7 +8053,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǎo",
     "hanzi": "吵",
-    "zuci": "吵闹"
+    "zuci": "吵闹",
+    "liju": "教室里太吵闹了。"
   },
   {
     "id": "ch-ao-4",
@@ -7332,7 +8064,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chào",
     "hanzi": "钞",
-    "zuci": "钞票"
+    "zuci": "钞票",
+    "liju": "钱包里有一些钞票。"
   },
   {
     "id": "ch-ou-1",
@@ -7342,7 +8075,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chōu",
     "hanzi": "抽",
-    "zuci": "抽出"
+    "zuci": "抽出",
+    "liju": "他从书包里抽出课本。"
   },
   {
     "id": "ch-ou-2",
@@ -7352,7 +8086,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chóu",
     "hanzi": "愁",
-    "zuci": "忧愁"
+    "zuci": "忧愁",
+    "liju": "他脸上带着忧愁的表情。"
   },
   {
     "id": "ch-ou-3",
@@ -7362,7 +8097,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǒu",
     "hanzi": "丑",
-    "zuci": "丑陋"
+    "zuci": "丑陋",
+    "liju": "不能嘲笑别人的丑陋。"
   },
   {
     "id": "ch-ou-4",
@@ -7372,7 +8108,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chòu",
     "hanzi": "臭",
-    "zuci": "臭味"
+    "zuci": "臭味",
+    "liju": "垃圾散发臭味。"
   },
   {
     "id": "ch-an-1",
@@ -7382,7 +8119,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chān",
     "hanzi": "掺",
-    "zuci": "掺和"
+    "zuci": "掺和",
+    "liju": "这件事你不要掺和。"
   },
   {
     "id": "ch-an-2",
@@ -7392,7 +8130,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chán",
     "hanzi": "缠",
-    "zuci": "缠绕"
+    "zuci": "缠绕",
+    "liju": "藤蔓缠绕着大树。"
   },
   {
     "id": "ch-an-3",
@@ -7402,7 +8141,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǎn",
     "hanzi": "产",
-    "zuci": "生产"
+    "zuci": "生产",
+    "liju": "农民伯伯生产粮食。"
   },
   {
     "id": "ch-an-4",
@@ -7412,7 +8152,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chàn",
     "hanzi": "颤",
-    "zuci": "颤抖"
+    "zuci": "颤抖",
+    "liju": "他冷得全身颤抖。"
   },
   {
     "id": "ch-en-2",
@@ -7422,7 +8163,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chén",
     "hanzi": "尘",
-    "zuci": "尘土"
+    "zuci": "尘土",
+    "liju": "汽车驶过扬起尘土。"
   },
   {
     "id": "ch-en-3",
@@ -7432,7 +8174,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chěn",
     "hanzi": "碜",
-    "zuci": "寒碜"
+    "zuci": "寒碜",
+    "liju": "穿成这样太寒碜了。"
   },
   {
     "id": "ch-en-4",
@@ -7442,7 +8185,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chèn",
     "hanzi": "衬",
-    "zuci": "衬托"
+    "zuci": "衬托",
+    "liju": "绿叶衬托着红花。"
   },
   {
     "id": "ch-ang-1",
@@ -7452,7 +8196,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chāng",
     "hanzi": "昌",
-    "zuci": "昌盛"
+    "zuci": "昌盛",
+    "liju": "祝愿祖国繁荣昌盛。"
   },
   {
     "id": "ch-ang-2",
@@ -7462,7 +8207,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cháng",
     "hanzi": "长",
-    "zuci": "长短"
+    "zuci": "长短",
+    "liju": "这两条绳长短不一样。"
   },
   {
     "id": "ch-ang-3",
@@ -7472,7 +8218,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǎng",
     "hanzi": "场",
-    "zuci": "场地"
+    "zuci": "场地",
+    "liju": "球场场地很平整。"
   },
   {
     "id": "ch-ang-4",
@@ -7482,7 +8229,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chàng",
     "hanzi": "唱",
-    "zuci": "唱歌"
+    "zuci": "唱歌",
+    "liju": "她在舞台上唱歌。"
   },
   {
     "id": "ch-eng-1",
@@ -7492,7 +8240,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chēng",
     "hanzi": "称",
-    "zuci": "称呼"
+    "zuci": "称呼",
+    "liju": "同学们称他为学霸。"
   },
   {
     "id": "ch-eng-2",
@@ -7502,7 +8251,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chéng",
     "hanzi": "成",
-    "zuci": "成功"
+    "zuci": "成功",
+    "liju": "他经过努力终于成功了。"
   },
   {
     "id": "ch-eng-3",
@@ -7512,7 +8262,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chěng",
     "hanzi": "逞",
-    "zuci": "逞能"
+    "zuci": "逞能",
+    "liju": "不要总是逞能。"
   },
   {
     "id": "ch-eng-4",
@@ -7522,7 +8273,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chèng",
     "hanzi": "称",
-    "zuci": "称心"
+    "zuci": "称心",
+    "liju": "这份工作他很称心。"
   },
   {
     "id": "ch-i-1",
@@ -7532,7 +8284,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chī",
     "hanzi": "吃",
-    "zuci": "吃饭"
+    "zuci": "吃饭",
+    "liju": "全家人一起吃饭。"
   },
   {
     "id": "ch-i-2",
@@ -7542,7 +8295,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chí",
     "hanzi": "池",
-    "zuci": "池塘"
+    "zuci": "池塘",
+    "liju": "池塘里开着荷花。"
   },
   {
     "id": "ch-i-3",
@@ -7552,7 +8306,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǐ",
     "hanzi": "尺",
-    "zuci": "尺子"
+    "zuci": "尺子",
+    "liju": "他用尺子量书本长度。"
   },
   {
     "id": "ch-i-4",
@@ -7562,7 +8317,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chì",
     "hanzi": "赤",
-    "zuci": "赤色"
+    "zuci": "赤色",
+    "liju": "他画了一轮赤色太阳。"
   },
   {
     "id": "ch-u-1",
@@ -7572,7 +8328,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chū",
     "hanzi": "出",
-    "zuci": "出来"
+    "zuci": "出来",
+    "liju": "太阳从云层里出来。"
   },
   {
     "id": "ch-u-2",
@@ -7582,7 +8339,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chú",
     "hanzi": "除",
-    "zuci": "除非"
+    "zuci": "除非",
+    "liju": "除非下雨否则我们就去。"
   },
   {
     "id": "ch-u-3",
@@ -7592,7 +8350,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chǔ",
     "hanzi": "处",
-    "zuci": "处理"
+    "zuci": "处理",
+    "liju": "这件事要妥善处理。"
   },
   {
     "id": "ch-u-4",
@@ -7602,7 +8361,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chù",
     "hanzi": "触",
-    "zuci": "接触"
+    "zuci": "接触",
+    "liju": "不要接触电源插座。"
   },
   {
     "id": "ch-ua-1",
@@ -7612,7 +8372,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chuā",
     "hanzi": "欻",
-    "zuci": "欻的一声"
+    "zuci": "欻的一声",
+    "liju": "欻的一声箭飞了出去。"
   },
   {
     "id": "ch-uo-1",
@@ -7622,7 +8383,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chuō",
     "hanzi": "戳",
-    "zuci": "戳破"
+    "zuci": "戳破",
+    "liju": "针把气球戳破了。"
   },
   {
     "id": "ch-uo-4",
@@ -7632,7 +8394,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chuò",
     "hanzi": "辍",
-    "zuci": "辍学"
+    "zuci": "辍学",
+    "liju": "他因为贫困而辍学。"
   },
   {
     "id": "ch-uai-1",
@@ -7642,7 +8405,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chuāi",
     "hanzi": "揣",
-    "zuci": "揣测"
+    "zuci": "揣测",
+    "liju": "不要随意揣测别人想法。"
   },
   {
     "id": "ch-uai-4",
@@ -7652,7 +8416,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chuài",
     "hanzi": "踹",
-    "zuci": "踹门"
+    "zuci": "踹门",
+    "liju": "他用力踹开了门。"
   },
   {
     "id": "ch-ui-1",
@@ -7662,7 +8427,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chuī",
     "hanzi": "吹",
-    "zuci": "吹风"
+    "zuci": "吹风",
+    "liju": "冬天的冷风吹得脸上疼。"
   },
   {
     "id": "ch-ui-2",
@@ -7672,7 +8438,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chuí",
     "hanzi": "锤",
-    "zuci": "锤子"
+    "zuci": "锤子",
+    "liju": "他用锤子钉钉子。"
   },
   {
     "id": "ch-uan-1",
@@ -7682,7 +8449,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chuān",
     "hanzi": "穿",
-    "zuci": "穿衣"
+    "zuci": "穿衣",
+    "liju": "早上起床先穿衣。"
   },
   {
     "id": "ch-uan-2",
@@ -7692,7 +8460,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chuán",
     "hanzi": "船",
-    "zuci": "轮船"
+    "zuci": "轮船",
+    "liju": "轮船在海面上航行。"
   },
   {
     "id": "ch-uan-3",
@@ -7702,7 +8471,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "chuǎn",
     "hanzi": "喘",
-    "zuci": "喘气"
+    "zuci": "喘气",
+    "liju": "跑步后他大口喘气。"
   },
   {
     "id": "ch-uan-4",
@@ -7712,7 +8482,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "chuàn",
     "hanzi": "串",
-    "zuci": "一串"
+    "zuci": "一串",
+    "liju": "树上挂着一串葡萄。"
   },
   {
     "id": "ch-un-1",
@@ -7722,7 +8493,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "chūn",
     "hanzi": "春",
-    "zuci": "春天"
+    "zuci": "春天",
+    "liju": "春天来了百花盛开。"
   },
   {
     "id": "ch-un-2",
@@ -7732,7 +8504,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "chún",
     "hanzi": "纯",
-    "zuci": "纯洁"
+    "zuci": "纯洁",
+    "liju": "孩子们的友谊很纯洁。"
   },
   {
     "id": "sh-a-1",
@@ -7742,7 +8515,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shā",
     "hanzi": "沙",
-    "zuci": "沙子"
+    "zuci": "沙子",
+    "liju": "沙滩上有许多细沙子。"
   },
   {
     "id": "sh-a-2",
@@ -7752,7 +8526,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shá",
     "hanzi": "啥",
-    "zuci": "什么"
+    "zuci": "什么",
+    "liju": "你刚才说了什么？"
   },
   {
     "id": "sh-a-3",
@@ -7762,7 +8537,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǎ",
     "hanzi": "傻",
-    "zuci": "傻瓜"
+    "zuci": "傻瓜",
+    "liju": "不要叫他傻瓜。"
   },
   {
     "id": "sh-a-4",
@@ -7772,7 +8548,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shà",
     "hanzi": "煞",
-    "zuci": "煞白"
+    "zuci": "煞白",
+    "liju": "他吓得脸色煞白。"
   },
   {
     "id": "sh-e-2",
@@ -7782,7 +8559,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shé",
     "hanzi": "蛇",
-    "zuci": "大蛇"
+    "zuci": "大蛇",
+    "liju": "草丛里爬出一条大蛇。"
   },
   {
     "id": "sh-e-3",
@@ -7792,7 +8570,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shě",
     "hanzi": "舍",
-    "zuci": "舍得"
+    "zuci": "舍得",
+    "liju": "你舍得离开家乡吗？"
   },
   {
     "id": "sh-e-4",
@@ -7802,7 +8581,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shè",
     "hanzi": "设",
-    "zuci": "设计"
+    "zuci": "设计",
+    "liju": "他设计了一栋漂亮的房子。"
   },
   {
     "id": "sh-ai-1",
@@ -7812,7 +8592,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shāi",
     "hanzi": "筛",
-    "zuci": "筛选"
+    "zuci": "筛选",
+    "liju": "老师筛选出优秀作品。"
   },
   {
     "id": "sh-ai-3",
@@ -7822,7 +8603,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǎi",
     "hanzi": "色",
-    "zuci": "掉色"
+    "zuci": "掉色",
+    "liju": "这件衣服洗了会掉色。"
   },
   {
     "id": "sh-ai-4",
@@ -7832,7 +8614,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shài",
     "hanzi": "晒",
-    "zuci": "晒干"
+    "zuci": "晒干",
+    "liju": "把衣服挂在外面晒干。"
   },
   {
     "id": "sh-ei-2",
@@ -7842,7 +8625,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shéi",
     "hanzi": "谁",
-    "zuci": "是谁"
+    "zuci": "是谁",
+    "liju": "是谁拿了我的铅笔？"
   },
   {
     "id": "sh-ao-1",
@@ -7852,7 +8636,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shāo",
     "hanzi": "烧",
-    "zuci": "烧水"
+    "zuci": "烧水",
+    "liju": "奶奶正在烧水泡茶。"
   },
   {
     "id": "sh-ao-2",
@@ -7862,7 +8647,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "sháo",
     "hanzi": "勺",
-    "zuci": "勺子"
+    "zuci": "勺子",
+    "liju": "他用勺子喝汤。"
   },
   {
     "id": "sh-ao-3",
@@ -7872,7 +8658,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǎo",
     "hanzi": "少",
-    "zuci": "多少"
+    "zuci": "多少",
+    "liju": "你知道班里有多少人吗？"
   },
   {
     "id": "sh-ao-4",
@@ -7882,7 +8669,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shào",
     "hanzi": "少",
-    "zuci": "少年"
+    "zuci": "少年",
+    "liju": "少年是祖国的未来。"
   },
   {
     "id": "sh-ou-1",
@@ -7892,7 +8680,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shōu",
     "hanzi": "收",
-    "zuci": "收到"
+    "zuci": "收到",
+    "liju": "我收到了好朋友的礼物。"
   },
   {
     "id": "sh-ou-2",
@@ -7902,7 +8691,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shóu",
     "hanzi": "熟",
-    "zuci": "熟了"
+    "zuci": "熟了",
+    "liju": "饭已经熟了可以吃了。"
   },
   {
     "id": "sh-ou-3",
@@ -7912,7 +8702,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǒu",
     "hanzi": "手",
-    "zuci": "双手"
+    "zuci": "双手",
+    "liju": "他用双手捧起书本。"
   },
   {
     "id": "sh-ou-4",
@@ -7922,7 +8713,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shòu",
     "hanzi": "受",
-    "zuci": "受到"
+    "zuci": "受到",
+    "liju": "他受到了大家的表扬。"
   },
   {
     "id": "sh-an-1",
@@ -7932,7 +8724,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shān",
     "hanzi": "山",
-    "zuci": "大山"
+    "zuci": "大山",
+    "liju": "远处有一座高高的大山。"
   },
   {
     "id": "sh-an-3",
@@ -7942,7 +8735,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǎn",
     "hanzi": "闪",
-    "zuci": "闪光"
+    "zuci": "闪光",
+    "liju": "钻石在灯光下闪闪发光。"
   },
   {
     "id": "sh-an-4",
@@ -7952,7 +8746,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shàn",
     "hanzi": "善",
-    "zuci": "善良"
+    "zuci": "善良",
+    "liju": "她是一个善良的女孩。"
   },
   {
     "id": "sh-en-1",
@@ -7962,7 +8757,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shēn",
     "hanzi": "深",
-    "zuci": "深入"
+    "zuci": "深入",
+    "liju": "我们要深入思考问题。"
   },
   {
     "id": "sh-en-2",
@@ -7972,7 +8768,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shén",
     "hanzi": "什",
-    "zuci": "什么"
+    "zuci": "什么",
+    "liju": "这是什么花？"
   },
   {
     "id": "sh-en-3",
@@ -7982,7 +8779,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shěn",
     "hanzi": "审",
-    "zuci": "审查"
+    "zuci": "审查",
+    "liju": "老师审查了我们的作文。"
   },
   {
     "id": "sh-en-4",
@@ -7992,7 +8790,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shèn",
     "hanzi": "甚",
-    "zuci": "甚至"
+    "zuci": "甚至",
+    "liju": "他太忙了甚至没吃饭。"
   },
   {
     "id": "sh-ang-1",
@@ -8002,7 +8801,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shāng",
     "hanzi": "商",
-    "zuci": "商人"
+    "zuci": "商人",
+    "liju": "那个商人来自南方。"
   },
   {
     "id": "sh-ang-3",
@@ -8012,7 +8812,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǎng",
     "hanzi": "赏",
-    "zuci": "欣赏"
+    "zuci": "欣赏",
+    "liju": "我们欣赏窗外的风景。"
   },
   {
     "id": "sh-ang-4",
@@ -8022,7 +8823,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shàng",
     "hanzi": "上",
-    "zuci": "上面"
+    "zuci": "上面",
+    "liju": "书在桌子的上面。"
   },
   {
     "id": "sh-eng-1",
@@ -8032,7 +8834,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shēng",
     "hanzi": "生",
-    "zuci": "生活"
+    "zuci": "生活",
+    "liju": "农村的生活很安静。"
   },
   {
     "id": "sh-eng-2",
@@ -8042,7 +8845,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shéng",
     "hanzi": "绳",
-    "zuci": "绳子"
+    "zuci": "绳子",
+    "liju": "他用绳子捆扎包裹。"
   },
   {
     "id": "sh-eng-3",
@@ -8052,7 +8856,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shěng",
     "hanzi": "省",
-    "zuci": "节省"
+    "zuci": "节省",
+    "liju": "我们要节省用水。"
   },
   {
     "id": "sh-eng-4",
@@ -8062,7 +8867,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shèng",
     "hanzi": "胜",
-    "zuci": "胜利"
+    "zuci": "胜利",
+    "liju": "我们赢得了胜利。"
   },
   {
     "id": "sh-i-1",
@@ -8072,7 +8878,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shī",
     "hanzi": "师",
-    "zuci": "老师"
+    "zuci": "老师",
+    "liju": "老师教会我们很多知识。"
   },
   {
     "id": "sh-i-2",
@@ -8082,7 +8889,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shí",
     "hanzi": "十",
-    "zuci": "十个"
+    "zuci": "十个",
+    "liju": "树上有十个红苹果。"
   },
   {
     "id": "sh-i-3",
@@ -8092,7 +8900,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǐ",
     "hanzi": "史",
-    "zuci": "历史"
+    "zuci": "历史",
+    "liju": "历史课上我们学古代故事。"
   },
   {
     "id": "sh-i-4",
@@ -8102,7 +8911,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shì",
     "hanzi": "是",
-    "zuci": "是否"
+    "zuci": "是否",
+    "liju": "你是否愿意帮助他？"
   },
   {
     "id": "sh-u-1",
@@ -8112,7 +8922,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shū",
     "hanzi": "书",
-    "zuci": "书本"
+    "zuci": "书本",
+    "liju": "书本是我们的好朋友。"
   },
   {
     "id": "sh-u-2",
@@ -8122,7 +8933,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "shú",
     "hanzi": "熟",
-    "zuci": "熟悉"
+    "zuci": "熟悉",
+    "liju": "我熟悉这里的每一条路。"
   },
   {
     "id": "sh-u-3",
@@ -8132,7 +8944,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shǔ",
     "hanzi": "数",
-    "zuci": "数学"
+    "zuci": "数学",
+    "liju": "数学课上我们做计算题。"
   },
   {
     "id": "sh-u-4",
@@ -8142,7 +8955,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shù",
     "hanzi": "树",
-    "zuci": "树木"
+    "zuci": "树木",
+    "liju": "春天树木发出新芽。"
   },
   {
     "id": "sh-ua-1",
@@ -8152,7 +8966,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shuā",
     "hanzi": "刷",
-    "zuci": "刷子"
+    "zuci": "刷子",
+    "liju": "我用刷子清理灰尘。"
   },
   {
     "id": "sh-ua-3",
@@ -8162,7 +8977,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shuǎ",
     "hanzi": "耍",
-    "zuci": "玩耍"
+    "zuci": "玩耍",
+    "liju": "孩子们在公园里玩耍。"
   },
   {
     "id": "sh-uo-1",
@@ -8172,7 +8988,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shuō",
     "hanzi": "说",
-    "zuci": "说话"
+    "zuci": "说话",
+    "liju": "上课时不要随便说话。"
   },
   {
     "id": "sh-uai-4",
@@ -8182,7 +8999,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shuài",
     "hanzi": "帅",
-    "zuci": "元帅"
+    "zuci": "元帅",
+    "liju": "故事里有一位大将军。"
   },
   {
     "id": "sh-ui-3",
@@ -8192,7 +9010,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shuǐ",
     "hanzi": "水",
-    "zuci": "大水"
+    "zuci": "大水",
+    "liju": "昨天的大水冲坏了道路。"
   },
   {
     "id": "sh-ui-4",
@@ -8202,7 +9021,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shuì",
     "hanzi": "睡",
-    "zuci": "睡觉"
+    "zuci": "睡觉",
+    "liju": "晚上十点该睡觉了。"
   },
   {
     "id": "sh-uan-1",
@@ -8212,7 +9032,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shuān",
     "hanzi": "栓",
-    "zuci": "栓子"
+    "zuci": "栓子",
+    "liju": "木门上的栓子很牢固。"
   },
   {
     "id": "sh-un-4",
@@ -8222,7 +9043,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "shùn",
     "hanzi": "顺",
-    "zuci": "顺利"
+    "zuci": "顺利",
+    "liju": "他的工作一切顺利。"
   },
   {
     "id": "sh-uang-1",
@@ -8232,7 +9054,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "shuāng",
     "hanzi": "双",
-    "zuci": "双手"
+    "zuci": "双手",
+    "liju": "他用双手捧着奖杯。"
   },
   {
     "id": "sh-uang-3",
@@ -8242,7 +9065,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "shuǎng",
     "hanzi": "爽",
-    "zuci": "爽快"
+    "zuci": "爽快",
+    "liju": "他做事非常爽快。"
   },
   {
     "id": "r-e-4",
@@ -8252,7 +9076,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rè",
     "hanzi": "热",
-    "zuci": "热水"
+    "zuci": "热水",
+    "liju": "冬天喝一杯热水真舒服。"
   },
   {
     "id": "r-ao-2",
@@ -8262,7 +9087,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ráo",
     "hanzi": "饶",
-    "zuci": "饶恕"
+    "zuci": "饶恕",
+    "liju": "他请求老师饶恕。"
   },
   {
     "id": "r-ao-3",
@@ -8272,7 +9098,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rǎo",
     "hanzi": "扰",
-    "zuci": "打扰"
+    "zuci": "打扰",
+    "liju": "对不起打扰你一下。"
   },
   {
     "id": "r-ao-4",
@@ -8282,7 +9109,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rào",
     "hanzi": "绕",
-    "zuci": "绕路"
+    "zuci": "绕路",
+    "liju": "前面修路只能绕路走。"
   },
   {
     "id": "r-ou-2",
@@ -8292,7 +9120,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "róu",
     "hanzi": "柔",
-    "zuci": "柔软"
+    "zuci": "柔软",
+    "liju": "猫的毛很柔软。"
   },
   {
     "id": "r-ou-4",
@@ -8302,7 +9131,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ròu",
     "hanzi": "肉",
-    "zuci": "肉类"
+    "zuci": "肉类",
+    "liju": "狗喜欢吃肉类食物。"
   },
   {
     "id": "r-an-2",
@@ -8312,7 +9142,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "rán",
     "hanzi": "然",
-    "zuci": "然后"
+    "zuci": "然后",
+    "liju": "先做完作业然后出去玩。"
   },
   {
     "id": "r-an-3",
@@ -8322,7 +9153,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rǎn",
     "hanzi": "染",
-    "zuci": "染色"
+    "zuci": "染色",
+    "liju": "她把头发染成了黑色。"
   },
   {
     "id": "r-en-2",
@@ -8332,7 +9164,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "rén",
     "hanzi": "人",
-    "zuci": "人民"
+    "zuci": "人民",
+    "liju": "人民的生活越来越好。"
   },
   {
     "id": "r-en-3",
@@ -8342,7 +9175,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rěn",
     "hanzi": "忍",
-    "zuci": "忍受"
+    "zuci": "忍受",
+    "liju": "他忍受着疼痛继续比赛。"
   },
   {
     "id": "r-en-4",
@@ -8352,7 +9186,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rèn",
     "hanzi": "任",
-    "zuci": "任务"
+    "zuci": "任务",
+    "liju": "我们完成了老师布置的任务。"
   },
   {
     "id": "r-ang-2",
@@ -8362,7 +9197,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ráng",
     "hanzi": "嚷",
-    "zuci": "嚷嚷"
+    "zuci": "嚷嚷",
+    "liju": "不要在外面大声嚷嚷。"
   },
   {
     "id": "r-ang-3",
@@ -8372,7 +9208,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rǎng",
     "hanzi": "壤",
-    "zuci": "土壤"
+    "zuci": "土壤",
+    "liju": "这片土壤适合种菜。"
   },
   {
     "id": "r-ang-4",
@@ -8382,7 +9219,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ràng",
     "hanzi": "让",
-    "zuci": "让开"
+    "zuci": "让开",
+    "liju": "他让开了一条路。"
   },
   {
     "id": "r-eng-1",
@@ -8392,7 +9230,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "rēng",
     "hanzi": "扔",
-    "zuci": "扔球"
+    "zuci": "扔球",
+    "liju": "弟弟把球扔给小狗。"
   },
   {
     "id": "r-eng-2",
@@ -8402,7 +9241,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "réng",
     "hanzi": "仍",
-    "zuci": "仍然"
+    "zuci": "仍然",
+    "liju": "他仍然坚持每天跑步。"
   },
   {
     "id": "r-i-4",
@@ -8412,7 +9252,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rì",
     "hanzi": "日",
-    "zuci": "日子"
+    "zuci": "日子",
+    "liju": "日子一天天过去了。"
   },
   {
     "id": "r-ong-2",
@@ -8422,7 +9263,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "róng",
     "hanzi": "荣",
-    "zuci": "光荣"
+    "zuci": "光荣",
+    "liju": "当兵是一件光荣的事。"
   },
   {
     "id": "r-ong-3",
@@ -8432,7 +9274,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rǒng",
     "hanzi": "冗",
-    "zuci": "冗长"
+    "zuci": "冗长",
+    "liju": "他的发言过于冗长。"
   },
   {
     "id": "r-u-2",
@@ -8442,7 +9285,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "rú",
     "hanzi": "如",
-    "zuci": "如果"
+    "zuci": "如果",
+    "liju": "如果下雨我们就改期。"
   },
   {
     "id": "r-u-3",
@@ -8452,7 +9296,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "rǔ",
     "hanzi": "乳",
-    "zuci": "乳汁"
+    "zuci": "乳汁",
+    "liju": "牛能产出营养的乳汁。"
   },
   {
     "id": "r-u-4",
@@ -8462,7 +9307,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rù",
     "hanzi": "入",
-    "zuci": "入口"
+    "zuci": "入口",
+    "liju": "超市入口有很多人。"
   },
   {
     "id": "r-ua-3",
@@ -8472,7 +9318,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ruǎ",
     "hanzi": "挼",
-    "zuci": "挼搓"
+    "zuci": "挼搓",
+    "liju": "她挼搓着手里的面团。"
   },
   {
     "id": "r-uo-4",
@@ -8482,7 +9329,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ruò",
     "hanzi": "若",
-    "zuci": "若干"
+    "zuci": "若干",
+    "liju": "若干年后这里变样了。"
   },
   {
     "id": "r-ui-3",
@@ -8492,7 +9340,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ruǐ",
     "hanzi": "蕊",
-    "zuci": "花蕊"
+    "zuci": "花蕊",
+    "liju": "花蕊上有几只小蜜蜂。"
   },
   {
     "id": "r-ui-4",
@@ -8502,7 +9351,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ruì",
     "hanzi": "锐",
-    "zuci": "锐利"
+    "zuci": "锐利",
+    "liju": "这把刀很锐利。"
   },
   {
     "id": "r-uan-3",
@@ -8512,7 +9362,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ruǎn",
     "hanzi": "软",
-    "zuci": "柔软"
+    "zuci": "柔软",
+    "liju": "这块面包很柔软。"
   },
   {
     "id": "r-un-4",
@@ -8522,7 +9373,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "rùn",
     "hanzi": "润",
-    "zuci": "湿润"
+    "zuci": "湿润",
+    "liju": "雨后空气很湿润。"
   },
   {
     "id": "z-a-1",
@@ -8532,7 +9384,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zā",
     "hanzi": "扎",
-    "zuci": "扎辫子"
+    "zuci": "扎辫子",
+    "liju": "妈妈帮她扎辫子。"
   },
   {
     "id": "z-a-2",
@@ -8542,7 +9395,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zá",
     "hanzi": "杂",
-    "zuci": "杂物"
+    "zuci": "杂物",
+    "liju": "他把杂物放进了柜子。"
   },
   {
     "id": "z-a-3",
@@ -8552,7 +9406,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǎ",
     "hanzi": "咋",
-    "zuci": "咋办"
+    "zuci": "咋办",
+    "liju": "突然下雨了该咋办？"
   },
   {
     "id": "z-ai-1",
@@ -8562,7 +9417,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zāi",
     "hanzi": "灾",
-    "zuci": "灾难"
+    "zuci": "灾难",
+    "liju": "地震是一场大灾难。"
   },
   {
     "id": "z-ai-3",
@@ -8572,7 +9428,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǎi",
     "hanzi": "载",
-    "zuci": "记载"
+    "zuci": "记载",
+    "liju": "历史书上记载了很多事情。"
   },
   {
     "id": "z-ai-4",
@@ -8582,7 +9439,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zài",
     "hanzi": "在",
-    "zuci": "现在"
+    "zuci": "现在",
+    "liju": "现在我们要去操场集合。"
   },
   {
     "id": "z-e-2",
@@ -8592,7 +9450,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zé",
     "hanzi": "则",
-    "zuci": "原则"
+    "zuci": "原则",
+    "liju": "做事情要讲原则。"
   },
   {
     "id": "z-e-3",
@@ -8602,7 +9461,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zě",
     "hanzi": "仄",
-    "zuci": "平仄"
+    "zuci": "平仄",
+    "liju": "古诗讲究平仄对仗。"
   },
   {
     "id": "z-ei-2",
@@ -8612,7 +9472,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zéi",
     "hanzi": "贼",
-    "zuci": "贼人"
+    "zuci": "贼人",
+    "liju": "贼人被警察抓住了。"
   },
   {
     "id": "z-en-3",
@@ -8622,7 +9483,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zěn",
     "hanzi": "怎",
-    "zuci": "怎样"
+    "zuci": "怎样",
+    "liju": "你怎样完成这个任务？"
   },
   {
     "id": "z-en-4",
@@ -8632,7 +9494,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zèn",
     "hanzi": "谮",
-    "zuci": "谮言"
+    "zuci": "谮言",
+    "liju": "不要听信小人的谮言。"
   },
   {
     "id": "z-ang-1",
@@ -8642,7 +9505,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zāng",
     "hanzi": "脏",
-    "zuci": "脏乱"
+    "zuci": "脏乱",
+    "liju": "房间太脏乱了需要整理。"
   },
   {
     "id": "z-ang-3",
@@ -8652,7 +9516,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǎng",
     "hanzi": "驵",
-    "zuci": "驵侩"
+    "zuci": "驵侩",
+    "liju": "古代驵侩就是现在的中间人。"
   },
   {
     "id": "z-ang-4",
@@ -8662,7 +9527,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zàng",
     "hanzi": "葬",
-    "zuci": "葬礼"
+    "zuci": "葬礼",
+    "liju": "全村人都参加了葬礼。"
   },
   {
     "id": "z-eng-1",
@@ -8672,7 +9538,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zēng",
     "hanzi": "增",
-    "zuci": "增加"
+    "zuci": "增加",
+    "liju": "学校增加了新的课程。"
   },
   {
     "id": "z-eng-4",
@@ -8682,7 +9549,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zèng",
     "hanzi": "赠",
-    "zuci": "赠送"
+    "zuci": "赠送",
+    "liju": "他赠送了一本书给我。"
   },
   {
     "id": "z-i-3",
@@ -8692,7 +9560,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǐ",
     "hanzi": "子",
-    "zuci": "父子"
+    "zuci": "父子",
+    "liju": "他们父子俩长得很像。"
   },
   {
     "id": "z-i-4",
@@ -8702,7 +9571,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zì",
     "hanzi": "字",
-    "zuci": "写字"
+    "zuci": "写字",
+    "liju": "我们每天认真写字。"
   },
   {
     "id": "z-u-1",
@@ -8712,7 +9582,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zū",
     "hanzi": "租",
-    "zuci": "租用"
+    "zuci": "租用",
+    "liju": "他们租用了一间办公室。"
   },
   {
     "id": "z-u-2",
@@ -8722,7 +9593,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zú",
     "hanzi": "族",
-    "zuci": "民族"
+    "zuci": "民族",
+    "liju": "五十六个民族是一家。"
   },
   {
     "id": "z-u-3",
@@ -8732,7 +9604,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǔ",
     "hanzi": "祖",
-    "zuci": "祖先"
+    "zuci": "祖先",
+    "liju": "我们要尊敬祖先。"
   },
   {
     "id": "z-uo-1",
@@ -8742,7 +9615,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zuō",
     "hanzi": "作",
-    "zuci": "作坊"
+    "zuci": "作坊",
+    "liju": "村口有家豆腐作坊。"
   },
   {
     "id": "z-uo-2",
@@ -8752,7 +9626,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "zuó",
     "hanzi": "昨",
-    "zuci": "昨天"
+    "zuci": "昨天",
+    "liju": "昨天我们去公园玩了。"
   },
   {
     "id": "z-uo-3",
@@ -8762,7 +9637,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zuǒ",
     "hanzi": "左",
-    "zuci": "左右"
+    "zuci": "左右",
+    "liju": "教室左右各有一扇窗。"
   },
   {
     "id": "z-uo-4",
@@ -8772,7 +9648,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zuò",
     "hanzi": "作",
-    "zuci": "作业"
+    "zuci": "作业",
+    "liju": "回家要先完成作业。"
   },
   {
     "id": "z-ui-3",
@@ -8782,7 +9659,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zuǐ",
     "hanzi": "嘴",
-    "zuci": "嘴巴"
+    "zuci": "嘴巴",
+    "liju": "他的嘴巴很甜。"
   },
   {
     "id": "z-ui-4",
@@ -8792,7 +9670,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zuì",
     "hanzi": "最",
-    "zuci": "最大"
+    "zuci": "最大",
+    "liju": "大象是陆地上最大的动物。"
   },
   {
     "id": "z-uan-1",
@@ -8802,7 +9681,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zuān",
     "hanzi": "钻",
-    "zuci": "钻研"
+    "zuci": "钻研",
+    "liju": "他喜欢钻研难题。"
   },
   {
     "id": "z-uan-4",
@@ -8812,7 +9692,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "zuàn",
     "hanzi": "钻",
-    "zuci": "钻石"
+    "zuci": "钻石",
+    "liju": "钻石很坚硬。"
   },
   {
     "id": "z-un-1",
@@ -8822,7 +9703,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "zūn",
     "hanzi": "尊",
-    "zuci": "尊重"
+    "zuci": "尊重",
+    "liju": "我们要尊重老师。"
   },
   {
     "id": "z-un-3",
@@ -8832,7 +9714,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "zǔn",
     "hanzi": "撙",
-    "zuci": "撙节"
+    "zuci": "撙节",
+    "liju": "要养成撙节用钱的习惯。"
   },
   {
     "id": "c-a-1",
@@ -8842,7 +9725,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cā",
     "hanzi": "擦",
-    "zuci": "擦车"
+    "zuci": "擦车",
+    "liju": "他每天自己擦车。"
   },
   {
     "id": "c-ai-1",
@@ -8852,7 +9736,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cāi",
     "hanzi": "猜",
-    "zuci": "猜谜"
+    "zuci": "猜谜",
+    "liju": "同学们正在猜谜语。"
   },
   {
     "id": "c-ai-2",
@@ -8862,7 +9747,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cái",
     "hanzi": "才",
-    "zuci": "才能"
+    "zuci": "才能",
+    "liju": "他很有音乐才能。"
   },
   {
     "id": "c-ai-3",
@@ -8872,7 +9758,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "cǎi",
     "hanzi": "采",
-    "zuci": "采集"
+    "zuci": "采集",
+    "liju": "小蜜蜂在花丛中采集花蜜。"
   },
   {
     "id": "c-ai-4",
@@ -8882,7 +9769,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cài",
     "hanzi": "菜",
-    "zuci": "蔬菜"
+    "zuci": "蔬菜",
+    "liju": "多吃蔬菜对身体好。"
   },
   {
     "id": "c-an-1",
@@ -8892,7 +9780,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cān",
     "hanzi": "参",
-    "zuci": "参加"
+    "zuci": "参加",
+    "liju": "我参加了学校运动会。"
   },
   {
     "id": "c-an-2",
@@ -8902,7 +9791,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cán",
     "hanzi": "残",
-    "zuci": "残酷"
+    "zuci": "残酷",
+    "liju": "战争残酷无情。"
   },
   {
     "id": "c-an-3",
@@ -8912,7 +9802,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "cǎn",
     "hanzi": "惨",
-    "zuci": "悲惨"
+    "zuci": "悲惨",
+    "liju": "这个故事太悲惨了。"
   },
   {
     "id": "c-an-4",
@@ -8922,7 +9813,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "càn",
     "hanzi": "灿",
-    "zuci": "灿烂"
+    "zuci": "灿烂",
+    "liju": "阳光下花儿开得灿烂。"
   },
   {
     "id": "c-ao-1",
@@ -8932,7 +9824,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cāo",
     "hanzi": "操",
-    "zuci": "操场"
+    "zuci": "操场",
+    "liju": "同学们在操场上跑步。"
   },
   {
     "id": "c-ao-2",
@@ -8942,7 +9835,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cáo",
     "hanzi": "曹",
-    "zuci": "曹氏"
+    "zuci": "曹氏",
+    "liju": "曹氏家族历史悠久。"
   },
   {
     "id": "c-ao-3",
@@ -8952,7 +9846,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "cǎo",
     "hanzi": "草",
-    "zuci": "花草"
+    "zuci": "花草",
+    "liju": "公园里种了很多花草。"
   },
   {
     "id": "c-e-4",
@@ -8962,7 +9857,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cè",
     "hanzi": "册",
-    "zuci": "手册"
+    "zuci": "手册",
+    "liju": "他买了一本旅游手册。"
   },
   {
     "id": "c-eng-2",
@@ -8972,7 +9868,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "céng",
     "hanzi": "曾",
-    "zuci": "曾经"
+    "zuci": "曾经",
+    "liju": "我曾经去过那个城市。"
   },
   {
     "id": "c-i-1",
@@ -8982,7 +9879,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cī",
     "hanzi": "差",
-    "zuci": "参差"
+    "zuci": "参差",
+    "liju": "这两棵树高度参差不齐。"
   },
   {
     "id": "c-i-2",
@@ -8992,7 +9890,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cí",
     "hanzi": "词",
-    "zuci": "词语"
+    "zuci": "词语",
+    "liju": "要理解词语的意思。"
   },
   {
     "id": "c-i-3",
@@ -9002,7 +9901,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "cǐ",
     "hanzi": "此",
-    "zuci": "因此"
+    "zuci": "因此",
+    "liju": "下雨了因此比赛取消。"
   },
   {
     "id": "c-i-4",
@@ -9012,7 +9912,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cì",
     "hanzi": "次",
-    "zuci": "一次"
+    "zuci": "一次",
+    "liju": "他一次吃了三个苹果。"
   },
   {
     "id": "c-ong-2",
@@ -9022,7 +9923,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cóng",
     "hanzi": "从",
-    "zuci": "从来"
+    "zuci": "从来",
+    "liju": "他从来不迟到。"
   },
   {
     "id": "c-ou-4",
@@ -9032,7 +9934,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "còu",
     "hanzi": "凑",
-    "zuci": "凑巧"
+    "zuci": "凑巧",
+    "liju": "凑巧我也要去那里。"
   },
   {
     "id": "c-u-1",
@@ -9042,7 +9945,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cū",
     "hanzi": "粗",
-    "zuci": "粗细"
+    "zuci": "粗细",
+    "liju": "绳子的粗细要合适。"
   },
   {
     "id": "c-u-4",
@@ -9052,7 +9956,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cù",
     "hanzi": "促",
-    "zuci": "促进"
+    "zuci": "促进",
+    "liju": "运动促进身体健康。"
   },
   {
     "id": "c-uan-1",
@@ -9062,7 +9967,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cuān",
     "hanzi": "蹿",
-    "zuci": "蹿跳"
+    "zuci": "蹿跳",
+    "liju": "小猫蹿跳着追蝴蝶。"
   },
   {
     "id": "c-uan-4",
@@ -9072,7 +9978,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cuàn",
     "hanzi": "窜",
-    "zuci": "逃窜"
+    "zuci": "逃窜",
+    "liju": "老鼠吓得四处逃窜。"
   },
   {
     "id": "c-ui-1",
@@ -9082,7 +9989,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cuī",
     "hanzi": "催",
-    "zuci": "催促"
+    "zuci": "催促",
+    "liju": "妈妈催促我快点起床。"
   },
   {
     "id": "c-ui-4",
@@ -9092,7 +10000,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cuì",
     "hanzi": "脆",
-    "zuci": "脆骨"
+    "zuci": "脆骨",
+    "liju": "我喜欢吃脆骨。"
   },
   {
     "id": "c-un-1",
@@ -9102,7 +10011,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cūn",
     "hanzi": "村",
-    "zuci": "村子"
+    "zuci": "村子",
+    "liju": "村子的景色真美。"
   },
   {
     "id": "c-un-2",
@@ -9112,7 +10022,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "cún",
     "hanzi": "存",
-    "zuci": "存在"
+    "zuci": "存在",
+    "liju": "问题还存在没有解决。"
   },
   {
     "id": "c-un-4",
@@ -9122,7 +10033,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cùn",
     "hanzi": "寸",
-    "zuci": "尺寸"
+    "zuci": "尺寸",
+    "liju": "鞋子的尺寸大了。"
   },
   {
     "id": "c-uo-1",
@@ -9132,7 +10044,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "cuō",
     "hanzi": "搓",
-    "zuci": "搓手"
+    "zuci": "搓手",
+    "liju": "天太冷他不停地搓手。"
   },
   {
     "id": "c-uo-4",
@@ -9142,7 +10055,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "cuò",
     "hanzi": "错",
-    "zuci": "错误"
+    "zuci": "错误",
+    "liju": "他改正了错误。"
   },
   {
     "id": "s-a-1",
@@ -9152,7 +10066,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sā",
     "hanzi": "撒",
-    "zuci": "撒谎"
+    "zuci": "撒谎",
+    "liju": "好孩子不应该撒谎。"
   },
   {
     "id": "s-a-3",
@@ -9162,7 +10077,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǎ",
     "hanzi": "洒",
-    "zuci": "洒水"
+    "zuci": "洒水",
+    "liju": "清洁工在洒水扫地。"
   },
   {
     "id": "s-a-4",
@@ -9172,7 +10088,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sà",
     "hanzi": "卅",
-    "zuci": "卅年"
+    "zuci": "卅年",
+    "liju": "三十年，我长高了。"
   },
   {
     "id": "s-ai-1",
@@ -9182,7 +10099,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sāi",
     "hanzi": "塞",
-    "zuci": "塞车"
+    "zuci": "塞车",
+    "liju": "早上七点经常塞车。"
   },
   {
     "id": "s-ai-4",
@@ -9192,7 +10110,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sài",
     "hanzi": "赛",
-    "zuci": "比赛"
+    "zuci": "比赛",
+    "liju": "篮球比赛很精彩。"
   },
   {
     "id": "s-an-1",
@@ -9202,7 +10121,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sān",
     "hanzi": "三",
-    "zuci": "三个"
+    "zuci": "三个",
+    "liju": "我有三个好朋友。"
   },
   {
     "id": "s-an-3",
@@ -9212,7 +10132,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǎn",
     "hanzi": "伞",
-    "zuci": "雨伞"
+    "zuci": "雨伞",
+    "liju": "出门要带雨伞。"
   },
   {
     "id": "s-an-4",
@@ -9222,7 +10143,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sàn",
     "hanzi": "散",
-    "zuci": "散步"
+    "zuci": "散步",
+    "liju": "晚饭后去散步。"
   },
   {
     "id": "s-ang-1",
@@ -9232,7 +10154,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sāng",
     "hanzi": "桑",
-    "zuci": "桑树"
+    "zuci": "桑树",
+    "liju": "桑树上结满了桑椹。"
   },
   {
     "id": "s-ang-3",
@@ -9242,7 +10165,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǎng",
     "hanzi": "嗓",
-    "zuci": "嗓音"
+    "zuci": "嗓音",
+    "liju": "她的嗓音很好听。"
   },
   {
     "id": "s-ang-4",
@@ -9252,7 +10176,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sàng",
     "hanzi": "丧",
-    "zuci": "丧失"
+    "zuci": "丧失",
+    "liju": "他丧失了记忆。"
   },
   {
     "id": "s-ao-1",
@@ -9262,7 +10187,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sāo",
     "hanzi": "骚",
-    "zuci": "骚动"
+    "zuci": "骚动",
+    "liju": "观众席骚动起来。"
   },
   {
     "id": "s-ao-3",
@@ -9272,7 +10198,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǎo",
     "hanzi": "扫",
-    "zuci": "扫地"
+    "zuci": "扫地",
+    "liju": "她每天扫地。"
   },
   {
     "id": "s-ao-4",
@@ -9282,7 +10209,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sào",
     "hanzi": "臊",
-    "zuci": "害臊"
+    "zuci": "害臊",
+    "liju": "她害羞得害臊了。"
   },
   {
     "id": "s-e-4",
@@ -9292,7 +10220,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sè",
     "hanzi": "色",
-    "zuci": "颜色"
+    "zuci": "颜色",
+    "liju": "彩虹有七种颜色。"
   },
   {
     "id": "s-en-1",
@@ -9302,7 +10231,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sēn",
     "hanzi": "森",
-    "zuci": "森林"
+    "zuci": "森林",
+    "liju": "森林里有很多树。"
   },
   {
     "id": "s-eng-1",
@@ -9312,7 +10242,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sēng",
     "hanzi": "僧",
-    "zuci": "僧人"
+    "zuci": "僧人",
+    "liju": "僧人念经打坐。"
   },
   {
     "id": "s-i-1",
@@ -9322,7 +10253,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sī",
     "hanzi": "思",
-    "zuci": "思考"
+    "zuci": "思考",
+    "liju": "他正在思考问题。"
   },
   {
     "id": "s-i-3",
@@ -9332,7 +10264,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǐ",
     "hanzi": "死",
-    "zuci": "死亡"
+    "zuci": "死亡",
+    "liju": "车祸导致一人死亡。"
   },
   {
     "id": "s-i-4",
@@ -9342,7 +10275,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sì",
     "hanzi": "四",
-    "zuci": "四个"
+    "zuci": "四个",
+    "liju": "桌上有四个杯子。"
   },
   {
     "id": "s-ong-1",
@@ -9352,7 +10286,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sōng",
     "hanzi": "松",
-    "zuci": "松树"
+    "zuci": "松树",
+    "liju": "松树四季常青。"
   },
   {
     "id": "s-ong-3",
@@ -9362,7 +10297,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǒng",
     "hanzi": "耸",
-    "zuci": "耸立"
+    "zuci": "耸立",
+    "liju": "宝塔耸立在山顶。"
   },
   {
     "id": "s-ong-4",
@@ -9372,7 +10308,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sòng",
     "hanzi": "送",
-    "zuci": "送别"
+    "zuci": "送别",
+    "liju": "大家到车站送别。"
   },
   {
     "id": "s-ou-1",
@@ -9382,7 +10319,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sōu",
     "hanzi": "搜",
-    "zuci": "搜索"
+    "zuci": "搜索",
+    "liju": "他在搜索资料。"
   },
   {
     "id": "s-ou-3",
@@ -9392,7 +10330,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǒu",
     "hanzi": "叟",
-    "zuci": "老叟"
+    "zuci": "老叟",
+    "liju": "那位老叟年过八十。"
   },
   {
     "id": "s-ou-4",
@@ -9402,7 +10341,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sòu",
     "hanzi": "嗽",
-    "zuci": "咳嗽"
+    "zuci": "咳嗽",
+    "liju": "他咳嗽了好几天。"
   },
   {
     "id": "s-u-1",
@@ -9412,7 +10352,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sū",
     "hanzi": "苏",
-    "zuci": "苏州"
+    "zuci": "苏州",
+    "liju": "苏州园林很美。"
   },
   {
     "id": "s-u-2",
@@ -9422,7 +10363,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "sú",
     "hanzi": "俗",
-    "zuci": "风俗"
+    "zuci": "风俗",
+    "liju": "每个地方风俗不同。"
   },
   {
     "id": "s-u-4",
@@ -9432,7 +10374,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "sù",
     "hanzi": "诉",
-    "zuci": "告诉"
+    "zuci": "告诉",
+    "liju": "他把好消息告诉了大家。"
   },
   {
     "id": "s-uan-1",
@@ -9442,7 +10385,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "suān",
     "hanzi": "酸",
-    "zuci": "酸味"
+    "zuci": "酸味",
+    "liju": "柠檬酸味很重。"
   },
   {
     "id": "s-uan-4",
@@ -9452,7 +10396,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "suàn",
     "hanzi": "算",
-    "zuci": "算术"
+    "zuci": "算术",
+    "liju": "他在学算术。"
   },
   {
     "id": "s-ui-1",
@@ -9462,7 +10407,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "suī",
     "hanzi": "虽",
-    "zuci": "虽然"
+    "zuci": "虽然",
+    "liju": "虽然下雨但我不怕。"
   },
   {
     "id": "s-ui-2",
@@ -9472,7 +10418,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "suí",
     "hanzi": "随",
-    "zuci": "随时"
+    "zuci": "随时",
+    "liju": "有事可以随时找我。"
   },
   {
     "id": "s-ui-4",
@@ -9482,7 +10429,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "suì",
     "hanzi": "岁",
-    "zuci": "岁月"
+    "zuci": "岁月",
+    "liju": "岁月不饶人。"
   },
   {
     "id": "s-un-1",
@@ -9492,7 +10440,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "sūn",
     "hanzi": "孙",
-    "zuci": "孙子"
+    "zuci": "孙子",
+    "liju": "奶奶非常疼爱孙子。"
   },
   {
     "id": "s-un-3",
@@ -9502,7 +10451,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "sǔn",
     "hanzi": "损",
-    "zuci": "损失"
+    "zuci": "损失",
+    "liju": "台风造成了很大损失。"
   },
   {
     "id": "s-uo-1",
@@ -9512,7 +10462,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "suō",
     "hanzi": "缩",
-    "zuci": "缩小"
+    "zuci": "缩小",
+    "liju": "照片缩小了。"
   },
   {
     "id": "s-uo-3",
@@ -9522,7 +10473,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "suǒ",
     "hanzi": "所",
-    "zuci": "所以"
+    "zuci": "所以",
+    "liju": "他病了，所以没来。"
   },
   {
     "id": "s-uo-4",
@@ -9532,7 +10484,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "suò",
     "hanzi": "锁",
-    "zuci": "锁门"
+    "zuci": "锁门",
+    "liju": "离开时要锁门。"
   },
   {
     "id": "零声母-a-1",
@@ -9542,7 +10495,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ā",
     "hanzi": "啊",
-    "zuci": "啊呀"
+    "zuci": "啊呀",
+    "liju": "啊呀，书包忘记带了。"
   },
   {
     "id": "零声母-a-2",
@@ -9552,7 +10506,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "á",
     "hanzi": "啊",
-    "zuci": "啊？你说什么"
+    "zuci": "啊？你说什么",
+    "liju": "啊？你刚才说我没听清。"
   },
   {
     "id": "零声母-a-3",
@@ -9562,7 +10517,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǎ",
     "hanzi": "啊",
-    "zuci": "啊？是吗"
+    "zuci": "啊？是吗",
+    "liju": "啊？他真的考了满分吗？"
   },
   {
     "id": "零声母-a-4",
@@ -9572,7 +10528,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "à",
     "hanzi": "啊",
-    "zuci": "啊！明白了"
+    "zuci": "啊！明白了",
+    "liju": "啊！我终于明白了这个道理。"
   },
   {
     "id": "零声母-o-1",
@@ -9582,7 +10539,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ō",
     "hanzi": "哦",
-    "zuci": "哦！原来如此"
+    "zuci": "哦！原来如此",
+    "liju": "哦！原来是这样的。"
   },
   {
     "id": "零声母-o-2",
@@ -9592,7 +10550,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ó",
     "hanzi": "哦",
-    "zuci": "哦？真的吗"
+    "zuci": "哦？真的吗",
+    "liju": "哦？你说的是真的吗？"
   },
   {
     "id": "零声母-o-3",
@@ -9602,7 +10561,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǒ",
     "hanzi": "哦",
-    "zuci": "哦？是这样吗"
+    "zuci": "哦？是这样吗",
+    "liju": "哦？事情原来是这样的。"
   },
   {
     "id": "零声母-o-4",
@@ -9612,7 +10572,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ò",
     "hanzi": "哦",
-    "zuci": "哦！我懂了"
+    "zuci": "哦！我懂了",
+    "liju": "哦！我现在终于懂了。"
   },
   {
     "id": "零声母-e-1",
@@ -9622,7 +10583,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ē",
     "hanzi": "阿",
-    "zuci": "阿胶"
+    "zuci": "阿胶",
+    "liju": "阿胶是一种补血良药。"
   },
   {
     "id": "零声母-e-2",
@@ -9632,7 +10594,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "é",
     "hanzi": "鹅",
-    "zuci": "天鹅"
+    "zuci": "天鹅",
+    "liju": "湖面上游着白天鹅。"
   },
   {
     "id": "零声母-e-3",
@@ -9642,7 +10605,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ě",
     "hanzi": "恶",
-    "zuci": "恶心"
+    "zuci": "恶心",
+    "liju": "晕车让他觉得恶心。"
   },
   {
     "id": "零声母-e-4",
@@ -9652,7 +10616,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "è",
     "hanzi": "恶",
-    "zuci": "凶恶"
+    "zuci": "凶恶",
+    "liju": "凶恶的狼来了。"
   },
   {
     "id": "零声母-ai-1",
@@ -9662,7 +10627,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "āi",
     "hanzi": "哎",
-    "zuci": "哎呀"
+    "zuci": "哎呀",
+    "liju": "哎呀，差点摔倒了。"
   },
   {
     "id": "零声母-ai-2",
@@ -9672,7 +10638,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ái",
     "hanzi": "挨",
-    "zuci": "挨打"
+    "zuci": "挨打",
+    "liju": "他犯了错被挨打。"
   },
   {
     "id": "零声母-ai-3",
@@ -9682,7 +10649,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǎi",
     "hanzi": "矮",
-    "zuci": "矮小"
+    "zuci": "矮小",
+    "liju": "房子又矮小又破旧。"
   },
   {
     "id": "零声母-ai-4",
@@ -9692,7 +10660,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ài",
     "hanzi": "爱",
-    "zuci": "热爱"
+    "zuci": "热爱",
+    "liju": "她热爱跳舞和唱歌。"
   },
   {
     "id": "零声母-ei-1",
@@ -9702,7 +10671,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ēi",
     "hanzi": "诶",
-    "zuci": "诶！过来"
+    "zuci": "诶！过来",
+    "liju": "诶！你们快过来看。"
   },
   {
     "id": "零声母-ei-2",
@@ -9712,7 +10682,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "éi",
     "hanzi": "诶",
-    "zuci": "诶？是你吗"
+    "zuci": "诶？是你吗",
+    "liju": "诶？真的是你吗？"
   },
   {
     "id": "零声母-ei-3",
@@ -9722,7 +10693,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ěi",
     "hanzi": "诶",
-    "zuci": "诶？真的吗"
+    "zuci": "诶？真的吗",
+    "liju": "诶？这个消息确实吗？"
   },
   {
     "id": "零声母-ei-4",
@@ -9732,7 +10704,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "èi",
     "hanzi": "诶",
-    "zuci": "诶！好的"
+    "zuci": "诶！好的",
+    "liju": "诶！我马上就去办。"
   },
   {
     "id": "零声母-ao-1",
@@ -9742,7 +10715,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "āo",
     "hanzi": "凹",
-    "zuci": "凹凸"
+    "zuci": "凹凸",
+    "liju": "这条路坑坑洼洼凹凸不平。"
   },
   {
     "id": "零声母-ao-2",
@@ -9752,7 +10726,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "áo",
     "hanzi": "熬",
-    "zuci": "熬夜"
+    "zuci": "熬夜",
+    "liju": "熬夜对身体不好。"
   },
   {
     "id": "零声母-ao-3",
@@ -9762,7 +10737,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǎo",
     "hanzi": "袄",
-    "zuci": "棉袄"
+    "zuci": "棉袄",
+    "liju": "她穿了一件红色棉袄。"
   },
   {
     "id": "零声母-ao-4",
@@ -9772,7 +10748,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "ào",
     "hanzi": "傲",
-    "zuci": "骄傲"
+    "zuci": "骄傲",
+    "liju": "他考了满分但很骄傲。"
   },
   {
     "id": "零声母-ou-1",
@@ -9782,7 +10759,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ōu",
     "hanzi": "欧",
-    "zuci": "欧洲"
+    "zuci": "欧洲",
+    "liju": "姐姐去欧洲旅行了。"
   },
   {
     "id": "零声母-ou-3",
@@ -9792,7 +10770,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǒu",
     "hanzi": "偶",
-    "zuci": "偶尔"
+    "zuci": "偶尔",
+    "liju": "他偶尔也会去图书馆。"
   },
   {
     "id": "零声母-an-1",
@@ -9802,7 +10781,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ān",
     "hanzi": "安",
-    "zuci": "安全"
+    "zuci": "安全",
+    "liju": "过马路要注意安全。"
   },
   {
     "id": "零声母-an-3",
@@ -9812,7 +10792,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ǎn",
     "hanzi": "俺",
-    "zuci": "俺们"
+    "zuci": "俺们",
+    "liju": "俺们村里有个大池塘。"
   },
   {
     "id": "零声母-an-4",
@@ -9822,7 +10803,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "àn",
     "hanzi": "暗",
-    "zuci": "黑暗"
+    "zuci": "黑暗",
+    "liju": "他害怕黑暗的房间。"
   },
   {
     "id": "零声母-en-1",
@@ -9832,7 +10814,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "ēn",
     "hanzi": "恩",
-    "zuci": "恩情"
+    "zuci": "恩情",
+    "liju": "父母恩情比山高。"
   },
   {
     "id": "零声母-en-4",
@@ -9842,7 +10825,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "èn",
     "hanzi": "摁",
-    "zuci": "摁住"
+    "zuci": "摁住",
+    "liju": "他用力摁住伤口止血。"
   },
   {
     "id": "零声母-ang-2",
@@ -9852,7 +10836,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "áng",
     "hanzi": "昂",
-    "zuci": "昂扬"
+    "zuci": "昂扬",
+    "liju": "同学们精神昂扬地升国旗。"
   },
   {
     "id": "零声母-ang-4",
@@ -9862,7 +10847,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "àng",
     "hanzi": "盎",
-    "zuci": "盎然"
+    "zuci": "盎然",
+    "liju": "春天来了春意盎然。"
   },
   {
     "id": "零声母-er-2",
@@ -9872,7 +10858,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "ér",
     "hanzi": "儿",
-    "zuci": "儿童"
+    "zuci": "儿童",
+    "liju": "儿童节大家都很开心。"
   },
   {
     "id": "零声母-er-3",
@@ -9882,7 +10869,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "ěr",
     "hanzi": "耳",
-    "zuci": "耳朵"
+    "zuci": "耳朵",
+    "liju": "他用手捂住了耳朵。"
   },
   {
     "id": "零声母-er-4",
@@ -9892,7 +10880,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "èr",
     "hanzi": "二",
-    "zuci": "二个"
+    "zuci": "二个",
+    "liju": "二个苹果正好分给两人。"
   },
   {
     "id": "零声母-yi-1",
@@ -9902,7 +10891,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yī",
     "hanzi": "一",
-    "zuci": "一个"
+    "zuci": "一个",
+    "liju": "我有一个幸福的家。"
   },
   {
     "id": "零声母-yi-2",
@@ -9912,7 +10902,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yí",
     "hanzi": "移",
-    "zuci": "移动"
+    "zuci": "移动",
+    "liju": "把桌子移动一下位置。"
   },
   {
     "id": "零声母-yi-3",
@@ -9922,7 +10913,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǐ",
     "hanzi": "已",
-    "zuci": "已经"
+    "zuci": "已经",
+    "liju": "他已经完成了作业。"
   },
   {
     "id": "零声母-yi-4",
@@ -9932,7 +10924,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yì",
     "hanzi": "意",
-    "zuci": "意思"
+    "zuci": "意思",
+    "liju": "我不明白你的意思。"
   },
   {
     "id": "零声母-ya-1",
@@ -9942,7 +10935,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yā",
     "hanzi": "压",
-    "zuci": "压倒"
+    "zuci": "压倒",
+    "liju": "大风把庄稼压倒了。"
   },
   {
     "id": "零声母-ya-2",
@@ -9952,7 +10946,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yá",
     "hanzi": "牙",
-    "zuci": "牙齿"
+    "zuci": "牙齿",
+    "liju": "他每天都刷牙。"
   },
   {
     "id": "零声母-ya-3",
@@ -9962,7 +10957,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǎ",
     "hanzi": "哑",
-    "zuci": "哑巴"
+    "zuci": "哑巴",
+    "liju": "他是个哑巴不会说话。"
   },
   {
     "id": "零声母-ya-4",
@@ -9972,7 +10968,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yà",
     "hanzi": "亚",
-    "zuci": "亚洲"
+    "zuci": "亚洲",
+    "liju": "亚洲有很多国家。"
   },
   {
     "id": "零声母-ye-1",
@@ -9982,7 +10979,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yē",
     "hanzi": "椰",
-    "zuci": "椰子"
+    "zuci": "椰子",
+    "liju": "椰子水很好喝。"
   },
   {
     "id": "零声母-ye-2",
@@ -9992,7 +10990,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yé",
     "hanzi": "爷",
-    "zuci": "爷爷"
+    "zuci": "爷爷",
+    "liju": "爷爷在花园里浇花。"
   },
   {
     "id": "零声母-ye-3",
@@ -10002,7 +11001,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yě",
     "hanzi": "也",
-    "zuci": "也是"
+    "zuci": "也是",
+    "liju": "我也是这样想的。"
   },
   {
     "id": "零声母-ye-4",
@@ -10012,7 +11012,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yè",
     "hanzi": "夜",
-    "zuci": "黑夜"
+    "zuci": "黑夜",
+    "liju": "他独自走在黑夜中。"
   },
   {
     "id": "零声母-yao-1",
@@ -10022,7 +11023,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yāo",
     "hanzi": "要",
-    "zuci": "要求"
+    "zuci": "要求",
+    "liju": "老师要求我们认真写字。"
   },
   {
     "id": "零声母-yao-2",
@@ -10032,7 +11034,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yáo",
     "hanzi": "摇",
-    "zuci": "摇摆"
+    "zuci": "摇摆",
+    "liju": "旗帜在风中摇摆。"
   },
   {
     "id": "零声母-yao-3",
@@ -10042,7 +11045,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǎo",
     "hanzi": "咬",
-    "zuci": "咬牙"
+    "zuci": "咬牙",
+    "liju": "他咬牙坚持跑完了全程。"
   },
   {
     "id": "零声母-yao-4",
@@ -10052,7 +11056,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yào",
     "hanzi": "要",
-    "zuci": "重要"
+    "zuci": "重要",
+    "liju": "身体比什么都重要。"
   },
   {
     "id": "零声母-you-1",
@@ -10062,7 +11067,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yōu",
     "hanzi": "优",
-    "zuci": "优秀"
+    "zuci": "优秀",
+    "liju": "他是个优秀的学生。"
   },
   {
     "id": "零声母-you-2",
@@ -10072,7 +11078,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yóu",
     "hanzi": "游",
-    "zuci": "游泳"
+    "zuci": "游泳",
+    "liju": "夏天我们去游泳。"
   },
   {
     "id": "零声母-you-3",
@@ -10082,7 +11089,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǒu",
     "hanzi": "有",
-    "zuci": "有的"
+    "zuci": "有的",
+    "liju": "有的人喜欢运动。"
   },
   {
     "id": "零声母-you-4",
@@ -10092,7 +11100,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yòu",
     "hanzi": "又",
-    "zuci": "又一次"
+    "zuci": "又一次",
+    "liju": "他考试又一次获得第一。"
   },
   {
     "id": "零声母-yan-1",
@@ -10102,7 +11111,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yān",
     "hanzi": "烟",
-    "zuci": "香烟"
+    "zuci": "香烟",
+    "liju": "吸烟有害健康。"
   },
   {
     "id": "零声母-yan-2",
@@ -10112,7 +11122,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yán",
     "hanzi": "盐",
-    "zuci": "食盐"
+    "zuci": "食盐",
+    "liju": "炒菜要放食盐。"
   },
   {
     "id": "零声母-yan-3",
@@ -10122,7 +11133,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǎn",
     "hanzi": "眼",
-    "zuci": "眼睛"
+    "zuci": "眼睛",
+    "liju": "她的眼睛很漂亮。"
   },
   {
     "id": "零声母-yan-4",
@@ -10132,7 +11144,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yàn",
     "hanzi": "燕",
-    "zuci": "燕子"
+    "zuci": "燕子",
+    "liju": "燕子从南方飞回来了。"
   },
   {
     "id": "零声母-yin-1",
@@ -10142,7 +11155,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yīn",
     "hanzi": "因",
-    "zuci": "因为"
+    "zuci": "因为",
+    "liju": "因为下雨所以比赛取消了。"
   },
   {
     "id": "零声母-yin-2",
@@ -10152,7 +11166,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yín",
     "hanzi": "银",
-    "zuci": "银子"
+    "zuci": "银子",
+    "liju": "古代用银子当钱用。"
   },
   {
     "id": "零声母-yin-3",
@@ -10162,7 +11177,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǐn",
     "hanzi": "引",
-    "zuci": "引起"
+    "zuci": "引起",
+    "liju": "他的发言引起了大家注意。"
   },
   {
     "id": "零声母-yin-4",
@@ -10172,7 +11188,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yìn",
     "hanzi": "印",
-    "zuci": "印刷"
+    "zuci": "印刷",
+    "liju": "这本书印刷得很精美。"
   },
   {
     "id": "零声母-yang-1",
@@ -10182,7 +11199,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yāng",
     "hanzi": "央",
-    "zuci": "中央"
+    "zuci": "中央",
+    "liju": "广场中央有喷泉。"
   },
   {
     "id": "零声母-yang-2",
@@ -10192,7 +11210,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yáng",
     "hanzi": "羊",
-    "zuci": "小羊"
+    "zuci": "小羊",
+    "liju": "小羊在草地上吃草。"
   },
   {
     "id": "零声母-yang-3",
@@ -10202,7 +11221,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǎng",
     "hanzi": "养",
-    "zuci": "养活"
+    "zuci": "养活",
+    "liju": "他靠种地养活全家。"
   },
   {
     "id": "零声母-yang-4",
@@ -10212,7 +11232,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yàng",
     "hanzi": "样",
-    "zuci": "样子"
+    "zuci": "样子",
+    "liju": "她今天心情很好的样子。"
   },
   {
     "id": "零声母-ying-1",
@@ -10222,7 +11243,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yīng",
     "hanzi": "应",
-    "zuci": "应该"
+    "zuci": "应该",
+    "liju": "你应该早点休息。"
   },
   {
     "id": "零声母-ying-2",
@@ -10232,7 +11254,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yíng",
     "hanzi": "迎",
-    "zuci": "欢迎"
+    "zuci": "欢迎",
+    "liju": "大家热烈欢迎新同学。"
   },
   {
     "id": "零声母-ying-3",
@@ -10242,7 +11265,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǐng",
     "hanzi": "影",
-    "zuci": "影子"
+    "zuci": "影子",
+    "liju": "阳光下影子很长。"
   },
   {
     "id": "零声母-ying-4",
@@ -10252,7 +11276,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yìng",
     "hanzi": "硬",
-    "zuci": "坚硬"
+    "zuci": "坚硬",
+    "liju": "石头很坚硬。"
   },
   {
     "id": "零声母-yong-1",
@@ -10262,7 +11287,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yōng",
     "hanzi": "拥",
-    "zuci": "拥抱"
+    "zuci": "拥抱",
+    "liju": "妈妈给了孩子一个大拥抱。"
   },
   {
     "id": "零声母-yong-2",
@@ -10272,7 +11298,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yóng",
     "hanzi": "喁",
-    "zuci": "喁喁"
+    "zuci": "喁喁",
+    "liju": "两人在角落里喁喁私语。"
   },
   {
     "id": "零声母-yong-3",
@@ -10282,7 +11309,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǒng",
     "hanzi": "永",
-    "zuci": "永远"
+    "zuci": "永远",
+    "liju": "友谊永远记在心里。"
   },
   {
     "id": "零声母-yong-4",
@@ -10292,7 +11320,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yòng",
     "hanzi": "用",
-    "zuci": "使用"
+    "zuci": "使用",
+    "liju": "要正确使用电器。"
   },
   {
     "id": "零声母-wu-1",
@@ -10302,7 +11331,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wū",
     "hanzi": "乌",
-    "zuci": "乌鸦"
+    "zuci": "乌鸦",
+    "liju": "乌鸦飞走了。"
   },
   {
     "id": "零声母-wu-2",
@@ -10312,7 +11342,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wú",
     "hanzi": "无",
-    "zuci": "无法"
+    "zuci": "无法",
+    "liju": "困难无法阻挡我们前进。"
   },
   {
     "id": "零声母-wu-3",
@@ -10322,7 +11353,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wǔ",
     "hanzi": "五",
-    "zuci": "五个"
+    "zuci": "五个",
+    "liju": "盘子里有五个桃子。"
   },
   {
     "id": "零声母-wu-4",
@@ -10332,7 +11364,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wù",
     "hanzi": "物",
-    "zuci": "动物"
+    "zuci": "动物",
+    "liju": "动物园里有很多动物。"
   },
   {
     "id": "零声母-wa-1",
@@ -10342,7 +11375,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wā",
     "hanzi": "挖",
-    "zuci": "挖土"
+    "zuci": "挖土",
+    "liju": "他在花园里挖土种树。"
   },
   {
     "id": "零声母-wa-2",
@@ -10352,7 +11386,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wá",
     "hanzi": "娃",
-    "zuci": "娃娃"
+    "zuci": "娃娃",
+    "liju": "妹妹抱着布娃娃睡觉。"
   },
   {
     "id": "零声母-wa-3",
@@ -10362,7 +11397,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wǎ",
     "hanzi": "瓦",
-    "zuci": "瓦片"
+    "zuci": "瓦片",
+    "liju": "屋顶的瓦片被风吹落了。"
   },
   {
     "id": "零声母-wa-4",
@@ -10372,7 +11408,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wà",
     "hanzi": "袜",
-    "zuci": "袜子"
+    "zuci": "袜子",
+    "liju": "他穿了一双新袜子。"
   },
   {
     "id": "零声母-wo-1",
@@ -10382,7 +11419,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wō",
     "hanzi": "窝",
-    "zuci": "鸟窝"
+    "zuci": "鸟窝",
+    "liju": "树上有一个鸟窝。"
   },
   {
     "id": "零声母-wo-3",
@@ -10392,7 +11430,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wǒ",
     "hanzi": "我",
-    "zuci": "我们"
+    "zuci": "我们",
+    "liju": "我们一起去上学吧。"
   },
   {
     "id": "零声母-wo-4",
@@ -10402,7 +11441,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wò",
     "hanzi": "卧",
-    "zuci": "卧室"
+    "zuci": "卧室",
+    "liju": "我的卧室不大但很干净。"
   },
   {
     "id": "零声母-wai-1",
@@ -10412,7 +11452,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wāi",
     "hanzi": "歪",
-    "zuci": "歪斜"
+    "zuci": "歪斜",
+    "liju": "墙上的画挂得歪斜了。"
   },
   {
     "id": "零声母-wai-4",
@@ -10422,7 +11463,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wài",
     "hanzi": "外",
-    "zuci": "外面"
+    "zuci": "外面",
+    "liju": "外面正在下大雨。"
   },
   {
     "id": "零声母-wei-1",
@@ -10432,7 +11474,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wēi",
     "hanzi": "危",
-    "zuci": "危险"
+    "zuci": "危险",
+    "liju": "这个动作很危险。"
   },
   {
     "id": "零声母-wei-2",
@@ -10442,7 +11485,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wéi",
     "hanzi": "围",
-    "zuci": "包围"
+    "zuci": "包围",
+    "liju": "大树包围了整个村子。"
   },
   {
     "id": "零声母-wei-3",
@@ -10452,7 +11496,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wěi",
     "hanzi": "伟",
-    "zuci": "伟大"
+    "zuci": "伟大",
+    "liju": "伟大的祖国越来越强大。"
   },
   {
     "id": "零声母-wei-4",
@@ -10462,7 +11507,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wèi",
     "hanzi": "为",
-    "zuci": "为了"
+    "zuci": "为了",
+    "liju": "为了健康要每天锻炼。"
   },
   {
     "id": "零声母-wan-1",
@@ -10472,7 +11518,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wān",
     "hanzi": "弯",
-    "zuci": "弯曲"
+    "zuci": "弯曲",
+    "liju": "小河弯弯曲曲流向远方。"
   },
   {
     "id": "零声母-wan-2",
@@ -10482,7 +11529,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wán",
     "hanzi": "玩",
-    "zuci": "玩具"
+    "zuci": "玩具",
+    "liju": "小朋友们正在玩玩具。"
   },
   {
     "id": "零声母-wan-3",
@@ -10492,7 +11540,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wǎn",
     "hanzi": "晚",
-    "zuci": "晚上"
+    "zuci": "晚上",
+    "liju": "晚上我要和弟弟看电视。"
   },
   {
     "id": "零声母-wan-4",
@@ -10502,7 +11551,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wàn",
     "hanzi": "万",
-    "zuci": "万一"
+    "zuci": "万一",
+    "liju": "万一明天停水怎么办？"
   },
   {
     "id": "零声母-wen-1",
@@ -10512,7 +11562,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wēn",
     "hanzi": "温",
-    "zuci": "温度"
+    "zuci": "温度",
+    "liju": "今天温度比昨天高。"
   },
   {
     "id": "零声母-wen-2",
@@ -10522,7 +11573,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wén",
     "hanzi": "文",
-    "zuci": "文字"
+    "zuci": "文字",
+    "liju": "汉字是古老的文字。"
   },
   {
     "id": "零声母-wen-3",
@@ -10532,7 +11584,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wěn",
     "hanzi": "稳",
-    "zuci": "稳重"
+    "zuci": "稳重",
+    "liju": "他做事沉稳可靠。"
   },
   {
     "id": "零声母-wen-4",
@@ -10542,7 +11595,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wèn",
     "hanzi": "问",
-    "zuci": "问题"
+    "zuci": "问题",
+    "liju": "请回答老师的问题。"
   },
   {
     "id": "零声母-wang-1",
@@ -10552,7 +11606,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wāng",
     "hanzi": "汪",
-    "zuci": "汪汪"
+    "zuci": "汪汪",
+    "liju": "小狗汪汪叫。"
   },
   {
     "id": "零声母-wang-2",
@@ -10562,7 +11617,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "wáng",
     "hanzi": "王",
-    "zuci": "王国"
+    "zuci": "王国",
+    "liju": "狮子是森林王国之王。"
   },
   {
     "id": "零声母-wang-3",
@@ -10572,7 +11628,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wǎng",
     "hanzi": "网",
-    "zuci": "网络"
+    "zuci": "网络",
+    "liju": "网络让人们沟通更方便。"
   },
   {
     "id": "零声母-wang-4",
@@ -10582,7 +11639,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "wàng",
     "hanzi": "望",
-    "zuci": "希望"
+    "zuci": "希望",
+    "liju": "他满怀希望地走进教室。"
   },
   {
     "id": "零声母-weng-1",
@@ -10592,7 +11650,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "wēng",
     "hanzi": "翁",
-    "zuci": "老翁"
+    "zuci": "老翁",
+    "liju": "老翁拄着拐杖走来。"
   },
   {
     "id": "零声母-weng-3",
@@ -10602,7 +11661,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "wěng",
     "hanzi": "蓊",
-    "zuci": "蓊蓊"
+    "zuci": "蓊蓊",
+    "liju": "路边的蓊蓊郁郁好美。"
   },
   {
     "id": "零声母-yu-1",
@@ -10612,7 +11672,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yū",
     "hanzi": "迂",
-    "zuci": "迂回"
+    "zuci": "迂回",
+    "liju": "山路迂回曲折地通向山顶。"
   },
   {
     "id": "零声母-yu-2",
@@ -10622,7 +11683,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yú",
     "hanzi": "鱼",
-    "zuci": "鱼儿"
+    "zuci": "鱼儿",
+    "liju": "鱼儿在水里游来游去。"
   },
   {
     "id": "零声母-yu-3",
@@ -10632,7 +11694,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǔ",
     "hanzi": "雨",
-    "zuci": "雨水"
+    "zuci": "雨水",
+    "liju": "雨水滋润了庄稼。"
   },
   {
     "id": "零声母-yu-4",
@@ -10642,7 +11705,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yù",
     "hanzi": "玉",
-    "zuci": "玉米"
+    "zuci": "玉米",
+    "liju": "玉米是一种常见农作物。"
   },
   {
     "id": "零声母-yue-1",
@@ -10652,7 +11716,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yuē",
     "hanzi": "约",
-    "zuci": "约定"
+    "zuci": "约定",
+    "liju": "我们约定在图书馆见面。"
   },
   {
     "id": "零声母-yue-4",
@@ -10662,7 +11727,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yuè",
     "hanzi": "月",
-    "zuci": "月亮"
+    "zuci": "月亮",
+    "liju": "今晚的月亮又圆又亮。"
   },
   {
     "id": "零声母-yuan-1",
@@ -10672,7 +11738,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yuān",
     "hanzi": "冤",
-    "zuci": "冤枉"
+    "zuci": "冤枉",
+    "liju": "他受到了冤枉但相信公道。"
   },
   {
     "id": "零声母-yuan-2",
@@ -10682,7 +11749,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yuán",
     "hanzi": "园",
-    "zuci": "公园"
+    "zuci": "公园",
+    "liju": "公园里有很多人散步。"
   },
   {
     "id": "零声母-yuan-3",
@@ -10692,7 +11760,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yuǎn",
     "hanzi": "远",
-    "zuci": "远近"
+    "zuci": "远近",
+    "liju": "远近的人都来参观这座桥。"
   },
   {
     "id": "零声母-yuan-4",
@@ -10702,7 +11771,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yuàn",
     "hanzi": "愿",
-    "zuci": "愿意"
+    "zuci": "愿意",
+    "liju": "你愿意和我一起玩吗？"
   },
   {
     "id": "零声母-yun-1",
@@ -10712,7 +11782,8 @@ export const pinyinData = [
     "shengdiao": 1,
     "pinyin": "yūn",
     "hanzi": "晕",
-    "zuci": "头晕"
+    "zuci": "头晕",
+    "liju": "他发烧了觉得头晕。"
   },
   {
     "id": "零声母-yun-2",
@@ -10722,7 +11793,8 @@ export const pinyinData = [
     "shengdiao": 2,
     "pinyin": "yún",
     "hanzi": "云",
-    "zuci": "白云"
+    "zuci": "白云",
+    "liju": "天上飘着朵朵白云。"
   },
   {
     "id": "零声母-yun-3",
@@ -10732,7 +11804,8 @@ export const pinyinData = [
     "shengdiao": 3,
     "pinyin": "yǔn",
     "hanzi": "允",
-    "zuci": "允许"
+    "zuci": "允许",
+    "liju": "老师允许我们小组讨论。"
   },
   {
     "id": "零声母-yun-4",
@@ -10742,7 +11815,8 @@ export const pinyinData = [
     "shengdiao": 4,
     "pinyin": "yùn",
     "hanzi": "运",
-    "zuci": "运动"
+    "zuci": "运动",
+    "liju": "每天运动让身体更健康。"
   }
 ]
 
