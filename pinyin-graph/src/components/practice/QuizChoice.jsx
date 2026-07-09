@@ -63,12 +63,10 @@ export default function QuizChoice({
           ) : (
             <span className="text-5xl font-bold text-gray-900">{question.question}</span>
           )}
-          {question.type === 'hanzi-to-pinyin' && (
-            <PlayButton
-              onPlay={() => onPlaySound?.(question.question)}
-              size="md"
-            />
-          )}
+          <PlayButton
+            onPlay={() => onPlaySound?.(question.type === 'pinyin-to-hanzi' ? question.question : question.data?.pinyin)}
+            size="md"
+          />
         </div>
         <p className="text-sm text-gray-400">
           {question.type === 'pinyin-to-hanzi' ? '请选择对应的汉字' : '请选择正确的拼音'}

@@ -1,0 +1,83 @@
+<h2>层级色彩方案重新设计</h2>
+<p class="subtitle">为拼音学习图谱选择一套更和谐、现代的层级配色。每个方案都保持「同一层级统一颜色」的原则。</p>
+
+<div class="section">
+  <h3>当前实现</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="display:flex;align-items:center;justify-content:center;gap:24px;padding:32px;background:#f8fafc;">
+      <div style="text-align:center">
+        <div style="width:72px;height:72px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;box-shadow:0 4px 12px rgba(37,99,235,0.35)">b</div>
+        <p style="margin-top:8px;font-size:12px;color:#64748b">声母层</p>
+      </div>
+      <div style="text-align:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;box-shadow:0 4px 12px rgba(16,185,129,0.35)">a</div>
+        <p style="margin-top:8px;font-size:12px;color:#64748b">韵母层</p>
+      </div>
+      <div style="text-align:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;box-shadow:0 4px 12px rgba(245,158,11,0.35);line-height:1.2"><span>bā<br>八</span></div>
+        <p style="margin-top:8px;font-size:12px;color:#64748b">拼音层</p>
+      </div>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b">
+      问题：蓝/绿/橙三色饱和度高、对比强烈，整体略显刺眼；三个颜色在色环上距离不均，缺乏统一色调。
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>新方案对比</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="pastel" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>柔和马卡龙</h3>
+        <p>低饱和度糖果色，温暖亲和，非常适合儿童学习场景。</p>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#FF9AA2;color:#fff;font-size:12px;font-weight:700">b</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#B5EAD7;color:#374151;font-size:12px;font-weight:700">a</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#FFDAC1;color:#374151;font-size:11px;font-weight:700;line-height:1.1">bā<br>八</span>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:#64748b;font-family:monospace">
+          声母 #FF9AA2 · 韵母 #B5EAD7 · 拼音 #FFDAC1 · 背景 #FFFBF7
+        </div>
+      </div>
+    </div>
+
+    <div class="option" data-choice="modern" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>现代渐变</h3>
+        <p>冷暖交替的渐变方向，层级递进感强，兼顾童趣与科技感。</p>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:12px;font-weight:700">b</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;font-size:12px;font-weight:700">a</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#f6d365,#fda085);color:#fff;font-size:11px;font-weight:700;line-height:1.1">bā<br>八</span>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:#64748b;font-family:monospace">
+          声母 #667eea→#764ba2 · 韵母 #11998e→#38ef7d · 拼音 #f6d365→#fda085 · 背景 #F8FAFC
+        </div>
+      </div>
+    </div>
+
+    <div class="option" data-choice="forest" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>自然森林</h3>
+        <p>源于自然的低对比配色，长时间使用不易疲劳，适合沉浸式学习。</p>
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#5B9BD5;color:#fff;font-size:12px;font-weight:700">b</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#70AD47;color:#fff;font-size:12px;font-weight:700">a</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#ED7D31;color:#fff;font-size:11px;font-weight:700;line-height:1.1">bā<br>八</span>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:#64748b;font-family:monospace">
+          声母 #5B9BD5 · 韵母 #70AD47 · 拼音 #ED7D31 · 背景 #F5F7F4
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>推荐说明</h3>
+  <p>综合儿童审美、长时间使用舒适度与现代 UI 趋势，<strong>推荐方案 A（柔和马卡龙）</strong>。它饱和度适中、三色在色相上均匀分布（红/绿/橙），既保留了丰富色彩，又不会过于刺眼。</p>
+</div>

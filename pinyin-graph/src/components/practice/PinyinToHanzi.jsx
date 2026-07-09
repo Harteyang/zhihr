@@ -4,8 +4,9 @@
  * 显示拼音，用户需从候选字中选出正确的汉字
  */
 import { useState, useCallback, useEffect } from 'react'
+import PlayButton from '../ui/PlayButton'
 
-export default function PinyinToHanzi({ question, onAnswer, onNext, isLast }) {
+export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound, isLast }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
 
@@ -42,6 +43,7 @@ export default function PinyinToHanzi({ question, onAnswer, onNext, isLast }) {
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
           <span className="text-3xl font-bold text-blue-600">{question.question}</span>
+          <PlayButton onPlay={() => onPlaySound?.(question.question)} size="md" />
         </div>
         <p className="text-sm text-gray-400">请选择对应的汉字</p>
       </div>

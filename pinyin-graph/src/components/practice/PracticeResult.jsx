@@ -62,7 +62,7 @@ export default function PracticeResult({ result, onPlaySound, onRestart, onBack 
                   </div>
                 </div>
                 <PlayButton
-                  onPlay={() => onPlaySound?.(wa.data?.hanzi || wa.question)}
+                  onPlay={() => onPlaySound?.(wa.data?.pinyin || wa.question)}
                   size="sm"
                 />
               </div>

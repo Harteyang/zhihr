@@ -1,0 +1,131 @@
+<h2>韵母点击展开交互方案</h2>
+<p class="subtitle">将「点击韵母弹窗显示汉字」改为「在当前界面内直接展开下一层级汉字节点」。请选择一种展开方式。</p>
+
+<div class="section">
+  <h3>方案 A：扇形放射展开</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="position:relative;height:260px;background:#FFFBF7;overflow:hidden;">
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);">
+        <div style="width:64px;height:64px;border-radius:50%;background:#FF9AA2;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;box-shadow:0 4px 14px rgba(255,154,162,0.4)">b</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-78px,-30px);">
+        <div style="width:42px;height:42px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:14px;box-shadow:0 3px 10px rgba(181,234,215,0.45)">a</div>
+      </div>
+      <!-- 展开的拼音节点 -->
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-130px,-70px);">
+        <div style="width:36px;height:36px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:10px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bā<br>八</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-145px,-20px);">
+        <div style="width:36px;height:36px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:10px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bá<br>拔</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-140px,28px);">
+        <div style="width:36px;height:36px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:10px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bǎ<br>把</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-120px,72px);">
+        <div style="width:36px;height:36px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:10px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bà<br>爸</div>
+      </div>
+      <!-- 其他韵母（未展开，保持原状） -->
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(60px,-70px);opacity:0.45;">
+        <div style="width:42px;height:42px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:14px">o</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(85px,40px);opacity:0.45;">
+        <div style="width:42px;height:42px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:14px">ai</div>
+      </div>
+      <div style="position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) translate(-10px,95px);opacity:0.45;">
+        <div style="width:42px;height:42px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:14px">an</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b">
+      点击某个韵母后，该韵母对应的 4 个声调汉字以扇形向外展开；未点击的韵母保持可见但略微淡化。优点：空间感强，符合力导向图的自然形态。
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案 B：环形层级展开</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="position:relative;height:260px;background:#FFFBF7;overflow:hidden;">
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">
+        <div style="width:64px;height:64px;border-radius:50%;background:#FF9AA2;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;box-shadow:0 4px 14px rgba(255,154,162,0.4)">b</div>
+      </div>
+      <!-- 韵母环 -->
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-100px,0px);opacity:0.45;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:13px">a</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(0px,-100px);opacity:0.45;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:13px">o</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(100px,0px);opacity:0.45;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:13px">ai</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(0px,100px);opacity:0.45;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:13px">an</div>
+      </div>
+      <!-- 展开的拼音环（围绕 a） -->
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-145px,-45px);">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:9px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bā<br>八</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-160px,10px);">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:9px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bá<br>拔</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-150px,60px);">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:9px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bǎ<br>把</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-115px,95px);">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:9px;line-height:1.1;text-align:center;box-shadow:0 2px 8px rgba(255,218,193,0.5)">bà<br>爸</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b">
+      点击韵母后，其对应的拼音节点整齐排列在韵母外侧的环上。优点：布局规整，便于对比同一韵母下的所有声调；未展开韵母可保持原位或轻微收缩。
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>方案 C：列表侧边展开</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="display:flex;height:260px;background:#FFFBF7;overflow:hidden;">
+      <div style="flex:1;position:relative;">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);">
+          <div style="width:56px;height:56px;border-radius:50%;background:#FF9AA2;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px">b</div>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-75px,-20px);">
+          <div style="width:36px;height:36px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:12px">a</div>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(60px,-50px);">
+          <div style="width:36px;height:36px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:12px">o</div>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(40px,60px);">
+          <div style="width:36px;height:36px;border-radius:50%;background:#B5EAD7;display:flex;align-items:center;justify-content:center;color:#374151;font-weight:700;font-size:12px">ai</div>
+        </div>
+      </div>
+      <div style="width:130px;background:#fff;border-left:1px solid #f1d3d7;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:-4px 0 16px rgba(0,0,0,0.04)">
+        <div style="font-size:13px;font-weight:700;color:#FF9AA2;margin-bottom:4px">韵母 a</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#FFFBF7;border-radius:8px;border:1px solid #ffe3e6">
+          <div style="width:26px;height:26px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-size:9px;font-weight:700">bā</div>
+          <span style="font-size:14px;color:#374151">八</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#FFFBF7;border-radius:8px;border:1px solid #ffe3e6">
+          <div style="width:26px;height:26px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-size:9px;font-weight:700">bá</div>
+          <span style="font-size:14px;color:#374151">拔</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#FFFBF7;border-radius:8px;border:1px solid #ffe3e6">
+          <div style="width:26px;height:26px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-size:9px;font-weight:700">bǎ</div>
+          <span style="font-size:14px;color:#374151">把</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#FFFBF7;border-radius:8px;border:1px solid #ffe3e6">
+          <div style="width:26px;height:26px;border-radius:50%;background:#FFDAC1;display:flex;align-items:center;justify-content:center;color:#374151;font-size:9px;font-weight:700">bà</div>
+          <span style="font-size:14px;color:#374151">爸</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;background:#fff;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b">
+      点击韵母后，在图谱右侧滑出该韵母的汉字列表（替代原有弹窗）。优点：信息密度高，适合字多的韵母；对图谱主体干扰小。
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>推荐说明</h3>
+  <p>结合力导向图的视觉特性与儿童学习的探索感，<strong>推荐方案 A（扇形放射展开）</strong>。它最自然地延续了图谱的放射状结构，点击韵母后汉字像花瓣一样展开，交互直观、动画流畅，且不会引入额外的侧边栏或弹窗。</p>
+</div>

@@ -1,0 +1,3 @@
+{"type":"server-started","port":54015,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:54015","screen_dir":"/Users/yq/Documents/zhihr/.superpowers/brainstorm/14587-1783522067/content","state_dir":"/Users/yq/Documents/zhihr/.superpowers/brainstorm/14587-1783522067/state"}
+{"type":"screen-added","file":"/Users/yq/Documents/zhihr/.superpowers/brainstorm/14587-1783522067/content/color-schemes.html"}
+{"type":"server-stopped","reason":"owner process exited"}

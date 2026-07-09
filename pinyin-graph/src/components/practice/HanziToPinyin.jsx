@@ -4,8 +4,9 @@
  * 显示汉字，用户需从多个拼音选项中选择正确的
  */
 import { useState, useCallback, useEffect } from 'react'
+import PlayButton from '../ui/PlayButton'
 
-export default function HanziToPinyin({ question, onAnswer, onNext, isLast }) {
+export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound, isLast }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
 
@@ -47,7 +48,6 @@ export default function HanziToPinyin({ question, onAnswer, onNext, isLast }) {
         <p className="text-sm text-gray-400">请选择正确的拼音</p>
       </div>
 
-
       <div className="grid grid-cols-2 gap-3 mb-4">
         {question.options.map((opt, i) => (
           <button
@@ -63,7 +63,10 @@ export default function HanziToPinyin({ question, onAnswer, onNext, isLast }) {
       {revealed && !isCorrectOption(selected) && (
         <div className="text-center mb-3">
           <p className="text-red-500 text-sm mb-1">❌ 正确答案是：</p>
-          <span className="text-green-600 text-xl font-bold">{question.correctAnswer}</span>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-green-600 text-xl font-bold">{question.correctAnswer}</span>
+            <PlayButton onPlay={() => onPlaySound?.(question.correctAnswer)} size="sm" />
+          </div>
         </div>
       )}
 
