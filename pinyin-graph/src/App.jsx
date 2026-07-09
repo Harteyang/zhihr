@@ -36,6 +36,29 @@ export default function App() {
   const quiz = usePinyinQuiz({ pool: pinyinData, questionCount: 10 })
   const [practiceMode, setPracticeMode] = useState('choice')
 
+  // 主题：优先从 localStorage 读取，其次尊重系统偏好
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'light'
+    return (
+      localStorage.getItem('pinyin-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    )
+  })
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (theme === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+    localStorage.setItem('pinyin-theme', theme)
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+  }, [])
+
   // 语音
   const { speak } = useSpeech()
 
@@ -115,7 +138,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <TopNav tab={tab} onTabChange={handleTabChange} onHome={handleTopNavHome} />
+      <TopNav
+        tab={tab}
+        onTabChange={handleTabChange}
+        onHome={handleTopNavHome}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
       <main className="max-w-5xl mx-auto px-4 py-5">
         {tab === 'graph' && (
           <ViewTransition viewKey={view}>
