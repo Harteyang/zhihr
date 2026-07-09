@@ -12,7 +12,9 @@ export const SHENGMU_GROUPS = [
   { label: '舌面音', items: ['j', 'q', 'x'] },
   { label: '翘舌音', items: ['zh', 'ch', 'sh', 'r'] },
   { label: '平舌音', items: ['z', 'c', 's'] },
-  { label: '整体认读音节', items: ['整体认读音节'] },
+  { label: '零声母', items: ['零声母'] },
+  { label: 'y声母', items: ['y'] },
+  { label: 'w声母', items: ['w'] },
 ]
 
 export default function ShengmuSelector({ selected, onSelect }) {

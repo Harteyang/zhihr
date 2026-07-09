@@ -93,10 +93,10 @@ export const byYunmu = pinyinData.reduce((acc, item) => {
  */
 export function getByShengmu(sm) {
   if (sm === 'y') {
-    return pinyinData.filter(item => item.pinyin.startsWith('y'))
+    return pinyinData.filter(item => item.shengmu === 'y')
   }
   if (sm === 'w') {
-    return pinyinData.filter(item => item.pinyin.startsWith('w'))
+    return pinyinData.filter(item => item.shengmu === 'w')
   }
   return byShengmu[sm] || []
 }

@@ -958,42 +958,42 @@ export const pinyinData = [
   {"id": "s-uo-1", "shengmu": "s", "yunmu": "uo", "shengdiao": 1, "pinyin": "suō", "hanzi": "缩", "zuci": "缩小", "liju": "照片缩小了。"},
   {"id": "s-uo-3", "shengmu": "s", "yunmu": "uo", "shengdiao": 3, "pinyin": "suǒ", "hanzi": "所", "zuci": "所以", "liju": "他病了，所以没来。"},
   {"id": "s-uo-4", "shengmu": "s", "yunmu": "uo", "shengdiao": 4, "pinyin": "suò", "hanzi": "锁", "zuci": "锁门", "liju": "离开时要锁门。"},
-  {"id": "整体认读音节-a-1", "shengmu": "整体认读音节", "yunmu": "a", "shengdiao": 1, "pinyin": "ā", "hanzi": "啊", "zuci": "啊呀", "liju": "啊呀，书包忘记带了。"},
-  {"id": "整体认读音节-a-2", "shengmu": "整体认读音节", "yunmu": "a", "shengdiao": 2, "pinyin": "á", "hanzi": "啊", "zuci": "啊？你说什么", "liju": "啊？你刚才说我没听清。"},
-  {"id": "整体认读音节-a-3", "shengmu": "整体认读音节", "yunmu": "a", "shengdiao": 3, "pinyin": "ǎ", "hanzi": "啊", "zuci": "啊？是吗", "liju": "啊？他真的考了满分吗？"},
-  {"id": "整体认读音节-a-4", "shengmu": "整体认读音节", "yunmu": "a", "shengdiao": 4, "pinyin": "à", "hanzi": "啊", "zuci": "啊！明白了", "liju": "啊！我终于明白了这个道理。"},
-  {"id": "整体认读音节-o-1", "shengmu": "整体认读音节", "yunmu": "o", "shengdiao": 1, "pinyin": "ō", "hanzi": "哦", "zuci": "哦！原来如此", "liju": "哦！原来是这样的。"},
-  {"id": "整体认读音节-o-2", "shengmu": "整体认读音节", "yunmu": "o", "shengdiao": 2, "pinyin": "ó", "hanzi": "哦", "zuci": "哦？真的吗", "liju": "哦？你说的是真的吗？"},
-  {"id": "整体认读音节-o-3", "shengmu": "整体认读音节", "yunmu": "o", "shengdiao": 3, "pinyin": "ǒ", "hanzi": "哦", "zuci": "哦？是这样吗", "liju": "哦？事情原来是这样的。"},
-  {"id": "整体认读音节-o-4", "shengmu": "整体认读音节", "yunmu": "o", "shengdiao": 4, "pinyin": "ò", "hanzi": "哦", "zuci": "哦！我懂了", "liju": "哦！我现在终于懂了。"},
-  {"id": "整体认读音节-e-1", "shengmu": "整体认读音节", "yunmu": "e", "shengdiao": 1, "pinyin": "ē", "hanzi": "阿", "zuci": "阿胶", "liju": "阿胶是一种补血良药。"},
-  {"id": "整体认读音节-e-2", "shengmu": "整体认读音节", "yunmu": "e", "shengdiao": 2, "pinyin": "é", "hanzi": "鹅", "zuci": "天鹅", "liju": "湖面上游着白天鹅。"},
-  {"id": "整体认读音节-e-3", "shengmu": "整体认读音节", "yunmu": "e", "shengdiao": 3, "pinyin": "ě", "hanzi": "恶", "zuci": "恶心", "liju": "晕车让他觉得恶心。"},
-  {"id": "整体认读音节-e-4", "shengmu": "整体认读音节", "yunmu": "e", "shengdiao": 4, "pinyin": "è", "hanzi": "恶", "zuci": "凶恶", "liju": "凶恶的狼来了。"},
-  {"id": "整体认读音节-ai-1", "shengmu": "整体认读音节", "yunmu": "ai", "shengdiao": 1, "pinyin": "āi", "hanzi": "哎", "zuci": "哎呀", "liju": "哎呀，差点摔倒了。"},
-  {"id": "整体认读音节-ai-2", "shengmu": "整体认读音节", "yunmu": "ai", "shengdiao": 2, "pinyin": "ái", "hanzi": "挨", "zuci": "挨打", "liju": "他犯了错被挨打。"},
-  {"id": "整体认读音节-ai-3", "shengmu": "整体认读音节", "yunmu": "ai", "shengdiao": 3, "pinyin": "ǎi", "hanzi": "矮", "zuci": "矮小", "liju": "房子又矮小又破旧。"},
-  {"id": "整体认读音节-ai-4", "shengmu": "整体认读音节", "yunmu": "ai", "shengdiao": 4, "pinyin": "ài", "hanzi": "爱", "zuci": "热爱", "liju": "她热爱跳舞和唱歌。"},
-  {"id": "整体认读音节-ei-1", "shengmu": "整体认读音节", "yunmu": "ei", "shengdiao": 1, "pinyin": "ēi", "hanzi": "诶", "zuci": "诶！过来", "liju": "诶！你们快过来看。"},
-  {"id": "整体认读音节-ei-2", "shengmu": "整体认读音节", "yunmu": "ei", "shengdiao": 2, "pinyin": "éi", "hanzi": "诶", "zuci": "诶？是你吗", "liju": "诶？真的是你吗？"},
-  {"id": "整体认读音节-ei-3", "shengmu": "整体认读音节", "yunmu": "ei", "shengdiao": 3, "pinyin": "ěi", "hanzi": "诶", "zuci": "诶？真的吗", "liju": "诶？这个消息确实吗？"},
-  {"id": "整体认读音节-ei-4", "shengmu": "整体认读音节", "yunmu": "ei", "shengdiao": 4, "pinyin": "èi", "hanzi": "诶", "zuci": "诶！好的", "liju": "诶！我马上就去办。"},
-  {"id": "整体认读音节-ao-1", "shengmu": "整体认读音节", "yunmu": "ao", "shengdiao": 1, "pinyin": "āo", "hanzi": "凹", "zuci": "凹凸", "liju": "这条路坑坑洼洼凹凸不平。"},
-  {"id": "整体认读音节-ao-2", "shengmu": "整体认读音节", "yunmu": "ao", "shengdiao": 2, "pinyin": "áo", "hanzi": "熬", "zuci": "熬夜", "liju": "熬夜对身体不好。"},
-  {"id": "整体认读音节-ao-3", "shengmu": "整体认读音节", "yunmu": "ao", "shengdiao": 3, "pinyin": "ǎo", "hanzi": "袄", "zuci": "棉袄", "liju": "她穿了一件红色棉袄。"},
-  {"id": "整体认读音节-ao-4", "shengmu": "整体认读音节", "yunmu": "ao", "shengdiao": 4, "pinyin": "ào", "hanzi": "傲", "zuci": "骄傲", "liju": "他考了满分但很骄傲。"},
-  {"id": "整体认读音节-ou-1", "shengmu": "整体认读音节", "yunmu": "ou", "shengdiao": 1, "pinyin": "ōu", "hanzi": "欧", "zuci": "欧洲", "liju": "姐姐去欧洲旅行了。"},
-  {"id": "整体认读音节-ou-3", "shengmu": "整体认读音节", "yunmu": "ou", "shengdiao": 3, "pinyin": "ǒu", "hanzi": "偶", "zuci": "偶尔", "liju": "他偶尔也会去图书馆。"},
-  {"id": "整体认读音节-an-1", "shengmu": "整体认读音节", "yunmu": "an", "shengdiao": 1, "pinyin": "ān", "hanzi": "安", "zuci": "安全", "liju": "过马路要注意安全。"},
-  {"id": "整体认读音节-an-3", "shengmu": "整体认读音节", "yunmu": "an", "shengdiao": 3, "pinyin": "ǎn", "hanzi": "俺", "zuci": "俺们", "liju": "俺们村里有个大池塘。"},
-  {"id": "整体认读音节-an-4", "shengmu": "整体认读音节", "yunmu": "an", "shengdiao": 4, "pinyin": "àn", "hanzi": "暗", "zuci": "黑暗", "liju": "他害怕黑暗的房间。"},
-  {"id": "整体认读音节-en-1", "shengmu": "整体认读音节", "yunmu": "en", "shengdiao": 1, "pinyin": "ēn", "hanzi": "恩", "zuci": "恩情", "liju": "父母恩情比山高。"},
-  {"id": "整体认读音节-en-4", "shengmu": "整体认读音节", "yunmu": "en", "shengdiao": 4, "pinyin": "èn", "hanzi": "摁", "zuci": "摁住", "liju": "他用力摁住伤口止血。"},
-  {"id": "整体认读音节-ang-2", "shengmu": "整体认读音节", "yunmu": "ang", "shengdiao": 2, "pinyin": "áng", "hanzi": "昂", "zuci": "昂扬", "liju": "同学们精神昂扬地升国旗。"},
-  {"id": "整体认读音节-ang-4", "shengmu": "整体认读音节", "yunmu": "ang", "shengdiao": 4, "pinyin": "àng", "hanzi": "盎", "zuci": "盎然", "liju": "春天来了春意盎然。"},
-  {"id": "整体认读音节-er-2", "shengmu": "整体认读音节", "yunmu": "er", "shengdiao": 2, "pinyin": "ér", "hanzi": "儿", "zuci": "儿童", "liju": "儿童节大家都很开心。"},
-  {"id": "整体认读音节-er-3", "shengmu": "整体认读音节", "yunmu": "er", "shengdiao": 3, "pinyin": "ěr", "hanzi": "耳", "zuci": "耳朵", "liju": "他用手捂住了耳朵。"},
-  {"id": "整体认读音节-er-4", "shengmu": "整体认读音节", "yunmu": "er", "shengdiao": 4, "pinyin": "èr", "hanzi": "二", "zuci": "二个", "liju": "二个苹果正好分给两人。"},
+  {"id": "零声母-a-1", "shengmu": "零声母", "yunmu": "a", "shengdiao": 1, "pinyin": "ā", "hanzi": "啊", "zuci": "啊呀", "liju": "啊呀，书包忘记带了。"},
+  {"id": "零声母-a-2", "shengmu": "零声母", "yunmu": "a", "shengdiao": 2, "pinyin": "á", "hanzi": "啊", "zuci": "啊？你说什么", "liju": "啊？你刚才说我没听清。"},
+  {"id": "零声母-a-3", "shengmu": "零声母", "yunmu": "a", "shengdiao": 3, "pinyin": "ǎ", "hanzi": "啊", "zuci": "啊？是吗", "liju": "啊？他真的考了满分吗？"},
+  {"id": "零声母-a-4", "shengmu": "零声母", "yunmu": "a", "shengdiao": 4, "pinyin": "à", "hanzi": "啊", "zuci": "啊！明白了", "liju": "啊！我终于明白了这个道理。"},
+  {"id": "零声母-o-1", "shengmu": "零声母", "yunmu": "o", "shengdiao": 1, "pinyin": "ō", "hanzi": "哦", "zuci": "哦！原来如此", "liju": "哦！原来是这样的。"},
+  {"id": "零声母-o-2", "shengmu": "零声母", "yunmu": "o", "shengdiao": 2, "pinyin": "ó", "hanzi": "哦", "zuci": "哦？真的吗", "liju": "哦？你说的是真的吗？"},
+  {"id": "零声母-o-3", "shengmu": "零声母", "yunmu": "o", "shengdiao": 3, "pinyin": "ǒ", "hanzi": "哦", "zuci": "哦？是这样吗", "liju": "哦？事情原来是这样的。"},
+  {"id": "零声母-o-4", "shengmu": "零声母", "yunmu": "o", "shengdiao": 4, "pinyin": "ò", "hanzi": "哦", "zuci": "哦！我懂了", "liju": "哦！我现在终于懂了。"},
+  {"id": "零声母-e-1", "shengmu": "零声母", "yunmu": "e", "shengdiao": 1, "pinyin": "ē", "hanzi": "阿", "zuci": "阿胶", "liju": "阿胶是一种补血良药。"},
+  {"id": "零声母-e-2", "shengmu": "零声母", "yunmu": "e", "shengdiao": 2, "pinyin": "é", "hanzi": "鹅", "zuci": "天鹅", "liju": "湖面上游着白天鹅。"},
+  {"id": "零声母-e-3", "shengmu": "零声母", "yunmu": "e", "shengdiao": 3, "pinyin": "ě", "hanzi": "恶", "zuci": "恶心", "liju": "晕车让他觉得恶心。"},
+  {"id": "零声母-e-4", "shengmu": "零声母", "yunmu": "e", "shengdiao": 4, "pinyin": "è", "hanzi": "恶", "zuci": "凶恶", "liju": "凶恶的狼来了。"},
+  {"id": "零声母-ai-1", "shengmu": "零声母", "yunmu": "ai", "shengdiao": 1, "pinyin": "āi", "hanzi": "哎", "zuci": "哎呀", "liju": "哎呀，差点摔倒了。"},
+  {"id": "零声母-ai-2", "shengmu": "零声母", "yunmu": "ai", "shengdiao": 2, "pinyin": "ái", "hanzi": "挨", "zuci": "挨打", "liju": "他犯了错被挨打。"},
+  {"id": "零声母-ai-3", "shengmu": "零声母", "yunmu": "ai", "shengdiao": 3, "pinyin": "ǎi", "hanzi": "矮", "zuci": "矮小", "liju": "房子又矮小又破旧。"},
+  {"id": "零声母-ai-4", "shengmu": "零声母", "yunmu": "ai", "shengdiao": 4, "pinyin": "ài", "hanzi": "爱", "zuci": "热爱", "liju": "她热爱跳舞和唱歌。"},
+  {"id": "零声母-ei-1", "shengmu": "零声母", "yunmu": "ei", "shengdiao": 1, "pinyin": "ēi", "hanzi": "诶", "zuci": "诶！过来", "liju": "诶！你们快过来看。"},
+  {"id": "零声母-ei-2", "shengmu": "零声母", "yunmu": "ei", "shengdiao": 2, "pinyin": "éi", "hanzi": "诶", "zuci": "诶？是你吗", "liju": "诶？真的是你吗？"},
+  {"id": "零声母-ei-3", "shengmu": "零声母", "yunmu": "ei", "shengdiao": 3, "pinyin": "ěi", "hanzi": "诶", "zuci": "诶？真的吗", "liju": "诶？这个消息确实吗？"},
+  {"id": "零声母-ei-4", "shengmu": "零声母", "yunmu": "ei", "shengdiao": 4, "pinyin": "èi", "hanzi": "诶", "zuci": "诶！好的", "liju": "诶！我马上就去办。"},
+  {"id": "零声母-ao-1", "shengmu": "零声母", "yunmu": "ao", "shengdiao": 1, "pinyin": "āo", "hanzi": "凹", "zuci": "凹凸", "liju": "这条路坑坑洼洼凹凸不平。"},
+  {"id": "零声母-ao-2", "shengmu": "零声母", "yunmu": "ao", "shengdiao": 2, "pinyin": "áo", "hanzi": "熬", "zuci": "熬夜", "liju": "熬夜对身体不好。"},
+  {"id": "零声母-ao-3", "shengmu": "零声母", "yunmu": "ao", "shengdiao": 3, "pinyin": "ǎo", "hanzi": "袄", "zuci": "棉袄", "liju": "她穿了一件红色棉袄。"},
+  {"id": "零声母-ao-4", "shengmu": "零声母", "yunmu": "ao", "shengdiao": 4, "pinyin": "ào", "hanzi": "傲", "zuci": "骄傲", "liju": "他考了满分但很骄傲。"},
+  {"id": "零声母-ou-1", "shengmu": "零声母", "yunmu": "ou", "shengdiao": 1, "pinyin": "ōu", "hanzi": "欧", "zuci": "欧洲", "liju": "姐姐去欧洲旅行了。"},
+  {"id": "零声母-ou-3", "shengmu": "零声母", "yunmu": "ou", "shengdiao": 3, "pinyin": "ǒu", "hanzi": "偶", "zuci": "偶尔", "liju": "他偶尔也会去图书馆。"},
+  {"id": "零声母-an-1", "shengmu": "零声母", "yunmu": "an", "shengdiao": 1, "pinyin": "ān", "hanzi": "安", "zuci": "安全", "liju": "过马路要注意安全。"},
+  {"id": "零声母-an-3", "shengmu": "零声母", "yunmu": "an", "shengdiao": 3, "pinyin": "ǎn", "hanzi": "俺", "zuci": "俺们", "liju": "俺们村里有个大池塘。"},
+  {"id": "零声母-an-4", "shengmu": "零声母", "yunmu": "an", "shengdiao": 4, "pinyin": "àn", "hanzi": "暗", "zuci": "黑暗", "liju": "他害怕黑暗的房间。"},
+  {"id": "零声母-en-1", "shengmu": "零声母", "yunmu": "en", "shengdiao": 1, "pinyin": "ēn", "hanzi": "恩", "zuci": "恩情", "liju": "父母恩情比山高。"},
+  {"id": "零声母-en-4", "shengmu": "零声母", "yunmu": "en", "shengdiao": 4, "pinyin": "èn", "hanzi": "摁", "zuci": "摁住", "liju": "他用力摁住伤口止血。"},
+  {"id": "零声母-ang-2", "shengmu": "零声母", "yunmu": "ang", "shengdiao": 2, "pinyin": "áng", "hanzi": "昂", "zuci": "昂扬", "liju": "同学们精神昂扬地升国旗。"},
+  {"id": "零声母-ang-4", "shengmu": "零声母", "yunmu": "ang", "shengdiao": 4, "pinyin": "àng", "hanzi": "盎", "zuci": "盎然", "liju": "春天来了春意盎然。"},
+  {"id": "零声母-er-2", "shengmu": "零声母", "yunmu": "er", "shengdiao": 2, "pinyin": "ér", "hanzi": "儿", "zuci": "儿童", "liju": "儿童节大家都很开心。"},
+  {"id": "零声母-er-3", "shengmu": "零声母", "yunmu": "er", "shengdiao": 3, "pinyin": "ěr", "hanzi": "耳", "zuci": "耳朵", "liju": "他用手捂住了耳朵。"},
+  {"id": "零声母-er-4", "shengmu": "零声母", "yunmu": "er", "shengdiao": 4, "pinyin": "èr", "hanzi": "二", "zuci": "二个", "liju": "二个苹果正好分给两人。"},
   {"id": "y-yi-1", "shengmu": "y", "yunmu": "yi", "shengdiao": 1, "pinyin": "yī", "hanzi": "一", "zuci": "一个", "liju": "我有一个幸福的家。"},
   {"id": "y-yi-2", "shengmu": "y", "yunmu": "yi", "shengdiao": 2, "pinyin": "yí", "hanzi": "移", "zuci": "移动", "liju": "把桌子移动一下位置。"},
   {"id": "y-yi-3", "shengmu": "y", "yunmu": "yi", "shengdiao": 3, "pinyin": "yǐ", "hanzi": "已", "zuci": "已经", "liju": "他已经完成了作业。"},
@@ -1099,12 +1099,11 @@ export const byYunmu = pinyinData.reduce((acc, item) => {
  * 获取指定声母的所有音节
  */
 export function getByShengmu(sm) {
-  if (sm === '整体认读音节') {
-    return pinyinData.filter(item => 
-      item.shengmu === '整体认读音节' || 
-      item.shengmu === 'y' || 
-      item.shengmu === 'w'
-    )
+  if (sm === 'y') {
+    return pinyinData.filter(item => item.shengmu === 'y')
+  }
+  if (sm === 'w') {
+    return pinyinData.filter(item => item.shengmu === 'w')
   }
   return byShengmu[sm] || []
 }
