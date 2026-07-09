@@ -7,14 +7,14 @@ import ShengmuOverviewCard from './ShengmuOverviewCard'
 
 export default function ShengmuOverview({ onSelect, onStartPractice, getPinyinCount }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">声母总览</h2>
-        <span className="text-xs text-gray-400">点击声母进入详细图谱</span>
+        <h1 className="text-h1 text-content-primary">声母总览</h1>
+        <span className="text-caption text-content-tertiary">点击声母进入详细图谱</span>
       </div>
 
-      <div className="w-full bg-white border border-gray-100 rounded-2xl shadow-sm p-4 sm:p-6">
-        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 justify-items-center">
+      <div className="card p-4 sm:p-5">
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
           {OVERVIEW_ITEMS.map((item) => (
             <ShengmuOverviewCard
               key={item.id}
@@ -27,14 +27,14 @@ export default function ShengmuOverview({ onSelect, onStartPractice, getPinyinCo
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3 text-xs text-gray-400">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 text-small text-content-tertiary">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded border border-gray-300 bg-white" />
+            <span className="w-3 h-3 rounded border border-divider bg-surface-card" />
             真实声母
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded border-2 border-dashed border-gray-300 bg-white/60" />
+            <span className="w-3 h-3 rounded border-2 border-dashed border-divider-strong bg-surface-card/60" />
             归入零声母
           </span>
         </div>
