@@ -5,7 +5,7 @@
 import { OVERVIEW_ITEMS } from '../../../utils/shengmu-overview'
 import ShengmuOverviewCard from './ShengmuOverviewCard'
 
-export default function ShengmuOverview({ onSelect, getPinyinCount }) {
+export default function ShengmuOverview({ onSelect, onStartPractice, getPinyinCount }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -27,15 +27,38 @@ export default function ShengmuOverview({ onSelect, getPinyinCount }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-gray-400">
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded border border-gray-300 bg-white" />
-          真实声母
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded border-2 border-dashed border-gray-300 bg-white/60" />
-          归入零声母
-        </span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 text-xs text-gray-400">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded border border-gray-300 bg-white" />
+            真实声母
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded border-2 border-dashed border-gray-300 bg-white/60" />
+            归入零声母
+          </span>
+        </div>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <button
+            onClick={() => onStartPractice?.('choice', {})}
+            className="btn-secondary"
+          >
+            选择题练习
+          </button>
+          <button
+            onClick={() => onStartPractice?.('pinyin-to-hanzi', {})}
+            className="btn-secondary"
+          >
+            拼音 → 汉字
+          </button>
+          <button
+            onClick={() => onStartPractice?.('hanzi-to-pinyin', {})}
+            className="btn-secondary"
+          >
+            汉字 → 拼音
+          </button>
+        </div>
       </div>
     </div>
   )

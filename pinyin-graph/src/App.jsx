@@ -21,6 +21,7 @@ import ViewTransition from './components/common/ViewTransition'
 import useSpeech from './hooks/useSpeech'
 import usePinyinQuiz from './hooks/usePinyinQuiz'
 import useLearningRecord from './hooks/useLearningRecord'
+import useFeedbackSound from './hooks/useFeedbackSound'
 
 
 
@@ -37,6 +38,9 @@ export default function App() {
 
   // 语音
   const { speak } = useSpeech()
+
+  // 练习反馈音效
+  const feedbackSound = useFeedbackSound()
 
   // 学习记录
   const { addRecord } = useLearningRecord()
@@ -85,11 +89,12 @@ export default function App() {
   const handleCloseCard = useCallback(() => setSelectedNode(null), [])
 
   // 切换到练习
-  const handleStartPractice = useCallback((mode, filter = {}) => {
+  // filter 为空对象时使用全部数据出题；否则按传入条件（如声母）筛选
+  const handleStartPractice = useCallback((mode, filter = { shengmu: currentShengmu }) => {
     setPracticeMode(mode)
     setTab('practice')
     setTimeout(() => {
-      quiz.start(mode, { ...filter, shengmu: currentShengmu })
+      quiz.start(mode, filter)
     }, 100)
   }, [currentShengmu, quiz])
 
@@ -117,6 +122,7 @@ export default function App() {
             {view === 'overview' ? (
               <ShengmuOverview
                 onSelect={handleSelectFromOverview}
+                onStartPractice={handleStartPractice}
                 getPinyinCount={getPinyinCount}
               />
             ) : (
@@ -145,6 +151,10 @@ export default function App() {
                     total={quiz.questions.length}
                     score={quiz.score}
                     onBack={() => setTab('graph')}
+                    feedbackEnabled={feedbackSound.enabled}
+                    onToggleFeedback={feedbackSound.toggle}
+                    feedbackVolume={feedbackSound.volume}
+                    onVolumeChange={feedbackSound.setVolume}
                   />
                   {quiz.currentQuestion.type === 'pinyin-to-hanzi' ? (
                     <PinyinToHanzi
@@ -152,6 +162,7 @@ export default function App() {
                       onAnswer={quiz.answer}
                       onNext={quiz.next}
                       onPlaySound={handlePlaySound}
+                      playCorrectSound={feedbackSound.playCorrectSound}
                       isLast={quiz.currentIndex >= quiz.questions.length - 1}
                       currentIndex={quiz.currentIndex}
                     />
@@ -161,6 +172,7 @@ export default function App() {
                       onAnswer={quiz.answer}
                       onNext={quiz.next}
                       onPlaySound={handlePlaySound}
+                      playCorrectSound={feedbackSound.playCorrectSound}
                       isLast={quiz.currentIndex >= quiz.questions.length - 1}
                       currentIndex={quiz.currentIndex}
                     />
@@ -187,6 +199,8 @@ export default function App() {
                   quiz.start(practiceMode, { shengmu: currentShengmu })
                 }}
                 onBack={() => setTab('graph')}
+                playVictorySound={feedbackSound.playVictorySound}
+                stopVictorySound={feedbackSound.stopVictorySound}
               />
             )}
           </ViewTransition>

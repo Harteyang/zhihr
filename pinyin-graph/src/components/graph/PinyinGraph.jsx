@@ -6,7 +6,7 @@
  *
  * 参考自 KnowledgeGraph.jsx 的力导向布局实现
  */
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 import { forceCollide } from 'd3-force-3d'
 import { getYunmuCategory, getLayerColor, getLayerTextColor, splitPinyinHanzi } from '../../utils/pinyin-utils'
@@ -70,17 +70,22 @@ function forceBoundary(maxRadius, padding = BOUNDARY_PADDING) {
   return force
 }
 
-export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, onYunmuClick }) {
+const PinyinGraph = forwardRef(function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, onYunmuClick, showLabels, onShowLabelsChange }, ref) {
   const fgRef = useRef(null)
   const wrapperRef = useRef(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [showLabels, setShowLabels] = useState(false)
   const [expandedYunmu, setExpandedYunmu] = useState(null)
   const [minZoom, setMinZoom] = useState(MIN_ZOOM_FLOOR)
 
   const toggleYunmu = useCallback((yunmuId) => {
     setExpandedYunmu((prev) => (prev === yunmuId ? null : yunmuId))
   }, [])
+
+  useImperativeHandle(ref, () => ({
+    fitView: () => {
+      if (fgRef.current) fgRef.current.zoomToFit(400, 20)
+    },
+  }))
 
   const fitDoneRef = useRef(false)
   const fitGenerationRef = useRef(0)
@@ -574,7 +579,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
   // 点击节点
   const handleNodeClick = useCallback((node) => {
     if (node.type === NODE_TYPES.SHENGMU) {
-      setShowLabels((prev) => !prev)
+      onShowLabelsChange?.(!showLabels)
       return
     }
     if (node.type === NODE_TYPES.PINYIN && onNodeClick) {
@@ -584,7 +589,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       toggleYunmu(node.id)
       if (onYunmuClick) onYunmuClick(node)
     }
-  }, [onNodeClick, onYunmuClick, toggleYunmu])
+  }, [onNodeClick, onYunmuClick, toggleYunmu, showLabels, onShowLabelsChange])
 
   // 引擎停止 → 自动适配视图
   const handleEngineStop = useCallback(() => {
@@ -600,17 +605,6 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     }, 450)
   }, [])
 
-  const handleFitView = useCallback(() => {
-    if (fgRef.current) fgRef.current.zoomToFit(400, 20)
-  }, [])
-
-  const handleReset = useCallback(() => {
-    if (fgRef.current) {
-      fgRef.current.centerAt(0, 0, 400)
-      fgRef.current.zoom(1, 400)
-    }
-  }, [])
-
   if (!data?.length) {
     return (
       <div className="flex items-center justify-center h-[400px] md:h-[600px] text-gray-400 text-sm">
@@ -621,28 +615,6 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
 
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-      {/* 工具栏 */}
-      <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
-        <button
-          onClick={handleFitView}
-          className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
-        >
-          适应视图
-        </button>
-        <button
-          onClick={handleReset}
-          className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
-        >
-          重置
-        </button>
-        <button
-          onClick={() => setShowLabels(v => !v)}
-          className="px-3 py-1.5 bg-white/90 backdrop-blur text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
-        >
-          {showLabels ? '隐藏汉字' : '显示汉字'}
-        </button>
-      </div>
-
       <div ref={wrapperRef} className="h-[58vh] md:h-[62vh] min-h-[360px] max-h-[720px] w-full">
         {size.width > 0 && size.height > 0 && (
           <ForceGraph2D
@@ -671,4 +643,6 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       </div>
     </div>
   )
-}
+})
+
+export default PinyinGraph

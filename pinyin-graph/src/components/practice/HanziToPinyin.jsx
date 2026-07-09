@@ -5,15 +5,23 @@
  */
 import { useState, useCallback, useEffect } from 'react'
 import PlayButton from '../ui/PlayButton'
+import SuccessFeedback from '../ui/SuccessFeedback'
 
-export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound, isLast, currentIndex }) {
+export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound, playCorrectSound, isLast, currentIndex }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
     setSelected(null)
     setRevealed(false)
+    setShowSuccess(false)
   }, [currentIndex, question])
+
+  const handleSuccessComplete = useCallback(() => {
+    setShowSuccess(false)
+    onNext?.()
+  }, [onNext])
 
   const handleSelect = useCallback((pinyin) => {
     if (revealed) return
@@ -23,12 +31,11 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
     setTimeout(() => {
       setRevealed(true)
       if (correct && !isLast) {
-        setTimeout(() => {
-          onNext?.()
-        }, 600)
+        playCorrectSound?.()
+        setShowSuccess(true)
       }
     }, 300)
-  }, [revealed, question, onAnswer, onNext, isLast])
+  }, [revealed, question, onAnswer, isLast, playCorrectSound])
 
   const isCorrectOption = (opt) => opt === question.correctAnswer
   const isSelectedOption = (opt) => opt === selected
@@ -74,11 +81,13 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
 
       {revealed && (
         <div className="text-center">
-          <button onClick={isLast ? onNext : onNext} className="btn-primary px-8">
+          <button onClick={onNext} className="btn-primary px-8">
             {isLast ? '查看结果' : '下一题 →'}
           </button>
         </div>
       )}
+
+      {showSuccess && <SuccessFeedback duration={1200} onComplete={handleSuccessComplete} />}
     </div>
   )
 }

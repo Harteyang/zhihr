@@ -4,6 +4,7 @@
  *
  * 声母切换通过返回总览 → 点击其他声母完成
  */
+import { useState, useRef } from 'react'
 import PinyinGraph from './PinyinGraph'
 import PinyinCard from './PinyinCard'
 import GraphToolbar from './GraphToolbar'
@@ -19,6 +20,9 @@ export default function GraphDetailView({
   onPlaySound,
   onStartPractice,
 }) {
+  const graphRef = useRef(null)
+  const [showLabels, setShowLabels] = useState(false)
+
   return (
     <div className="flex flex-col gap-3">
       {/* 返回按钮 + 当前位置 */}
@@ -43,13 +47,32 @@ export default function GraphDetailView({
         </span>
       </div>
 
+      {/* 图谱控制栏（位于图谱外部正上方） */}
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => graphRef.current?.fitView()}
+          className="px-3 py-1.5 bg-white text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
+        >
+          适应视图
+        </button>
+        <button
+          onClick={() => setShowLabels((v) => !v)}
+          className="px-3 py-1.5 bg-white text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 shadow-sm transition-colors"
+        >
+          {showLabels ? '隐藏汉字' : '显示汉字'}
+        </button>
+      </div>
+
       {/* 核心：知识图谱 */}
       <div className="relative">
         <PinyinGraph
+          ref={graphRef}
           data={data}
           shengmu={shengmu}
           onPlaySound={onPlaySound}
           onNodeClick={onNodeClick}
+          showLabels={showLabels}
+          onShowLabelsChange={setShowLabels}
         />
 
         {/* 拼音详情卡片 */}

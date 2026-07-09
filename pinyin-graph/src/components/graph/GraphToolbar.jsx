@@ -22,7 +22,7 @@ export default function GraphToolbar({
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => onStartPractice?.('choice', { shengmu })}
-          className="btn-primary shadow-sm"
+          className="btn-secondary"
         >
           选择题练习
         </button>
