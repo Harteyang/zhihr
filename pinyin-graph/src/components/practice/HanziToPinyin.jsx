@@ -7,6 +7,23 @@ import { useState, useCallback, useEffect } from 'react'
 import PlayButton from '../ui/PlayButton'
 import SuccessFeedback from '../ui/SuccessFeedback'
 
+function getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption) {
+  const base = 'py-3 px-4 rounded-md border-2 text-center font-semibold transition-all duration-150 '
+  if (!revealed && isSelectedOption(opt)) {
+    return base + 'border-state-info bg-state-info/10 text-state-info'
+  }
+  if (!revealed) {
+    return base + 'border-divider bg-surface-card text-content-primary hover:border-state-info hover:bg-state-info/5'
+  }
+  if (isCorrectOption(opt)) {
+    return base + 'border-state-success bg-state-success/10 text-state-success'
+  }
+  if (isSelectedOption(opt)) {
+    return base + 'border-state-error bg-state-error/10 text-state-error'
+  }
+  return base + 'border-divider bg-surface-card text-content-tertiary opacity-60'
+}
+
 export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound, playCorrectSound, isLast, currentIndex }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
@@ -40,21 +57,13 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
   const isCorrectOption = (opt) => opt === question.correctAnswer
   const isSelectedOption = (opt) => opt === selected
 
-  const getOptionStyle = (opt) => {
-    if (!revealed && isSelectedOption(opt)) return 'bg-blue-50 border-blue-400 text-blue-700 ring-2 ring-blue-200'
-    if (!revealed) return 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-    if (isCorrectOption(opt)) return 'bg-green-50 border-green-400 text-green-700 ring-2 ring-green-200'
-    if (isSelectedOption(opt)) return 'bg-red-50 border-red-400 text-red-600 ring-2 ring-red-200'
-    return 'bg-white border-gray-200 opacity-50'
-  }
-
   return (
     <div className="card fade-in">
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-5xl font-bold text-gray-900">{question.question}</span>
+          <span className="text-display font-bold text-content-primary">{question.question}</span>
         </div>
-        <p className="text-sm text-gray-400">请选择正确的拼音</p>
+        <p className="text-caption text-content-tertiary">请选择正确的拼音</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -62,7 +71,7 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
           <button
             key={i}
             onClick={() => handleSelect(opt)}
-            className={`py-3 px-4 rounded-xl border-2 text-center text-lg font-mono font-medium transition-all duration-150 ${getOptionStyle(opt)}`}
+            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-lg font-mono ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
           >
             {opt}
           </button>
@@ -71,9 +80,9 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
 
       {revealed && !isCorrectOption(selected) && (
         <div className="text-center mb-3">
-          <p className="text-red-500 text-sm mb-1">❌ 正确答案是：</p>
+          <p className="text-state-error text-caption mb-1">❌ 正确答案是：</p>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-green-600 text-xl font-bold">{question.correctAnswer}</span>
+            <span className="text-state-success text-h1 font-bold">{question.correctAnswer}</span>
             <PlayButton onPlay={() => onPlaySound?.(question.correctAnswer)} size="sm" />
           </div>
         </div>
