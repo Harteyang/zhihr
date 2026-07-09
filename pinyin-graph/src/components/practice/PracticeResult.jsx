@@ -1,7 +1,9 @@
 /**
  * PracticeResult — 练习结果页
  */
+import { useState } from 'react'
 import PlayButton from '../ui/PlayButton'
+import CelebrationAnimation from '../ui/CelebrationAnimation'
 
 function getGrade(percentage) {
   if (percentage >= 100) return { label: '完美！', emoji: '🏆', color: 'text-yellow-500' }
@@ -19,10 +21,15 @@ function formatDuration(seconds) {
 export default function PracticeResult({ result, onPlaySound, onRestart, onBack }) {
   if (!result) return null
 
+  const [showCelebration, setShowCelebration] = useState(result.percentage === 100)
   const grade = getGrade(result.percentage)
 
   return (
-    <div className="card fade-in text-center max-w-md mx-auto">
+    <>
+      {showCelebration && (
+        <CelebrationAnimation duration={4000} onComplete={() => setShowCelebration(false)} />
+      )}
+      <div className="card fade-in text-center max-w-md mx-auto">
       {/* 等级 */}
       <div className={`text-5xl mb-2 ${grade.color}`}>{grade.emoji}</div>
       <h2 className={`text-2xl font-bold mb-1 ${grade.color}`}>{grade.label}</h2>
@@ -81,5 +88,6 @@ export default function PracticeResult({ result, onPlaySound, onRestart, onBack 
         </button>
       </div>
     </div>
+    </>
   )
 }

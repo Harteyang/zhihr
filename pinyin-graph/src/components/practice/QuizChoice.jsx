@@ -26,18 +26,18 @@ export default function QuizChoice({
   }, [currentIndex])
 
   const handleSelect = useCallback((option) => {
-    if (revealed) return // 已经回答过了
+    if (revealed) return
     setSelected(option)
-    setRevealed(true)
     const correct = option === question.correctAnswer
     onAnswer?.(option)
-    // 自动进入下一题（短暂的延迟以便用户看到反馈）
-    if (!correct) return // 答错等待手动
     setTimeout(() => {
-      if (!isLast) {
-        onNext?.()
+      setRevealed(true)
+      if (correct && !isLast) {
+        setTimeout(() => {
+          onNext?.()
+        }, 600)
       }
-    }, 800)
+    }, 300)
   }, [revealed, question, onAnswer, onNext, isLast])
 
   const handleNextClick = useCallback(() => {
@@ -48,9 +48,10 @@ export default function QuizChoice({
   const isSelectedOption = (opt) => opt === selected
 
   const getOptionStyle = (opt) => {
+    if (!revealed && isSelectedOption(opt)) return 'bg-blue-50 border-blue-400 text-blue-700 ring-2 ring-blue-200'
     if (!revealed) return 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-    if (isCorrectOption(opt)) return 'bg-green-50 border-green-300 text-green-700'
-    if (isSelectedOption(opt)) return 'bg-red-50 border-red-300 text-red-600'
+    if (isCorrectOption(opt)) return 'bg-green-50 border-green-400 text-green-700 ring-2 ring-green-200'
+    if (isSelectedOption(opt)) return 'bg-red-50 border-red-400 text-red-600 ring-2 ring-red-200'
     return 'bg-white border-gray-200 opacity-50'
   }
 

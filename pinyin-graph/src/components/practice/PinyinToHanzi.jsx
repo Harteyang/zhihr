@@ -18,23 +18,26 @@ export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound,
   const handleSelect = useCallback((hanzi) => {
     if (revealed) return
     setSelected(hanzi)
-    setRevealed(true)
     const correct = hanzi === question.correctAnswer
     onAnswer?.(hanzi)
-    if (correct) {
-      setTimeout(() => {
-        if (!isLast) onNext?.()
-      }, 800)
-    }
+    setTimeout(() => {
+      setRevealed(true)
+      if (correct && !isLast) {
+        setTimeout(() => {
+          onNext?.()
+        }, 600)
+      }
+    }, 300)
   }, [revealed, question, onAnswer, onNext, isLast])
 
   const isCorrectOption = (opt) => opt === question.correctAnswer
   const isSelectedOption = (opt) => opt === selected
 
   const getOptionStyle = (opt) => {
+    if (!revealed && isSelectedOption(opt)) return 'bg-blue-50 border-blue-400 text-blue-700 ring-2 ring-blue-200'
     if (!revealed) return 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-    if (isCorrectOption(opt)) return 'bg-green-50 border-green-300 text-green-700'
-    if (isSelectedOption(opt)) return 'bg-red-50 border-red-300 text-red-600'
+    if (isCorrectOption(opt)) return 'bg-green-50 border-green-400 text-green-700 ring-2 ring-green-200'
+    if (isSelectedOption(opt)) return 'bg-red-50 border-red-400 text-red-600 ring-2 ring-red-200'
     return 'bg-white border-gray-200 opacity-50'
   }
 
