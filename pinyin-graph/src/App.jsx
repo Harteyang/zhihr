@@ -77,12 +77,6 @@ export default function App() {
     setSelectedNode(null)
   }, [])
 
-  // 详情页内声母切换
-  const handleSelectShengmuInDetail = useCallback((sm) => {
-    setCurrentShengmu(sm)
-    setSelectedNode(null)
-  }, [])
-
   // 详情内拼音节点点击
   const handleNodeClick = useCallback((node) => {
     if (node.type === 'pinyin') setSelectedNode(node)
@@ -118,9 +112,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface">
       <TopNav tab={tab} onTabChange={handleTabChange} onHome={handleTopNavHome} />
-
       <main className="max-w-5xl mx-auto px-4 py-5">
-        {/* ==================== 知识图谱选项卡 ==================== */}
         {tab === 'graph' && (
           <ViewTransition viewKey={view}>
             {view === 'overview' ? (
@@ -135,7 +127,6 @@ export default function App() {
                 stats={shengmuStats}
                 selectedNode={selectedNode}
                 onBack={handleBackToOverview}
-                onSelectShengmu={handleSelectShengmuInDetail}
                 onNodeClick={handleNodeClick}
                 onCloseCard={handleCloseCard}
                 onPlaySound={handlePlaySound}
@@ -145,51 +136,48 @@ export default function App() {
           </ViewTransition>
         )}
 
-        {/* ==================== 练习选项卡 ==================== */}
         {tab === 'practice' && (
           <ViewTransition viewKey={quiz.isFinished ? 'finished' : (quiz.currentQuestion?.data?.id || 'idle')}>
             {!quiz.isFinished ? (
-              <>
-                {quiz.currentQuestion ? (
-                  <>
-                    <PracticeHeader
-                      currentIndex={quiz.currentIndex}
-                      total={quiz.questions.length}
-                      score={quiz.score}
-                      onBack={() => setTab('graph')}
+              quiz.currentQuestion ? (
+                <>
+                  <PracticeHeader
+                    currentIndex={quiz.currentIndex}
+                    total={quiz.questions.length}
+                    score={quiz.score}
+                    onBack={() => setTab('graph')}
+                  />
+                  {quiz.currentQuestion.type === 'pinyin-to-hanzi' ? (
+                    <PinyinToHanzi
+                      question={quiz.currentQuestion}
+                      onAnswer={quiz.answer}
+                      onNext={quiz.next}
+                      onPlaySound={handlePlaySound}
+                      isLast={quiz.currentIndex >= quiz.questions.length - 1}
                     />
-                    {quiz.currentQuestion.type === 'pinyin-to-hanzi' ? (
-                      <PinyinToHanzi
-                        question={quiz.currentQuestion}
-                        onAnswer={quiz.answer}
-                        onNext={quiz.next}
-                        onPlaySound={handlePlaySound}
-                        isLast={quiz.currentIndex >= quiz.questions.length - 1}
-                      />
-                    ) : (
-                      <HanziToPinyin
-                        question={quiz.currentQuestion}
-                        onAnswer={quiz.answer}
-                        onNext={quiz.next}
-                        onPlaySound={handlePlaySound}
-                        isLast={quiz.currentIndex >= quiz.questions.length - 1}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">还没有开始练习</p>
-                    <button
-                      onClick={() => {
-                        quiz.start(practiceMode, { shengmu: currentShengmu })
-                      }}
-                      className="btn-primary px-6"
-                    >
-                      开始练习
-                    </button>
-                  </div>
-                )}
-              </>
+                  ) : (
+                    <HanziToPinyin
+                      question={quiz.currentQuestion}
+                      onAnswer={quiz.answer}
+                      onNext={quiz.next}
+                      onPlaySound={handlePlaySound}
+                      isLast={quiz.currentIndex >= quiz.questions.length - 1}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 mb-4">还没有开始练习</p>
+                  <button
+                    onClick={() => {
+                      quiz.start(practiceMode, { shengmu: currentShengmu })
+                    }}
+                    className="btn-primary px-6"
+                  >
+                    开始练习
+                  </button>
+                </div>
+              )
             ) : (
               <PracticeResult
                 result={quiz.result}

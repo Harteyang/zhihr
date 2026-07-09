@@ -1,8 +1,9 @@
 /**
  * GraphDetailView — 单声母详细图容器
- * 含左上角返回按钮、声母选择器、力导向图、浮层卡片、底部工具栏
+ * 含左上角返回按钮、当前声母指示、力导向图、浮层卡片、底部工具栏
+ *
+ * 声母切换通过返回总览 → 点击其他声母完成
  */
-import ShengmuSelector from './ShengmuSelector'
 import PinyinGraph from './PinyinGraph'
 import PinyinCard from './PinyinCard'
 import GraphToolbar from './GraphToolbar'
@@ -13,7 +14,6 @@ export default function GraphDetailView({
   stats,
   selectedNode,
   onBack,
-  onSelectShengmu,
   onNodeClick,
   onCloseCard,
   onPlaySound,
@@ -42,9 +42,6 @@ export default function GraphDetailView({
           / 声母 <strong className="text-gray-700">{shengmu}</strong>
         </span>
       </div>
-
-      {/* 声母横向选择器 */}
-      <ShengmuSelector selected={shengmu} onSelect={onSelectShengmu} />
 
       {/* 核心：知识图谱 */}
       <div className="relative">
