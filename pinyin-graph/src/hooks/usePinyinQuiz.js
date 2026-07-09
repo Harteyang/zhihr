@@ -96,6 +96,8 @@ export default function usePinyinQuiz(options = {}) {
   const next = useCallback(() => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(i => i + 1)
+    } else {
+      setIsFinished(true)
     }
   }, [currentIndex, questions.length])
 
