@@ -14,6 +14,7 @@ export default function QuizChoice({
   onNext,
   onPlaySound,
   isLast,
+  currentIndex,
 }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
@@ -22,7 +23,7 @@ export default function QuizChoice({
   useEffect(() => {
     setSelected(null)
     setRevealed(false)
-  }, [question])
+  }, [currentIndex])
 
   const handleSelect = useCallback((option) => {
     if (revealed) return // 已经回答过了

@@ -119,7 +119,6 @@ export default function App() {
               <ShengmuOverview
                 onSelect={handleSelectFromOverview}
                 getPinyinCount={getPinyinCount}
-                pinyinData={pinyinData}
               />
             ) : (
               <GraphDetailView
@@ -155,6 +154,7 @@ export default function App() {
                       onNext={quiz.next}
                       onPlaySound={handlePlaySound}
                       isLast={quiz.currentIndex >= quiz.questions.length - 1}
+                      currentIndex={quiz.currentIndex}
                     />
                   ) : (
                     <HanziToPinyin
@@ -163,6 +163,7 @@ export default function App() {
                       onNext={quiz.next}
                       onPlaySound={handlePlaySound}
                       isLast={quiz.currentIndex >= quiz.questions.length - 1}
+                      currentIndex={quiz.currentIndex}
                     />
                   )}
                 </>

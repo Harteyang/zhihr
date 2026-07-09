@@ -6,14 +6,14 @@
 import { useState, useCallback, useEffect } from 'react'
 import PlayButton from '../ui/PlayButton'
 
-export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound, isLast }) {
+export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound, isLast, currentIndex }) {
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
 
   useEffect(() => {
     setSelected(null)
     setRevealed(false)
-  }, [question])
+  }, [currentIndex])
 
   const handleSelect = useCallback((hanzi) => {
     if (revealed) return
