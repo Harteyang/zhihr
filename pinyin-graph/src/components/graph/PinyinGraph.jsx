@@ -181,11 +181,22 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
     yunmuNodes.forEach((node) => {
       const pos = layoutMap.get(node.label)
       if (!pos) return
-      node.x = pos.x
-      node.y = pos.y
-      node.fx = pos.fx
-      node.fy = pos.fy
+      
+      const isExpanded = activeExpandedYunmu === node.id
+      const isDimmed = activeExpandedYunmu && !isExpanded
+      
+      let scaleFactor = 1
+      if (isDimmed) {
+        scaleFactor = 0.45
+      }
+      
+      node.x = pos.x * scaleFactor
+      node.y = pos.y * scaleFactor
+      node.fx = pos.x * scaleFactor
+      node.fy = pos.y * scaleFactor
       node.angle = pos.angle
+      node.__originalRadius = pos.ringRadius
+      node.__dimmed = isDimmed
       node.data = yunmuDataMap.get(node.label) || []
     })
 
@@ -337,7 +348,11 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
       const yunmuCount = graphData.nodes.filter(n => n.type === NODE_TYPES.YUNMU).length
       const shengmuToYunmuDist = Math.max(80, 120 - Math.floor(yunmuCount / 2) * 5)
       fg.d3Force('link')?.distance((link) => {
-        if (link.source?.type === NODE_TYPES.SHENGMU) return shengmuToYunmuDist
+        if (link.source?.type === NODE_TYPES.SHENGMU) {
+          const targetNode = graphData.nodes.find(n => n.id === (link.target?.id || link.target))
+          if (targetNode?.__dimmed) return shengmuToYunmuDist * 0.45
+          return shengmuToYunmuDist
+        }
         return showLabels ? 100 : 70
       })
 
