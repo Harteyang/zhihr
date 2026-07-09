@@ -74,7 +74,7 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
   const fgRef = useRef(null)
   const wrapperRef = useRef(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [showLabels, setShowLabels] = useState(true)
+  const [showLabels, setShowLabels] = useState(false)
   const [expandedYunmu, setExpandedYunmu] = useState(null)
   const [minZoom, setMinZoom] = useState(MIN_ZOOM_FLOOR)
 
@@ -556,7 +556,10 @@ export default function PinyinGraph({ data, shengmu, onPlaySound, onNodeClick, o
 
   // 点击节点
   const handleNodeClick = useCallback((node) => {
-    if (node.type === NODE_TYPES.SHENGMU) return
+    if (node.type === NODE_TYPES.SHENGMU) {
+      setShowLabels((prev) => !prev)
+      return
+    }
     if (node.type === NODE_TYPES.PINYIN && onNodeClick) {
       onNodeClick(node)
     }
