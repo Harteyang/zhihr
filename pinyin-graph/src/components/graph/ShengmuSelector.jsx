@@ -7,13 +7,13 @@ import { getLayerColor, getLayerTextColor } from '../../utils/pinyin-utils'
 
 // 声母分组（用于视觉分类）
 export const SHENGMU_GROUPS = [
-  { label: '唇音', items: ['b', 'p', 'm', 'f'] },
+  { label: '唇音', items: ['b', 'p', 'm', 'f', 'y', 'w'] },
   { label: '舌尖音', items: ['d', 't', 'n', 'l'] },
   { label: '舌根音', items: ['g', 'k', 'h'] },
   { label: '舌面音', items: ['j', 'q', 'x'] },
   { label: '翘舌音', items: ['zh', 'ch', 'sh', 'r'] },
   { label: '平舌音', items: ['z', 'c', 's'] },
-  { label: '零声母', items: ['零声母'] },
+  { label: '整体认读音节', items: ['整体认读音节'] },
 ]
 
 export default function ShengmuSelector({ selected, onSelect }) {

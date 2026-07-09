@@ -91,7 +91,7 @@ function buildIndexes(records) {
     'b', 'p', 'm', 'f', 'd', 't', 'n', 'l',
     'g', 'k', 'h', 'j', 'q', 'x',
     'zh', 'ch', 'sh', 'r', 'z', 'c', 's',
-    '零声母',
+    '整体认读音节',
   ]
   const yunmuSet = new Set()
 

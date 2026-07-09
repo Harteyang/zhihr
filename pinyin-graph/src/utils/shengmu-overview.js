@@ -2,7 +2,7 @@
  * shengmu-overview — 声母总览图数据与布局
  *
  * 提供：
- *   OVERVIEW_ITEMS — 24 个声母节点（22 真实声母 + 零声母 + 虚拟 y、w）
+ *   OVERVIEW_ITEMS — 24 个声母节点（23 真实声母 + 整体认读音节）
  *   computeOverviewLayout(count, containerW, containerH) — 环形（≥1024px）或网格布局坐标
  */
 
@@ -12,8 +12,6 @@ export const OVERVIEW_ITEMS = [
   ...SHENGMU_GROUPS.flatMap((g) =>
     g.items.map((id) => ({ id, label: id, virtual: false, group: g.label }))
   ),
-  { id: 'y', label: 'y', virtual: true, redirect: '零声母', group: '零声母' },
-  { id: 'w', label: 'w', virtual: true, redirect: '零声母', group: '零声母' },
 ]
 
 export const RING_BREAKPOINT = 768

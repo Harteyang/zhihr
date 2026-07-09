@@ -10488,8 +10488,8 @@ export const pinyinData = [
     "liju": "离开时要锁门。"
   },
   {
-    "id": "零声母-a-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-a-1",
+    "shengmu": "整体认读音节",
     "yunmu": "a",
     "yunmuCategory": "单韵母",
     "shengdiao": 1,
@@ -10499,8 +10499,8 @@ export const pinyinData = [
     "liju": "啊呀，书包忘记带了。"
   },
   {
-    "id": "零声母-a-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-a-2",
+    "shengmu": "整体认读音节",
     "yunmu": "a",
     "yunmuCategory": "单韵母",
     "shengdiao": 2,
@@ -10510,8 +10510,8 @@ export const pinyinData = [
     "liju": "啊？你刚才说我没听清。"
   },
   {
-    "id": "零声母-a-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-a-3",
+    "shengmu": "整体认读音节",
     "yunmu": "a",
     "yunmuCategory": "单韵母",
     "shengdiao": 3,
@@ -10521,8 +10521,8 @@ export const pinyinData = [
     "liju": "啊？他真的考了满分吗？"
   },
   {
-    "id": "零声母-a-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-a-4",
+    "shengmu": "整体认读音节",
     "yunmu": "a",
     "yunmuCategory": "单韵母",
     "shengdiao": 4,
@@ -10532,8 +10532,8 @@ export const pinyinData = [
     "liju": "啊！我终于明白了这个道理。"
   },
   {
-    "id": "零声母-o-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-o-1",
+    "shengmu": "整体认读音节",
     "yunmu": "o",
     "yunmuCategory": "单韵母",
     "shengdiao": 1,
@@ -10543,8 +10543,8 @@ export const pinyinData = [
     "liju": "哦！原来是这样的。"
   },
   {
-    "id": "零声母-o-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-o-2",
+    "shengmu": "整体认读音节",
     "yunmu": "o",
     "yunmuCategory": "单韵母",
     "shengdiao": 2,
@@ -10554,8 +10554,8 @@ export const pinyinData = [
     "liju": "哦？你说的是真的吗？"
   },
   {
-    "id": "零声母-o-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-o-3",
+    "shengmu": "整体认读音节",
     "yunmu": "o",
     "yunmuCategory": "单韵母",
     "shengdiao": 3,
@@ -10565,8 +10565,8 @@ export const pinyinData = [
     "liju": "哦？事情原来是这样的。"
   },
   {
-    "id": "零声母-o-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-o-4",
+    "shengmu": "整体认读音节",
     "yunmu": "o",
     "yunmuCategory": "单韵母",
     "shengdiao": 4,
@@ -10576,8 +10576,8 @@ export const pinyinData = [
     "liju": "哦！我现在终于懂了。"
   },
   {
-    "id": "零声母-e-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-e-1",
+    "shengmu": "整体认读音节",
     "yunmu": "e",
     "yunmuCategory": "单韵母",
     "shengdiao": 1,
@@ -10587,8 +10587,8 @@ export const pinyinData = [
     "liju": "阿胶是一种补血良药。"
   },
   {
-    "id": "零声母-e-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-e-2",
+    "shengmu": "整体认读音节",
     "yunmu": "e",
     "yunmuCategory": "单韵母",
     "shengdiao": 2,
@@ -10598,8 +10598,8 @@ export const pinyinData = [
     "liju": "湖面上游着白天鹅。"
   },
   {
-    "id": "零声母-e-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-e-3",
+    "shengmu": "整体认读音节",
     "yunmu": "e",
     "yunmuCategory": "单韵母",
     "shengdiao": 3,
@@ -10609,8 +10609,8 @@ export const pinyinData = [
     "liju": "晕车让他觉得恶心。"
   },
   {
-    "id": "零声母-e-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-e-4",
+    "shengmu": "整体认读音节",
     "yunmu": "e",
     "yunmuCategory": "单韵母",
     "shengdiao": 4,
@@ -10620,8 +10620,8 @@ export const pinyinData = [
     "liju": "凶恶的狼来了。"
   },
   {
-    "id": "零声母-ai-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ai-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ai",
     "yunmuCategory": "复韵母",
     "shengdiao": 1,
@@ -10631,8 +10631,8 @@ export const pinyinData = [
     "liju": "哎呀，差点摔倒了。"
   },
   {
-    "id": "零声母-ai-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ai-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ai",
     "yunmuCategory": "复韵母",
     "shengdiao": 2,
@@ -10642,8 +10642,8 @@ export const pinyinData = [
     "liju": "他犯了错被挨打。"
   },
   {
-    "id": "零声母-ai-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ai-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ai",
     "yunmuCategory": "复韵母",
     "shengdiao": 3,
@@ -10653,8 +10653,8 @@ export const pinyinData = [
     "liju": "房子又矮小又破旧。"
   },
   {
-    "id": "零声母-ai-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ai-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ai",
     "yunmuCategory": "复韵母",
     "shengdiao": 4,
@@ -10664,8 +10664,8 @@ export const pinyinData = [
     "liju": "她热爱跳舞和唱歌。"
   },
   {
-    "id": "零声母-ei-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ei-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ei",
     "yunmuCategory": "复韵母",
     "shengdiao": 1,
@@ -10675,8 +10675,8 @@ export const pinyinData = [
     "liju": "诶！你们快过来看。"
   },
   {
-    "id": "零声母-ei-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ei-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ei",
     "yunmuCategory": "复韵母",
     "shengdiao": 2,
@@ -10686,8 +10686,8 @@ export const pinyinData = [
     "liju": "诶？真的是你吗？"
   },
   {
-    "id": "零声母-ei-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ei-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ei",
     "yunmuCategory": "复韵母",
     "shengdiao": 3,
@@ -10697,8 +10697,8 @@ export const pinyinData = [
     "liju": "诶？这个消息确实吗？"
   },
   {
-    "id": "零声母-ei-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ei-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ei",
     "yunmuCategory": "复韵母",
     "shengdiao": 4,
@@ -10708,8 +10708,8 @@ export const pinyinData = [
     "liju": "诶！我马上就去办。"
   },
   {
-    "id": "零声母-ao-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ao-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ao",
     "yunmuCategory": "复韵母",
     "shengdiao": 1,
@@ -10719,8 +10719,8 @@ export const pinyinData = [
     "liju": "这条路坑坑洼洼凹凸不平。"
   },
   {
-    "id": "零声母-ao-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ao-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ao",
     "yunmuCategory": "复韵母",
     "shengdiao": 2,
@@ -10730,8 +10730,8 @@ export const pinyinData = [
     "liju": "熬夜对身体不好。"
   },
   {
-    "id": "零声母-ao-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ao-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ao",
     "yunmuCategory": "复韵母",
     "shengdiao": 3,
@@ -10741,8 +10741,8 @@ export const pinyinData = [
     "liju": "她穿了一件红色棉袄。"
   },
   {
-    "id": "零声母-ao-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ao-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ao",
     "yunmuCategory": "复韵母",
     "shengdiao": 4,
@@ -10752,8 +10752,8 @@ export const pinyinData = [
     "liju": "他考了满分但很骄傲。"
   },
   {
-    "id": "零声母-ou-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ou-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ou",
     "yunmuCategory": "复韵母",
     "shengdiao": 1,
@@ -10763,8 +10763,8 @@ export const pinyinData = [
     "liju": "姐姐去欧洲旅行了。"
   },
   {
-    "id": "零声母-ou-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ou-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ou",
     "yunmuCategory": "复韵母",
     "shengdiao": 3,
@@ -10774,8 +10774,8 @@ export const pinyinData = [
     "liju": "他偶尔也会去图书馆。"
   },
   {
-    "id": "零声母-an-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-an-1",
+    "shengmu": "整体认读音节",
     "yunmu": "an",
     "yunmuCategory": "前鼻韵母",
     "shengdiao": 1,
@@ -10785,8 +10785,8 @@ export const pinyinData = [
     "liju": "过马路要注意安全。"
   },
   {
-    "id": "零声母-an-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-an-3",
+    "shengmu": "整体认读音节",
     "yunmu": "an",
     "yunmuCategory": "前鼻韵母",
     "shengdiao": 3,
@@ -10796,8 +10796,8 @@ export const pinyinData = [
     "liju": "俺们村里有个大池塘。"
   },
   {
-    "id": "零声母-an-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-an-4",
+    "shengmu": "整体认读音节",
     "yunmu": "an",
     "yunmuCategory": "前鼻韵母",
     "shengdiao": 4,
@@ -10807,8 +10807,8 @@ export const pinyinData = [
     "liju": "他害怕黑暗的房间。"
   },
   {
-    "id": "零声母-en-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-en-1",
+    "shengmu": "整体认读音节",
     "yunmu": "en",
     "yunmuCategory": "前鼻韵母",
     "shengdiao": 1,
@@ -10818,8 +10818,8 @@ export const pinyinData = [
     "liju": "父母恩情比山高。"
   },
   {
-    "id": "零声母-en-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-en-4",
+    "shengmu": "整体认读音节",
     "yunmu": "en",
     "yunmuCategory": "前鼻韵母",
     "shengdiao": 4,
@@ -10829,8 +10829,8 @@ export const pinyinData = [
     "liju": "他用力摁住伤口止血。"
   },
   {
-    "id": "零声母-ang-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ang-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ang",
     "yunmuCategory": "后鼻韵母",
     "shengdiao": 2,
@@ -10840,8 +10840,8 @@ export const pinyinData = [
     "liju": "同学们精神昂扬地升国旗。"
   },
   {
-    "id": "零声母-ang-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ang-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ang",
     "yunmuCategory": "后鼻韵母",
     "shengdiao": 4,
@@ -10851,8 +10851,8 @@ export const pinyinData = [
     "liju": "春天来了春意盎然。"
   },
   {
-    "id": "零声母-er-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-er-2",
+    "shengmu": "整体认读音节",
     "yunmu": "er",
     "yunmuCategory": "复韵母",
     "shengdiao": 2,
@@ -10862,8 +10862,8 @@ export const pinyinData = [
     "liju": "儿童节大家都很开心。"
   },
   {
-    "id": "零声母-er-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-er-3",
+    "shengmu": "整体认读音节",
     "yunmu": "er",
     "yunmuCategory": "复韵母",
     "shengdiao": 3,
@@ -10873,8 +10873,8 @@ export const pinyinData = [
     "liju": "他用手捂住了耳朵。"
   },
   {
-    "id": "零声母-er-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-er-4",
+    "shengmu": "整体认读音节",
     "yunmu": "er",
     "yunmuCategory": "复韵母",
     "shengdiao": 4,
@@ -10884,8 +10884,8 @@ export const pinyinData = [
     "liju": "二个苹果正好分给两人。"
   },
   {
-    "id": "零声母-yi-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yi-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yi",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -10895,8 +10895,8 @@ export const pinyinData = [
     "liju": "我有一个幸福的家。"
   },
   {
-    "id": "零声母-yi-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yi-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yi",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -10906,8 +10906,8 @@ export const pinyinData = [
     "liju": "把桌子移动一下位置。"
   },
   {
-    "id": "零声母-yi-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yi-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yi",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -10917,8 +10917,8 @@ export const pinyinData = [
     "liju": "他已经完成了作业。"
   },
   {
-    "id": "零声母-yi-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yi-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yi",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -10928,8 +10928,8 @@ export const pinyinData = [
     "liju": "我不明白你的意思。"
   },
   {
-    "id": "零声母-ya-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ya-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ya",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -10939,8 +10939,8 @@ export const pinyinData = [
     "liju": "大风把庄稼压倒了。"
   },
   {
-    "id": "零声母-ya-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ya-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ya",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -10950,8 +10950,8 @@ export const pinyinData = [
     "liju": "他每天都刷牙。"
   },
   {
-    "id": "零声母-ya-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ya-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ya",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -10961,8 +10961,8 @@ export const pinyinData = [
     "liju": "他是个哑巴不会说话。"
   },
   {
-    "id": "零声母-ya-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ya-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ya",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -10972,8 +10972,8 @@ export const pinyinData = [
     "liju": "亚洲有很多国家。"
   },
   {
-    "id": "零声母-ye-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ye-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ye",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -10983,8 +10983,8 @@ export const pinyinData = [
     "liju": "椰子水很好喝。"
   },
   {
-    "id": "零声母-ye-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ye-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ye",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -10994,8 +10994,8 @@ export const pinyinData = [
     "liju": "爷爷在花园里浇花。"
   },
   {
-    "id": "零声母-ye-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ye-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ye",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11005,8 +11005,8 @@ export const pinyinData = [
     "liju": "我也是这样想的。"
   },
   {
-    "id": "零声母-ye-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ye-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ye",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11016,8 +11016,8 @@ export const pinyinData = [
     "liju": "他独自走在黑夜中。"
   },
   {
-    "id": "零声母-yao-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yao-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yao",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11027,8 +11027,8 @@ export const pinyinData = [
     "liju": "老师要求我们认真写字。"
   },
   {
-    "id": "零声母-yao-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yao-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yao",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11038,8 +11038,8 @@ export const pinyinData = [
     "liju": "旗帜在风中摇摆。"
   },
   {
-    "id": "零声母-yao-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yao-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yao",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11049,8 +11049,8 @@ export const pinyinData = [
     "liju": "他咬牙坚持跑完了全程。"
   },
   {
-    "id": "零声母-yao-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yao-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yao",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11060,8 +11060,8 @@ export const pinyinData = [
     "liju": "身体比什么都重要。"
   },
   {
-    "id": "零声母-you-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-you-1",
+    "shengmu": "整体认读音节",
     "yunmu": "you",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11071,8 +11071,8 @@ export const pinyinData = [
     "liju": "他是个优秀的学生。"
   },
   {
-    "id": "零声母-you-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-you-2",
+    "shengmu": "整体认读音节",
     "yunmu": "you",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11082,8 +11082,8 @@ export const pinyinData = [
     "liju": "夏天我们去游泳。"
   },
   {
-    "id": "零声母-you-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-you-3",
+    "shengmu": "整体认读音节",
     "yunmu": "you",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11093,8 +11093,8 @@ export const pinyinData = [
     "liju": "有的人喜欢运动。"
   },
   {
-    "id": "零声母-you-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-you-4",
+    "shengmu": "整体认读音节",
     "yunmu": "you",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11104,8 +11104,8 @@ export const pinyinData = [
     "liju": "他考试又一次获得第一。"
   },
   {
-    "id": "零声母-yan-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yan-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yan",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11115,8 +11115,8 @@ export const pinyinData = [
     "liju": "吸烟有害健康。"
   },
   {
-    "id": "零声母-yan-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yan-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yan",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11126,8 +11126,8 @@ export const pinyinData = [
     "liju": "炒菜要放食盐。"
   },
   {
-    "id": "零声母-yan-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yan-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yan",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11137,8 +11137,8 @@ export const pinyinData = [
     "liju": "她的眼睛很漂亮。"
   },
   {
-    "id": "零声母-yan-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yan-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yan",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11148,8 +11148,8 @@ export const pinyinData = [
     "liju": "燕子从南方飞回来了。"
   },
   {
-    "id": "零声母-yin-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yin-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yin",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11159,8 +11159,8 @@ export const pinyinData = [
     "liju": "因为下雨所以比赛取消了。"
   },
   {
-    "id": "零声母-yin-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yin-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yin",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11170,8 +11170,8 @@ export const pinyinData = [
     "liju": "古代用银子当钱用。"
   },
   {
-    "id": "零声母-yin-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yin-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yin",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11181,8 +11181,8 @@ export const pinyinData = [
     "liju": "他的发言引起了大家注意。"
   },
   {
-    "id": "零声母-yin-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yin-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yin",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11192,8 +11192,8 @@ export const pinyinData = [
     "liju": "这本书印刷得很精美。"
   },
   {
-    "id": "零声母-yang-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yang-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yang",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11203,8 +11203,8 @@ export const pinyinData = [
     "liju": "广场中央有喷泉。"
   },
   {
-    "id": "零声母-yang-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yang-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yang",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11214,8 +11214,8 @@ export const pinyinData = [
     "liju": "小羊在草地上吃草。"
   },
   {
-    "id": "零声母-yang-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yang-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yang",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11225,8 +11225,8 @@ export const pinyinData = [
     "liju": "他靠种地养活全家。"
   },
   {
-    "id": "零声母-yang-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yang-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yang",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11236,8 +11236,8 @@ export const pinyinData = [
     "liju": "她今天心情很好的样子。"
   },
   {
-    "id": "零声母-ying-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ying-1",
+    "shengmu": "整体认读音节",
     "yunmu": "ying",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11247,8 +11247,8 @@ export const pinyinData = [
     "liju": "你应该早点休息。"
   },
   {
-    "id": "零声母-ying-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ying-2",
+    "shengmu": "整体认读音节",
     "yunmu": "ying",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11258,8 +11258,8 @@ export const pinyinData = [
     "liju": "大家热烈欢迎新同学。"
   },
   {
-    "id": "零声母-ying-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ying-3",
+    "shengmu": "整体认读音节",
     "yunmu": "ying",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11269,8 +11269,8 @@ export const pinyinData = [
     "liju": "阳光下影子很长。"
   },
   {
-    "id": "零声母-ying-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-ying-4",
+    "shengmu": "整体认读音节",
     "yunmu": "ying",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11280,8 +11280,8 @@ export const pinyinData = [
     "liju": "石头很坚硬。"
   },
   {
-    "id": "零声母-yong-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yong-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yong",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11291,8 +11291,8 @@ export const pinyinData = [
     "liju": "妈妈给了孩子一个大拥抱。"
   },
   {
-    "id": "零声母-yong-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yong-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yong",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11302,8 +11302,8 @@ export const pinyinData = [
     "liju": "两人在角落里喁喁私语。"
   },
   {
-    "id": "零声母-yong-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yong-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yong",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11313,8 +11313,8 @@ export const pinyinData = [
     "liju": "友谊永远记在心里。"
   },
   {
-    "id": "零声母-yong-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yong-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yong",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11324,8 +11324,8 @@ export const pinyinData = [
     "liju": "要正确使用电器。"
   },
   {
-    "id": "零声母-wu-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wu-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wu",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11335,8 +11335,8 @@ export const pinyinData = [
     "liju": "乌鸦飞走了。"
   },
   {
-    "id": "零声母-wu-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wu-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wu",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11346,8 +11346,8 @@ export const pinyinData = [
     "liju": "困难无法阻挡我们前进。"
   },
   {
-    "id": "零声母-wu-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wu-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wu",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11357,8 +11357,8 @@ export const pinyinData = [
     "liju": "盘子里有五个桃子。"
   },
   {
-    "id": "零声母-wu-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wu-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wu",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11368,8 +11368,8 @@ export const pinyinData = [
     "liju": "动物园里有很多动物。"
   },
   {
-    "id": "零声母-wa-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wa-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wa",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11379,8 +11379,8 @@ export const pinyinData = [
     "liju": "他在花园里挖土种树。"
   },
   {
-    "id": "零声母-wa-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wa-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wa",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11390,8 +11390,8 @@ export const pinyinData = [
     "liju": "妹妹抱着布娃娃睡觉。"
   },
   {
-    "id": "零声母-wa-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wa-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wa",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11401,8 +11401,8 @@ export const pinyinData = [
     "liju": "屋顶的瓦片被风吹落了。"
   },
   {
-    "id": "零声母-wa-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wa-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wa",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11412,8 +11412,8 @@ export const pinyinData = [
     "liju": "他穿了一双新袜子。"
   },
   {
-    "id": "零声母-wo-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wo-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wo",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11423,8 +11423,8 @@ export const pinyinData = [
     "liju": "树上有一个鸟窝。"
   },
   {
-    "id": "零声母-wo-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wo-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wo",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11434,8 +11434,8 @@ export const pinyinData = [
     "liju": "我们一起去上学吧。"
   },
   {
-    "id": "零声母-wo-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wo-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wo",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11445,8 +11445,8 @@ export const pinyinData = [
     "liju": "我的卧室不大但很干净。"
   },
   {
-    "id": "零声母-wai-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wai-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wai",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11456,8 +11456,8 @@ export const pinyinData = [
     "liju": "墙上的画挂得歪斜了。"
   },
   {
-    "id": "零声母-wai-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wai-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wai",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11467,8 +11467,8 @@ export const pinyinData = [
     "liju": "外面正在下大雨。"
   },
   {
-    "id": "零声母-wei-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wei-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wei",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11478,8 +11478,8 @@ export const pinyinData = [
     "liju": "这个动作很危险。"
   },
   {
-    "id": "零声母-wei-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wei-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wei",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11489,8 +11489,8 @@ export const pinyinData = [
     "liju": "大树包围了整个村子。"
   },
   {
-    "id": "零声母-wei-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wei-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wei",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11500,8 +11500,8 @@ export const pinyinData = [
     "liju": "伟大的祖国越来越强大。"
   },
   {
-    "id": "零声母-wei-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wei-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wei",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11511,8 +11511,8 @@ export const pinyinData = [
     "liju": "为了健康要每天锻炼。"
   },
   {
-    "id": "零声母-wan-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wan-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wan",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11522,8 +11522,8 @@ export const pinyinData = [
     "liju": "小河弯弯曲曲流向远方。"
   },
   {
-    "id": "零声母-wan-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wan-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wan",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11533,8 +11533,8 @@ export const pinyinData = [
     "liju": "小朋友们正在玩玩具。"
   },
   {
-    "id": "零声母-wan-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wan-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wan",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11544,8 +11544,8 @@ export const pinyinData = [
     "liju": "晚上我要和弟弟看电视。"
   },
   {
-    "id": "零声母-wan-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wan-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wan",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11555,8 +11555,8 @@ export const pinyinData = [
     "liju": "万一明天停水怎么办？"
   },
   {
-    "id": "零声母-wen-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wen-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wen",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11566,8 +11566,8 @@ export const pinyinData = [
     "liju": "今天温度比昨天高。"
   },
   {
-    "id": "零声母-wen-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wen-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wen",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11577,8 +11577,8 @@ export const pinyinData = [
     "liju": "汉字是古老的文字。"
   },
   {
-    "id": "零声母-wen-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wen-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wen",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11588,8 +11588,8 @@ export const pinyinData = [
     "liju": "他做事沉稳可靠。"
   },
   {
-    "id": "零声母-wen-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wen-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wen",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11599,8 +11599,8 @@ export const pinyinData = [
     "liju": "请回答老师的问题。"
   },
   {
-    "id": "零声母-wang-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wang-1",
+    "shengmu": "整体认读音节",
     "yunmu": "wang",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11610,8 +11610,8 @@ export const pinyinData = [
     "liju": "小狗汪汪叫。"
   },
   {
-    "id": "零声母-wang-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wang-2",
+    "shengmu": "整体认读音节",
     "yunmu": "wang",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11621,8 +11621,8 @@ export const pinyinData = [
     "liju": "狮子是森林王国之王。"
   },
   {
-    "id": "零声母-wang-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wang-3",
+    "shengmu": "整体认读音节",
     "yunmu": "wang",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11632,8 +11632,8 @@ export const pinyinData = [
     "liju": "网络让人们沟通更方便。"
   },
   {
-    "id": "零声母-wang-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-wang-4",
+    "shengmu": "整体认读音节",
     "yunmu": "wang",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11643,8 +11643,8 @@ export const pinyinData = [
     "liju": "他满怀希望地走进教室。"
   },
   {
-    "id": "零声母-weng-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-weng-1",
+    "shengmu": "整体认读音节",
     "yunmu": "weng",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11654,8 +11654,8 @@ export const pinyinData = [
     "liju": "老翁拄着拐杖走来。"
   },
   {
-    "id": "零声母-weng-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-weng-3",
+    "shengmu": "整体认读音节",
     "yunmu": "weng",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11665,8 +11665,8 @@ export const pinyinData = [
     "liju": "路边的蓊蓊郁郁好美。"
   },
   {
-    "id": "零声母-yu-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yu-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yu",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11676,8 +11676,8 @@ export const pinyinData = [
     "liju": "山路迂回曲折地通向山顶。"
   },
   {
-    "id": "零声母-yu-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yu-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yu",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11687,8 +11687,8 @@ export const pinyinData = [
     "liju": "鱼儿在水里游来游去。"
   },
   {
-    "id": "零声母-yu-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yu-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yu",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11698,8 +11698,8 @@ export const pinyinData = [
     "liju": "雨水滋润了庄稼。"
   },
   {
-    "id": "零声母-yu-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yu-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yu",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11709,8 +11709,8 @@ export const pinyinData = [
     "liju": "玉米是一种常见农作物。"
   },
   {
-    "id": "零声母-yue-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yue-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yue",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11720,8 +11720,8 @@ export const pinyinData = [
     "liju": "我们约定在图书馆见面。"
   },
   {
-    "id": "零声母-yue-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yue-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yue",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11731,8 +11731,8 @@ export const pinyinData = [
     "liju": "今晚的月亮又圆又亮。"
   },
   {
-    "id": "零声母-yuan-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yuan-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yuan",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11742,8 +11742,8 @@ export const pinyinData = [
     "liju": "他受到了冤枉但相信公道。"
   },
   {
-    "id": "零声母-yuan-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yuan-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yuan",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11753,8 +11753,8 @@ export const pinyinData = [
     "liju": "公园里有很多人散步。"
   },
   {
-    "id": "零声母-yuan-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yuan-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yuan",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11764,8 +11764,8 @@ export const pinyinData = [
     "liju": "远近的人都来参观这座桥。"
   },
   {
-    "id": "零声母-yuan-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yuan-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yuan",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11775,8 +11775,8 @@ export const pinyinData = [
     "liju": "你愿意和我一起玩吗？"
   },
   {
-    "id": "零声母-yun-1",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yun-1",
+    "shengmu": "整体认读音节",
     "yunmu": "yun",
     "yunmuCategory": "其他",
     "shengdiao": 1,
@@ -11786,8 +11786,8 @@ export const pinyinData = [
     "liju": "他发烧了觉得头晕。"
   },
   {
-    "id": "零声母-yun-2",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yun-2",
+    "shengmu": "整体认读音节",
     "yunmu": "yun",
     "yunmuCategory": "其他",
     "shengdiao": 2,
@@ -11797,8 +11797,8 @@ export const pinyinData = [
     "liju": "天上飘着朵朵白云。"
   },
   {
-    "id": "零声母-yun-3",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yun-3",
+    "shengmu": "整体认读音节",
     "yunmu": "yun",
     "yunmuCategory": "其他",
     "shengdiao": 3,
@@ -11808,8 +11808,8 @@ export const pinyinData = [
     "liju": "老师允许我们小组讨论。"
   },
   {
-    "id": "零声母-yun-4",
-    "shengmu": "零声母",
+    "id": "整体认读音节-yun-4",
+    "shengmu": "整体认读音节",
     "yunmu": "yun",
     "yunmuCategory": "其他",
     "shengdiao": 4,
@@ -11857,7 +11857,7 @@ export const shengmuList = [
   "z",
   "c",
   "s",
-  "零声母"
+  "整体认读音节"
 ]
 
 // 韵母列表
@@ -11928,6 +11928,12 @@ export const validPinyinSet = new Set(["biàn","biào","biè","bié","biān","bi
  * 获取指定声母的所有音节
  */
 export function getByShengmu(sm) {
+  if (sm === 'y') {
+    return pinyinData.filter(item => item.pinyin.startsWith('y'))
+  }
+  if (sm === 'w') {
+    return pinyinData.filter(item => item.pinyin.startsWith('w'))
+  }
   return byShengmu[sm] || []
 }
 
