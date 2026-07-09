@@ -1,35 +1,37 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { pinyinData, getByShengmu } from './data/pinyin'
+import { pinyinData, getByShengmu, byShengmu } from './data/pinyin'
 
-// 组件
-import Header from './components/layout/Header'
-import TabBar from './components/layout/TabBar'
-import PinyinGraph from './components/graph/PinyinGraph'
-import PinyinCard from './components/graph/PinyinCard'
-import ShengmuSelector from './components/graph/ShengmuSelector'
-import GraphToolbar from './components/graph/GraphToolbar'
+// 布局
+import TopNav from './components/layout/TopNav'
+
+// 图谱相关
+import ShengmuOverview from './components/graph/overview/ShengmuOverview'
+import GraphDetailView from './components/graph/GraphDetailView'
+
+// 练习
 import PinyinToHanzi from './components/practice/PinyinToHanzi'
 import HanziToPinyin from './components/practice/HanziToPinyin'
 import PracticeHeader from './components/practice/PracticeHeader'
 import PracticeResult from './components/practice/PracticeResult'
+
+// 通用
+import ViewTransition from './components/common/ViewTransition'
 
 // Hooks
 import useSpeech from './hooks/useSpeech'
 import usePinyinQuiz from './hooks/usePinyinQuiz'
 import useLearningRecord from './hooks/useLearningRecord'
 
-const TABS = [
-  { id: 'graph', label: '知识图谱', icon: '🌐' },
-  { id: 'practice', label: '练习', icon: '✏️' },
-]
+const VIRTUAL_REDIRECTS = { y: '零声母', w: '零声母' }
 
 export default function App() {
-  // 图谱状态
+  // 视图状态
+  const [tab, setTab] = useState('graph')        // graph | practice
+  const [view, setView] = useState('overview')   // overview | detail
   const [currentShengmu, setCurrentShengmu] = useState('b')
   const [selectedNode, setSelectedNode] = useState(null)
-  const [tab, setTab] = useState('graph')
 
-  // 练习状态
+  // 练习
   const quiz = usePinyinQuiz({ pool: pinyinData, questionCount: 10 })
   const [practiceMode, setPracticeMode] = useState('choice')
 
@@ -39,38 +41,57 @@ export default function App() {
   // 学习记录
   const { addRecord } = useLearningRecord()
 
-  // 练习完成时自动保存记录
+  // 练习完成自动保存
   useEffect(() => {
     if (quiz.isFinished && quiz.result) {
       addRecord(quiz.result)
     }
   }, [quiz.isFinished, quiz.result, addRecord])
 
-  // 当前声母的数据
-  const currentData = useMemo(() => {
-    return getByShengmu(currentShengmu)
-  }, [currentShengmu])
+  // 当前声母数据
+  const currentData = useMemo(() => getByShengmu(currentShengmu), [currentShengmu])
 
-  // 当前声母的韵母数量和拼音数量
+  // 当前声母统计
   const shengmuStats = useMemo(() => {
     if (!currentData.length) return { yunmuCount: 0, pinyinCount: 0 }
-    const yunmus = new Set(currentData.map(r => r.yunmu))
+    const yunmus = new Set(currentData.map((r) => r.yunmu))
     return { yunmuCount: yunmus.size, pinyinCount: currentData.length }
   }, [currentData])
 
-  // 图谱节点点击
-  const handleNodeClick = useCallback((node) => {
-    if (node.type === 'pinyin') {
-      setSelectedNode(node)
-    }
+  // 拼音数量查询（按声母 ID）
+  const getPinyinCount = useCallback((sm) => {
+    return byShengmu[sm]?.length || 0
   }, [])
 
-  // 关闭卡片
-  const handleCloseCard = useCallback(() => {
+  // 从总览点击声母（含虚拟 y/w 重定向）
+  const handleSelectFromOverview = useCallback((displayId) => {
+    const target = VIRTUAL_REDIRECTS[displayId] || displayId
+    setCurrentShengmu(target)
+    setSelectedNode(null)
+    setView('detail')
+  }, [])
+
+  // 返回总览
+  const handleBackToOverview = useCallback(() => {
+    setView('overview')
     setSelectedNode(null)
   }, [])
 
-  // 切换到练习模式
+  // 详情页内声母切换
+  const handleSelectShengmuInDetail = useCallback((sm) => {
+    setCurrentShengmu(sm)
+    setSelectedNode(null)
+  }, [])
+
+  // 详情内拼音节点点击
+  const handleNodeClick = useCallback((node) => {
+    if (node.type === 'pinyin') setSelectedNode(node)
+  }, [])
+
+  // 关闭浮层
+  const handleCloseCard = useCallback(() => setSelectedNode(null), [])
+
+  // 切换到练习
   const handleStartPractice = useCallback((mode, filter = {}) => {
     setPracticeMode(mode)
     setTab('practice')
@@ -79,78 +100,54 @@ export default function App() {
     }, 100)
   }, [currentShengmu, quiz])
 
-  // 练习中的语音播放
-  const handlePlaySound = useCallback((text) => {
-    speak(text)
-  }, [speak])
+  // 播放
+  const handlePlaySound = useCallback((text) => speak(text), [speak])
 
-  // 声母切换
-  const handleShengmuChange = useCallback((sm) => {
-    setCurrentShengmu(sm)
+  // TopNav 品牌按钮：回到总览
+  const handleTopNavHome = useCallback(() => {
+    setTab('graph')
+    setView('overview')
     setSelectedNode(null)
+  }, [])
+
+  // TopNav tab 切换
+  const handleTabChange = useCallback((next) => {
+    setTab(next)
   }, [])
 
   return (
     <div className="min-h-screen bg-surface">
-      <Header onHomeClick={() => { setTab('graph'); setSelectedNode(null) }} />
+      <TopNav tab={tab} onTabChange={handleTabChange} onHome={handleTopNavHome} />
 
-      <main className="max-w-5xl mx-auto px-4 py-4">
-        {/* 选项卡 */}
-        <TabBar activeTab={tab} onTabChange={setTab} tabs={TABS} />
-
-        {/* ==================== 图谱选项卡 ==================== */}
+      <main className="max-w-5xl mx-auto px-4 py-5">
+        {/* ==================== 知识图谱选项卡 ==================== */}
         {tab === 'graph' && (
-          <div className="flex flex-col gap-4">
-            {/* 声母选择器 */}
-            <ShengmuSelector
-              selected={currentShengmu}
-              onSelect={handleShengmuChange}
-            />
-
-            {/* 核心内容区：知识图谱，占据主要可视区域 */}
-            <div className="relative">
-              <PinyinGraph
-                data={currentData}
-                shengmu={currentShengmu}
-                onPlaySound={handlePlaySound}
-                onNodeClick={handleNodeClick}
+          <ViewTransition viewKey={view}>
+            {view === 'overview' ? (
+              <ShengmuOverview
+                onSelect={handleSelectFromOverview}
+                getPinyinCount={getPinyinCount}
               />
-
-              {/* 拼音详情卡片 */}
-              {selectedNode && (
-                <PinyinCard
-                  node={selectedNode}
-                  onClose={handleCloseCard}
-                  onPlaySound={handlePlaySound}
-                  onStartPractice={handleStartPractice}
-                />
-              )}
-            </div>
-
-            {/* 辅助信息：统计与练习入口 */}
-            <GraphToolbar
-              shengmu={currentShengmu}
-              shengmuCount={shengmuStats.yunmuCount}
-              pinyinCount={shengmuStats.pinyinCount}
-              onStartPractice={handleStartPractice}
-            />
-
-            {/* 操作说明 */}
-            <div className="card text-sm text-gray-600">
-              <h3 className="font-semibold text-gray-800 mb-2">使用说明</h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-500">
-                <li>点击声母切换中心节点</li>
-                <li>点击韵母展开对应拼音和汉字</li>
-                <li>点击拼音节点查看详情并发音</li>
-                <li>使用「显示汉字」可全局查看所有汉字</li>
-              </ul>
-            </div>
-          </div>
+            ) : (
+              <GraphDetailView
+                shengmu={currentShengmu}
+                data={currentData}
+                stats={shengmuStats}
+                selectedNode={selectedNode}
+                onBack={handleBackToOverview}
+                onSelectShengmu={handleSelectShengmuInDetail}
+                onNodeClick={handleNodeClick}
+                onCloseCard={handleCloseCard}
+                onPlaySound={handlePlaySound}
+                onStartPractice={handleStartPractice}
+              />
+            )}
+          </ViewTransition>
         )}
 
         {/* ==================== 练习选项卡 ==================== */}
         {tab === 'practice' && (
-          <div>
+          <ViewTransition viewKey={quiz.isFinished ? 'finished' : (quiz.currentQuestion?.data?.id || 'idle')}>
             {!quiz.isFinished ? (
               <>
                 {quiz.currentQuestion ? (
@@ -161,7 +158,6 @@ export default function App() {
                       score={quiz.score}
                       onBack={() => setTab('graph')}
                     />
-
                     {quiz.currentQuestion.type === 'pinyin-to-hanzi' ? (
                       <PinyinToHanzi
                         question={quiz.currentQuestion}
@@ -204,7 +200,7 @@ export default function App() {
                 onBack={() => setTab('graph')}
               />
             )}
-          </div>
+          </ViewTransition>
         )}
       </main>
     </div>
