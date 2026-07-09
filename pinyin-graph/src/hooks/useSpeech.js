@@ -4,23 +4,31 @@ import { speakWithIflytek } from '../utils/iflytek-tts'
 /**
  * useSpeech — 语音合成 Hook
  *
- * 策略：优先使用讯飞 TTS（通过本地 dev 代理），失败时回退到浏览器原生 SpeechSynthesis。
+ * 策略：讯飞 TTS 为主要方案；出现任何失败时自动、无缝回退到浏览器原生
+ * SpeechSynthesis，并记录失败原因与切换事件供后续分析。
  *
  * 返回值：
- *   speak(text)        — 朗读文本
- *   speakPinyin(pinyin) — 朗读拼音字符串
- *   stop               — 停止朗读
- *   supported          — 浏览器是否支持 TTS
- *   voices             — 可用浏览器原生中文语音列表
- *   currentVoice       — 当前浏览器语音
- *   setVoice(voiceURI) — 切换浏览器语音
- *   usingIflytek       — 当前是否使用讯飞 TTS
- *   iflytekError       — 讯飞 TTS 最近一次错误
+ *   speak(text)             — 朗读文本
+ *   speakPinyin(pinyin)     — 朗读拼音字符串
+ *   stop                    — 停止朗读
+ *   supported               — 浏览器是否支持 TTS
+ *   voices                  — 可用浏览器原生中文语音列表
+ *   currentVoice            — 当前浏览器语音
+ *   setVoice(voiceURI)      — 切换浏览器语音
+ *   iflytekEnabled          — 讯飞 TTS 是否启用（自动/手动均可控制）
+ *   enableIflytek()         — 手动重新启用讯飞 TTS
+ *   disableIflytek()        — 手动禁用它并强制使用本地 TTS
+ *   fallbackLog             — 回退事件日志数组
+ *   clearFallbackLog()      — 清空日志
+ *   iflytekError            — 最近一次讯飞错误信息
  */
 
 const DEFAULT_RATE = 0.55
 const DEFAULT_PITCH = 1.05
 const DEFAULT_VOLUME = 1
+
+// 连续失败阈值：超过此次数后自动禁用讯飞，避免反复失败影响体验
+const IFLYTEK_AUTO_DISABLE_THRESHOLD = 3
 
 // 已知真人感较强的中文语音，按优先级排序
 const PREFERRED_VOICE_URIS = [
@@ -62,10 +70,13 @@ export default function useSpeech() {
   const utteranceRef = useRef(null)
   const voicesRef = useRef([])
   const currentVoiceRef = useRef(null)
+  const iflytekFailCountRef = useRef(0)
+
   const [voices, setVoices] = useState([])
   const [currentVoice, setCurrentVoice] = useState(null)
-  const [usingIflytek, setUsingIflytek] = useState(true)
+  const [iflytekEnabled, setIflytekEnabled] = useState(true)
   const [iflytekError, setIflytekError] = useState(null)
+  const [fallbackLog, setFallbackLog] = useState([])
 
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window
 
@@ -99,6 +110,34 @@ export default function useSpeech() {
       currentVoiceRef.current = found
       setCurrentVoice(found)
     }
+  }, [])
+
+  const recordFallback = useCallback((text, reason, autoDisabled) => {
+    const entry = {
+      timestamp: new Date().toISOString(),
+      text,
+      reason,
+      autoDisabled,
+    }
+    setFallbackLog((prev) => [entry, ...prev].slice(0, 50))
+    // 同时输出到控制台，便于开发者排查
+    // eslint-disable-next-line no-console
+    console.warn('[useSpeech] iFlytek TTS fallback:', entry)
+  }, [])
+
+  const enableIflytek = useCallback(() => {
+    iflytekFailCountRef.current = 0
+    setIflytekEnabled(true)
+    setIflytekError(null)
+  }, [])
+
+  const disableIflytek = useCallback(() => {
+    setIflytekEnabled(false)
+    setIflytekError(' manually disabled')
+  }, [])
+
+  const clearFallbackLog = useCallback(() => {
+    setFallbackLog([])
   }, [])
 
   const stop = useCallback(() => {
@@ -135,21 +174,34 @@ export default function useSpeech() {
     async (text) => {
       if (!text) return
 
-      if (usingIflytek) {
+      if (iflytekEnabled) {
         try {
           await speakWithIflytek(text)
+          // 成功一次后重置连续失败计数
+          if (iflytekFailCountRef.current > 0) {
+            iflytekFailCountRef.current = 0
+          }
           setIflytekError(null)
           return
         } catch (err) {
-          setIflytekError(err.message)
-          // 回退到浏览器原生 TTS
+          const reason = err instanceof Error ? err.message : String(err)
+          iflytekFailCountRef.current += 1
+          setIflytekError(reason)
+
+          // 超过阈值则自动禁用讯飞，避免反复失败影响体验
+          const shouldAutoDisable = iflytekFailCountRef.current >= IFLYTEK_AUTO_DISABLE_THRESHOLD
+          if (shouldAutoDisable) {
+            setIflytekEnabled(false)
+          }
+
+          recordFallback(text, reason, shouldAutoDisable)
           speakNative(text)
         }
       } else {
         speakNative(text)
       }
     },
-    [usingIflytek, speakNative]
+    [iflytekEnabled, speakNative, recordFallback]
   )
 
   const speakPinyin = useCallback(
@@ -167,7 +219,11 @@ export default function useSpeech() {
     voices,
     currentVoice,
     setVoice,
-    usingIflytek,
+    iflytekEnabled,
+    enableIflytek,
+    disableIflytek,
+    fallbackLog,
+    clearFallbackLog,
     iflytekError,
   }
 }
