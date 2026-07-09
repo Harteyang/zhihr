@@ -13,7 +13,7 @@ export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound,
   useEffect(() => {
     setSelected(null)
     setRevealed(false)
-  }, [currentIndex])
+  }, [currentIndex, question])
 
   const handleSelect = useCallback((hanzi) => {
     if (revealed) return

@@ -23,7 +23,7 @@ export default function QuizChoice({
   useEffect(() => {
     setSelected(null)
     setRevealed(false)
-  }, [currentIndex])
+  }, [currentIndex, question])
 
   const handleSelect = useCallback((option) => {
     if (revealed) return
