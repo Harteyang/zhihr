@@ -125,10 +125,10 @@ export default function FullScoreCelebration({ duration = 4500, onComplete }) {
         }}
       >
         <div className="text-8xl mb-4 animate-bounce">🏆</div>
-        <h2 className="text-4xl md:text-6xl font-bold text-white mb-3 drop-shadow-lg">
+        <h2 className="text-display font-bold text-content-primary mb-3 drop-shadow-lg">
           满分！
         </h2>
-        <p className="text-xl md:text-2xl text-yellow-300 font-medium drop-shadow-md">
+        <p className="text-h2 text-state-warning font-medium drop-shadow-md">
           太棒了，全部答对！
         </p>
         <div className="mt-6 flex justify-center gap-2">

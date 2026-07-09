@@ -59,7 +59,7 @@ export default function SuccessFeedback({ duration = 1200, onComplete }) {
     <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
       {/* 对勾 */}
       <div
-        className="relative z-10 flex items-center justify-center w-24 h-24 rounded-full bg-green-500 shadow-lg"
+        className="relative z-10 flex items-center justify-center w-24 h-24 rounded-full bg-state-success shadow-lg"
         style={{
           transform: `scale(${Math.min(1, progress * 2)})`,
           opacity: progress < 0.85 ? 1 : 1 - (progress - 0.85) / 0.15,

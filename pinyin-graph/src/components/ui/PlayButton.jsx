@@ -14,9 +14,9 @@ export default function PlayButton({ onPlay, size = 'md', className = '' }) {
   }, [onPlay])
 
   const sizeClasses = {
-    sm: 'w-7 h-7 text-sm',
-    md: 'w-9 h-9 text-base',
-    lg: 'w-11 h-11 text-lg',
+    sm: 'w-7 h-7 text-caption',
+    md: 'w-9 h-9 text-body',
+    lg: 'w-11 h-11 text-h3',
   }
 
   return (
@@ -26,8 +26,8 @@ export default function PlayButton({ onPlay, size = 'md', className = '' }) {
         inline-flex items-center justify-center rounded-full
         transition-all duration-150
         ${playing
-          ? 'bg-blue-100 text-blue-500 animate-pulse ring-2 ring-blue-300'
-          : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+          ? 'bg-state-info/10 text-state-info animate-pulse ring-2 ring-state-info/30'
+          : 'bg-surface text-content-secondary hover:bg-divider hover:text-content-primary'
         }
         ${sizeClasses[size]}
         ${className}

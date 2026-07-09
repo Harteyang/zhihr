@@ -98,7 +98,7 @@ export default function QuizChoice({
           <button
             key={i}
             onClick={() => handleSelect(opt)}
-            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-lg ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-body ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
           >
             {opt}
           </button>

@@ -209,7 +209,7 @@ export default function App() {
                 </>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 mb-4">还没有开始练习</p>
+                  <p className="text-content-tertiary mb-4">还没有开始练习</p>
                   <button
                     onClick={() => {
                       quiz.start(practiceMode, { shengmu: currentShengmu })

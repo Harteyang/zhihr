@@ -71,7 +71,7 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
           <button
             key={i}
             onClick={() => handleSelect(opt)}
-            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-lg font-mono ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-body font-mono ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
           >
             {opt}
           </button>

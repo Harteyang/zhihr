@@ -38,11 +38,11 @@ export default function ShengmuSelector({ selected, onSelect }) {
                       color: isActive ? activeText : undefined,
                     }}
                     className={`
-                      px-3.5 py-2.5 md:px-3 md:py-1.5 rounded-xl text-sm font-medium transition-all duration-150
+                      px-3.5 py-2.5 md:px-3 md:py-1.5 rounded-xl text-caption font-medium transition-all duration-150
                       min-h-[44px] min-w-[44px] flex items-center justify-center
                       ${isActive
                         ? 'shadow-md scale-105'
-                        : 'text-gray-600 hover:bg-gray-100 bg-white border border-gray-200'
+                        : 'text-content-secondary hover:bg-surface bg-surface-card border border-divider'
                       }
                     `}
                     aria-pressed={isActive}
@@ -51,7 +51,7 @@ export default function ShengmuSelector({ selected, onSelect }) {
                   </button>
                 )
               })}
-              <span className="mx-1.5 w-px h-6 bg-gray-200 last:hidden shrink-0" />
+              <span className="mx-1.5 w-px h-6 bg-divider last:hidden shrink-0" />
             </div>
           ))}
         </div>
@@ -59,8 +59,8 @@ export default function ShengmuSelector({ selected, onSelect }) {
         <div className="shengmu-scroll-indicator pointer-events-none absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-surface to-transparent md:block hidden" />
       </div>
       {/* 提示文字 */}
-      <p className="text-xs text-gray-400 mt-1">
-        当前声母：<span className="font-medium text-gray-600">{selected}</span>
+      <p className="text-small text-content-tertiary mt-1">
+        当前声母：<span className="font-medium text-content-secondary">{selected}</span>
         {' · '}点击声母切换图谱
       </p>
 

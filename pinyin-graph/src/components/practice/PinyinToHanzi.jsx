@@ -72,7 +72,7 @@ export default function PinyinToHanzi({ question, onAnswer, onNext, onPlaySound,
           <button
             key={i}
             onClick={() => handleSelect(opt)}
-            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-3xl ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`${getOptionStyle(opt, revealed, isSelectedOption, isCorrectOption)} text-h1 ${revealed ? 'cursor-default' : 'cursor-pointer'}`}
           >
             {opt}
           </button>

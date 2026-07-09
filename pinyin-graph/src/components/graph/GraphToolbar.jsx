@@ -10,13 +10,13 @@ export default function GraphToolbar({
 }) {
   return (
     <div className="flex items-center justify-between flex-wrap gap-3">
-      <div className="flex items-center gap-3 text-sm text-gray-500">
+      <div className="flex items-center gap-3 text-caption text-content-secondary">
         <span>
-          声母 <strong className="text-gray-700">{shengmu}</strong>
+          声母 <strong className="text-content-primary">{shengmu}</strong>
         </span>
-        <span className="w-px h-4 bg-gray-200" />
+        <span className="w-px h-4 bg-divider" />
         <span>{shengmuCount} 个韵母</span>
-        <span className="w-px h-4 bg-gray-200" />
+        <span className="w-px h-4 bg-divider" />
         <span>{pinyinCount} 个拼音</span>
       </div>
       <div className="flex flex-wrap gap-2">

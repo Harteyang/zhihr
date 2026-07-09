@@ -32,7 +32,7 @@ export default function GraphDetailView({
           className="btn-secondary flex items-center gap-1"
           aria-label="返回声母总览"
         >
-          <span className="text-base leading-none" aria-hidden="true">←</span>
+          <span className="text-body leading-none" aria-hidden="true">←</span>
           <span>总览</span>
         </button>
         <span className="text-caption text-content-tertiary ml-1">
