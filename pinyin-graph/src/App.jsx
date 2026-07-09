@@ -22,7 +22,7 @@ import useSpeech from './hooks/useSpeech'
 import usePinyinQuiz from './hooks/usePinyinQuiz'
 import useLearningRecord from './hooks/useLearningRecord'
 
-const VIRTUAL_REDIRECTS = { y: '零声母', w: '零声母' }
+
 
 export default function App() {
   // 视图状态
@@ -63,10 +63,9 @@ export default function App() {
     return byShengmu[sm]?.length || 0
   }, [])
 
-  // 从总览点击声母（含虚拟 y/w 重定向）
+  // 从总览点击声母
   const handleSelectFromOverview = useCallback((displayId) => {
-    const target = VIRTUAL_REDIRECTS[displayId] || displayId
-    setCurrentShengmu(target)
+    setCurrentShengmu(displayId)
     setSelectedNode(null)
     setView('detail')
   }, [])

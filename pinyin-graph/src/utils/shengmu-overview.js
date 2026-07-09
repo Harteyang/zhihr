@@ -2,7 +2,7 @@
  * shengmu-overview — 声母总览图数据与布局
  *
  * 提供：
- *   OVERVIEW_ITEMS — 24 个声母节点（23 真实声母 + 整体认读音节）
+ *   OVERVIEW_ITEMS — 25 个声母节点（22 真实声母 + 零声母 + y + w）
  *   computeOverviewLayout(count, containerW, containerH) — 环形（≥1024px）或网格布局坐标
  */
 
