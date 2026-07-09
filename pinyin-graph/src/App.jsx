@@ -119,6 +119,7 @@ export default function App() {
               <ShengmuOverview
                 onSelect={handleSelectFromOverview}
                 getPinyinCount={getPinyinCount}
+                pinyinData={pinyinData}
               />
             ) : (
               <GraphDetailView
