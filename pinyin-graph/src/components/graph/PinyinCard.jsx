@@ -43,7 +43,13 @@ export default function PinyinCard({ node, onClose, onPlaySound, onStartPractice
       {/* 造句 */}
       {liju && (
         <div className="mb-4 px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl">
-          <div className="text-[10px] font-medium text-amber-600 mb-0.5">造句</div>
+          <div className="flex items-center justify-between mb-0.5">
+            <div className="text-[10px] font-medium text-amber-600">造句</div>
+            <PlayButton
+              onPlay={() => onPlaySound?.(liju)}
+              size="sm"
+            />
+          </div>
           <p className="text-sm text-gray-700 leading-relaxed">{liju}</p>
         </div>
       )}
