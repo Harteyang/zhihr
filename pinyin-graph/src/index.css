@@ -9,10 +9,63 @@
 
   :root {
     color-scheme: light;
+
+    /* 品牌色 */
+    --color-brand-50: 255 243 230;
+    --color-brand-100: 255 226 194;
+    --color-brand-300: 255 179 102;
+    --color-brand-500: 255 140 66;
+    --color-brand-700: 204 94 30;
+    --color-brand-900: 122 51 14;
+
+    /* 语义色 */
+    --color-shengmu: 232 93 117;
+    --color-yunmu: 0 201 167;
+    --color-pinyin: 255 209 92;
+    --color-pinyin-text: 122 79 0;
+    --color-learning: 108 92 231;
+
+    /* 学习/状态色 */
+    --color-state-success: 46 204 113;
+    --color-state-error: 231 76 60;
+    --color-state-warning: 241 196 15;
+    --color-state-info: 52 152 219;
+    --color-state-disabled: 209 199 192;
+
+    /* 界面色 */
+    --color-surface: 255 251 247;
+    --color-surface-card: 255 255 255;
+    --color-surface-elevated: 255 255 255;
+    --color-divider: 240 230 222;
+    --color-divider-strong: 229 216 206;
+    --color-content-primary: 45 36 32;
+    --color-content-secondary: 107 96 88;
+    --color-content-tertiary: 158 147 138;
   }
 
   .dark {
     color-scheme: dark;
+
+    --color-shengmu: 255 122 149;
+    --color-yunmu: 51 230 196;
+    --color-pinyin: 255 224 138;
+    --color-pinyin-text: 61 40 0;
+    --color-learning: 162 155 254;
+
+    --color-state-success: 77 255 136;
+    --color-state-error: 255 107 107;
+    --color-state-warning: 255 217 61;
+    --color-state-info: 93 173 226;
+    --color-state-disabled: 90 95 122;
+
+    --color-surface: 26 29 46;
+    --color-surface-card: 37 40 66;
+    --color-surface-elevated: 46 50 80;
+    --color-divider: 58 63 92;
+    --color-divider-strong: 74 80 112;
+    --color-content-primary: 245 241 236;
+    --color-content-secondary: 184 178 196;
+    --color-content-tertiary: 122 127 153;
   }
 
   body {
@@ -23,36 +76,69 @@
 
 @layer components {
   .btn-primary {
-    @apply px-5 py-2.5 rounded-md bg-brand-500 text-white font-semibold
-      hover:bg-brand-700 hover:shadow-colored dark:hover:shadow-colored-dark
+    @apply px-5 py-2.5 rounded-md font-semibold text-white
+      hover:shadow-colored dark:hover:shadow-colored-dark
       active:scale-[0.97] transition-all duration-150
-      disabled:bg-state-disabled disabled:text-white/70 disabled:shadow-none
-      disabled:cursor-not-allowed disabled:active:scale-100;
+      disabled:shadow-none disabled:cursor-not-allowed disabled:active:scale-100;
+    background-color: rgb(var(--color-brand-500));
+  }
+  .btn-primary:hover {
+    background-color: rgb(var(--color-brand-700));
+  }
+  .btn-primary:disabled {
+    background-color: rgb(var(--color-state-disabled));
+    color: rgba(255, 255, 255, 0.7);
   }
 
   .btn-secondary {
-    @apply px-4 py-2 rounded-md bg-surface-card text-content-secondary
-      font-semibold border border-divider
-      hover:bg-surface hover:border-divider-strong
+    @apply px-4 py-2 rounded-md font-semibold border
       active:scale-[0.97] transition-all duration-150;
+    background-color: rgb(var(--color-surface-card));
+    border-color: rgb(var(--color-divider));
+    color: rgb(var(--color-content-secondary));
+  }
+  .btn-secondary:hover {
+    background-color: rgb(var(--color-surface));
+    border-color: rgb(var(--color-divider-strong));
   }
 
   .btn-ghost {
-    @apply px-3 py-2 rounded-md text-content-secondary font-medium
-      hover:bg-surface hover:text-content-primary
-      active:scale-[0.97] transition-all duration-150;
+    @apply px-3 py-2 rounded-md font-medium transition-all duration-150;
+    color: rgb(var(--color-content-secondary));
+  }
+  .btn-ghost:hover {
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-content-primary));
+  }
+  .btn-ghost:active {
+    transform: scale(0.97);
   }
 
   .card {
-    @apply bg-surface-card border border-divider rounded-lg shadow-sm;
+    background-color: rgb(var(--color-surface-card));
+    border: 1px solid rgb(var(--color-divider));
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(45, 36, 32, 0.05);
+  }
+  .dark .card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   }
 
   .card-interactive {
-    @apply card hover:shadow-md hover:border-divider-strong transition-all duration-150;
+    @apply card transition-all duration-150;
+  }
+  .card-interactive:hover {
+    box-shadow: 0 4px 12px rgba(45, 36, 32, 0.08);
+    border-color: rgb(var(--color-divider-strong));
+  }
+  .dark .card-interactive:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   }
 
   .tag {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-small font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full font-medium;
+    font-size: 0.75rem;
+    line-height: 1.4;
   }
 }
 
@@ -104,9 +190,6 @@
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: theme('colors.divider.DEFAULT');
+  background: rgb(var(--color-divider));
   border-radius: 2px;
-}
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: theme('colors.divider.dark');
 }
