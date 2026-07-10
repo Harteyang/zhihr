@@ -38,7 +38,7 @@ export default function PracticeResult({ result, onPlaySound, onRestart, onBack,
       {showCelebration && (
         <FullScoreCelebration duration={4500} onComplete={() => setShowCelebration(false)} />
       )}
-      <div className="card fade-in text-center max-w-md mx-auto">
+      <div className="card fade-in text-center max-w-md mx-auto p-5 sm:p-6">
         {/* 等级 */}
         <div className={`text-5xl mb-2 ${grade.color}`}>{grade.emoji}</div>
         <h2 className={`text-h2 font-bold mb-1 ${grade.color}`}>{grade.label}</h2>
@@ -46,15 +46,15 @@ export default function PracticeResult({ result, onPlaySound, onRestart, onBack,
 
         {/* 成绩 */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="card p-3 text-center">
+          <div className="bg-surface border border-divider rounded-lg p-3 text-center">
             <div className="text-h1 font-bold text-content-primary">{result.score}</div>
             <div className="text-small text-content-tertiary mt-0.5">答对</div>
           </div>
-          <div className="card p-3 text-center">
+          <div className="bg-surface border border-divider rounded-lg p-3 text-center">
             <div className="text-h1 font-bold text-content-primary">{result.total}</div>
             <div className="text-small text-content-tertiary mt-0.5">总题</div>
           </div>
-          <div className="card p-3 text-center">
+          <div className="bg-surface border border-divider rounded-lg p-3 text-center">
             <div className="text-h1 font-bold text-brand-500">{result.percentage}%</div>
             <div className="text-small text-content-tertiary mt-0.5">正确率</div>
           </div>
@@ -68,7 +68,7 @@ export default function PracticeResult({ result, onPlaySound, onRestart, onBack,
             <h3 className="text-caption font-semibold text-content-secondary mb-2">错题回顾</h3>
             <div className="space-y-2">
               {result.wrongAnswers.map((wa, i) => (
-                <div key={i} className="bg-state-error/10 rounded-md p-3 flex items-center justify-between">
+                <div key={i} className="bg-state-error/10 border border-state-error/40 rounded-md p-3 flex items-center justify-between transition-colors">
                   <div>
                     <span className="text-caption font-medium text-content-secondary">{wa.question}</span>
                     <span className="text-small text-content-tertiary mx-1">→</span>

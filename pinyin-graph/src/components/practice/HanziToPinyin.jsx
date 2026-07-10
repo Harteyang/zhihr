@@ -58,15 +58,15 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
   const isSelectedOption = (opt) => opt === selected
 
   return (
-    <div className="card fade-in">
-      <div className="text-center mb-6">
+    <div className="card fade-in p-5 sm:p-6">
+      <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-2">
           <span className="text-display font-bold text-content-primary">{question.question}</span>
         </div>
         <p className="text-caption text-content-tertiary">请选择正确的拼音</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
         {question.options.map((opt, i) => (
           <button
             key={i}
@@ -79,7 +79,7 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
       </div>
 
       {revealed && !isCorrectOption(selected) && (
-        <div className="text-center mb-3">
+        <div className="text-center mb-5">
           <p className="text-state-error text-caption mb-1">❌ 正确答案是：</p>
           <div className="flex items-center justify-center gap-2">
             <span className="text-state-success text-h1 font-bold">{question.correctAnswer}</span>
@@ -89,7 +89,7 @@ export default function HanziToPinyin({ question, onAnswer, onNext, onPlaySound,
       )}
 
       {revealed && (
-        <div className="text-center">
+        <div className="text-center mt-2">
           <button onClick={onNext} className="btn-primary px-8">
             {isLast ? '查看结果' : '下一题 →'}
           </button>
