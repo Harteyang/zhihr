@@ -1,4 +1,4 @@
-import { debugLog, generateId, hashPassword, verifyPassword, signJwt, verifyJwt, sanitizeInput, jsonResponse, getCorsHeaders, getClientIp, checkRateLimit, validatePassword, maskError, getAuthenticatedUser } from '../utils/router.js'
+import { debugLog, generateId, hashPassword, verifyPassword, signJwt, verifyJwt, sanitizeInput, jsonResponse, getClientIp, checkRateLimit, validatePassword, maskError, getAuthUser, logOperation } from '../utils/router.js'
 
 const ACCESS_TOKEN_EXPIRY = 3600
 const REFRESH_TOKEN_EXPIRY = 2592000
@@ -38,25 +38,32 @@ async function handleRegister(request, env, corsHeaders) {
     }
 
     const db = env.DB
-    const existing = await db.prepare('SELECT id FROM users WHERE username = ?').bind(username).first()
 
+    const userCount = await db.prepare('SELECT COUNT(*) as count FROM users').first()
+    if (userCount.count > 0) {
+      return jsonResponse({ success: false, message: '请联系管理员创建账号' }, 403, corsHeaders)
+    }
+
+    const existing = await db.prepare('SELECT id FROM users WHERE username = ?').bind(username).first()
     if (existing) {
       return jsonResponse({ success: false, message: '用户名已存在' }, 400, corsHeaders)
     }
 
     const passwordHash = await hashPassword(password)
     const userId = generateId()
+    const now = new Date().toISOString()
 
-    await db.prepare('INSERT INTO users (id, username, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)')
-      .bind(userId, username, passwordHash, new Date().toISOString(), new Date().toISOString()).run()
+    await db.prepare(
+      'INSERT INTO users (id, username, password_hash, role, display_name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(userId, username, passwordHash, 'admin', username, 'active', now, now).run()
 
     const accessToken = await signJwt({ userId, username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY)
     const refreshToken = await signJwt({ userId, username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY)
 
-    debugLog('Auth', 'Register success:', username)
+    debugLog('Auth', 'First admin registered:', username)
     return jsonResponse({
-      success: true, message: '注册成功',
-      data: { userId, username, token: accessToken, refreshToken }
+      success: true, message: '注册成功，您是系统管理员',
+      data: { userId, username, role: 'admin', token: accessToken, refreshToken }
     }, 200, corsHeaders)
   } catch (error) {
     debugLog('Auth', 'Register error:', error)
@@ -83,25 +90,43 @@ async function handleLogin(request, env, corsHeaders) {
     }
 
     const db = env.DB
-    const user = await db.prepare('SELECT id, username, password_hash FROM users WHERE username = ?').bind(username).first()
+    const user = await db.prepare(
+      'SELECT id, username, password_hash, role, display_name, status FROM users WHERE username = ?'
+    ).bind(username).first()
 
     if (!user) {
       return jsonResponse({ success: false, message: '账号或密码错误' }, 400, corsHeaders)
     }
 
-    const isValid = await verifyPassword(password, user.password_hash)
+    if (user.status === 'disabled') {
+      return jsonResponse({ success: false, message: '账号已被禁用，请联系管理员' }, 403, corsHeaders)
+    }
 
+    const isValid = await verifyPassword(password, user.password_hash)
     if (!isValid) {
       return jsonResponse({ success: false, message: '账号或密码错误' }, 400, corsHeaders)
     }
 
-    const accessToken = await signJwt({ userId: user.id, username: user.username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY)
-    const refreshToken = await signJwt({ userId: user.id, username: user.username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY)
+    await db.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?')
+      .bind(new Date().toISOString(), new Date().toISOString(), user.id).run()
+
+    const accessToken = await signJwt(
+      { userId: user.id, username: user.username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY
+    )
+    const refreshToken = await signJwt(
+      { userId: user.id, username: user.username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY
+    )
+
+    await logOperation(env, { userId: user.id, username: user.username }, 'login', 'user', user.id, null, clientIp)
 
     debugLog('Auth', 'Login success:', username)
     return jsonResponse({
       success: true, message: '登录成功',
-      data: { userId: user.id, username: user.username, token: accessToken, refreshToken }
+      data: {
+        userId: user.id, username: user.username,
+        displayName: user.display_name, role: user.role,
+        token: accessToken, refreshToken
+      }
     }, 200, corsHeaders)
   } catch (error) {
     debugLog('Auth', 'Login error:', error)
@@ -144,15 +169,27 @@ async function handleRefreshToken(request, env, corsHeaders) {
 }
 
 async function handleMe(request, env, corsHeaders) {
-  const token = request.headers.get('Authorization')?.replace('Bearer ', '')
-  if (!token) {
+  const user = await getAuthUser(request, env)
+  if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
   }
 
-  const payload = await verifyJwt(token, env)
-  if (!payload || payload.type !== 'access') {
-    return jsonResponse({ success: false, message: '无效的token' }, 401, corsHeaders)
+  const dbUser = await env.DB.prepare(
+    'SELECT id, username, role, display_name, status FROM users WHERE id = ?'
+  ).bind(user.userId).first()
+
+  if (!dbUser) {
+    return jsonResponse({ success: false, message: '用户不存在' }, 401, corsHeaders)
   }
 
-  return jsonResponse({ success: true, data: { userId: payload.userId, username: payload.username } }, 200, corsHeaders)
+  return jsonResponse({
+    success: true,
+    data: {
+      userId: dbUser.id,
+      username: dbUser.username,
+      displayName: dbUser.display_name,
+      role: dbUser.role,
+      status: dbUser.status
+    }
+  }, 200, corsHeaders)
 }

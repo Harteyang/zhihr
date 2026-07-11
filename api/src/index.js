@@ -3,10 +3,14 @@ import { register, matchRoute, jsonResponse, getCorsHeaders, debugLog } from './
 import * as auth from './modules/auth.js'
 import * as reviews from './modules/reviews.js'
 import * as miaodu from './modules/miaodu.js'
+import * as talent from './modules/talent.js'
+import * as talentAuth from './modules/talent_auth.js'
 
 register(auth)
 register(reviews)
 register(miaodu)
+register(talent)
+register(talentAuth)
 
 async function handleRequest(request, env) {
   debugLog('Request', `${request.method} ${request.url}`)

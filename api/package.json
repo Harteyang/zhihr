@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:init": "wrangler d1 execute zhihr_db --file=./schema.sql"
+    "db:init": "wrangler d1 execute zhihr_db --file=./schema.sql",
+    "db:migrate-talent": "wrangler d1 execute zhihr_db --file=./migrations/001_talent_pool_users.sql"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5",
+    "unpdf": "^0.12.0",
+    "fflate": "^0.8.0"
   }
 }

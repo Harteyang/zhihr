@@ -237,6 +237,61 @@ async function getAuthenticatedUser(request, env) {
   return payload
 }
 
+async function getAuthUser(request, env) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+  if (!token) return null
+  const payload = await verifyJwt(token, env)
+  if (!payload || payload.type !== 'access') return null
+
+  const user = await env.DB.prepare(
+    'SELECT id, username, role, status FROM users WHERE id = ?'
+  ).bind(payload.userId).first()
+
+  if (!user || user.status === 'disabled') return null
+  return { userId: user.id, username: user.username, role: user.role }
+}
+
+async function requireAuth(request, env, corsHeaders) {
+  const user = await getAuthUser(request, env)
+  if (!user) {
+    return { user: null, error: jsonResponse({ success: false, message: '请先登录' }, 401, corsHeaders) }
+  }
+  return { user, error: null }
+}
+
+async function requireAdmin(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return { user: null, error }
+  if (user.role !== 'admin') {
+    return { user: null, error: jsonResponse({ success: false, message: '需要管理员权限' }, 403, corsHeaders) }
+  }
+  return { user, error: null }
+}
+
+async function getUserPositions(env, userId, role) {
+  if (role === 'admin') return null
+  const rows = await env.DB.prepare(
+    'SELECT position FROM talent_user_positions WHERE user_id = ?'
+  ).bind(userId).all()
+  return rows.results.map(r => r.position)
+}
+
+async function logOperation(env, user, action, resourceType, resourceId, detail, ipAddress) {
+  try {
+    await env.DB.prepare(`
+      INSERT INTO talent_operation_logs (user_id, username, action, resource_type, resource_id, detail, ip_address)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      user?.userId || null, user?.username || null,
+      action, resourceType || null, resourceId || null,
+      detail ? JSON.stringify(detail) : null,
+      ipAddress || null
+    ).run()
+  } catch (e) {
+    debugLog('OperationLog', 'Failed to log:', e.message)
+  }
+}
+
 const routes = []
 
 export function register(module) {
@@ -265,4 +320,4 @@ function extractParams(pattern, path) {
   return keys.reduce((acc, key, i) => ({ ...acc, [key.slice(1)]: values[i + 1] }), {})
 }
 
-export { DEBUG, debugLog, generateId, base64UrlEncode, base64UrlDecode, hashPassword, verifyPassword, signJwt, verifyJwt, sanitizeInput, jsonResponse, getCorsHeaders, getClientIp, checkRateLimit, validatePassword, maskError, parsePagination, getAuthenticatedUser }
+export { DEBUG, debugLog, generateId, base64UrlEncode, base64UrlDecode, hashPassword, verifyPassword, signJwt, verifyJwt, sanitizeInput, jsonResponse, getCorsHeaders, getClientIp, checkRateLimit, validatePassword, maskError, parsePagination, getAuthenticatedUser, getAuthUser, requireAuth, requireAdmin, getUserPositions, logOperation }

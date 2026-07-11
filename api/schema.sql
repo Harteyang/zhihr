@@ -72,3 +72,83 @@ CREATE INDEX IF NOT EXISTS idx_reviews_review_date ON reviews(user_id, review_da
 CREATE INDEX IF NOT EXISTS idx_tasks_user_status ON tasks(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON feedbacks(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feedbacks_status ON feedbacks(status);
+
+-- ========= 人才库管理系统 =========
+
+-- 候选人表
+CREATE TABLE IF NOT EXISTS talent_candidates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT,
+    email TEXT,
+    position TEXT,
+    skills TEXT,
+    education TEXT,
+    experience_years INTEGER,
+    status TEXT DEFAULT 'pending',
+    source TEXT,
+    summary TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 工作经历表
+CREATE TABLE IF NOT EXISTS talent_work_experiences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id INTEGER NOT NULL,
+    company TEXT NOT NULL,
+    title TEXT NOT NULL,
+    start_date TEXT,
+    end_date TEXT,
+    description TEXT,
+    FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
+);
+
+-- 附件元数据表（文件原件存 R2）
+CREATE TABLE IF NOT EXISTS talent_attachments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id INTEGER NOT NULL,
+    file_name TEXT NOT NULL,
+    file_type TEXT NOT NULL,
+    r2_key TEXT NOT NULL,
+    file_size INTEGER,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_candidates_status ON talent_candidates(status);
+CREATE INDEX IF NOT EXISTS idx_talent_candidates_position ON talent_candidates(position);
+CREATE INDEX IF NOT EXISTS idx_talent_candidates_name ON talent_candidates(name);
+CREATE INDEX IF NOT EXISTS idx_talent_work_exp_candidate ON talent_work_experiences(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_talent_attachments_candidate ON talent_attachments(candidate_id);
+
+-- ========= 账号管理与权限 =========
+
+-- 用户-岗位权限表（普通用户只能看分配岗位的候选人）
+CREATE TABLE IF NOT EXISTS talent_user_positions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    position TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, position)
+);
+
+-- 操作日志表
+CREATE TABLE IF NOT EXISTS talent_operation_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    username TEXT,
+    action TEXT NOT NULL,
+    resource_type TEXT,
+    resource_id TEXT,
+    detail TEXT,
+    ip_address TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_user_positions_user ON talent_user_positions(user_id);
+CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_user ON talent_operation_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_action ON talent_operation_logs(action);
+CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_created ON talent_operation_logs(created_at);
+
