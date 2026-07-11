@@ -73,7 +73,7 @@ const form = reactive({
   confirmPassword: ''
 })
 
-const validatePassword = (rule, value, callback) => {
+const validatePassword = (_rule, value, callback) => {
   // 编辑模式且留空 → 不修改密码
   if (isEdit.value && !value) {
     return callback()
@@ -87,7 +87,7 @@ const validatePassword = (rule, value, callback) => {
   callback()
 }
 
-const validateConfirmPassword = (_rule, value, callback) => {
+const validateConfirmPassword = (rule, value, callback) => {
   if (isEdit.value) return callback()
   if (!value) {
     return callback(new Error('请再次输入密码'))

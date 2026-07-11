@@ -346,6 +346,36 @@ async function batchSetPositions(request, env, corsHeaders) {
   }
 }
 
+// ========= 管理员认领（用于已有用户但无 admin 的数据库）=========
+
+async function setupAdmin(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const adminCount = await env.DB.prepare(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'admin'"
+    ).first()
+
+    if (adminCount.count > 0) {
+      return jsonResponse({ success: false, message: '系统已存在管理员，请联系管理员分配权限' }, 403, corsHeaders)
+    }
+
+    await env.DB.prepare(
+      "UPDATE users SET role = 'admin', updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(user.userId).run()
+
+    await logOperation(env, user, 'setup_admin', 'user', user.userId, null, getClientIp(request))
+
+    return jsonResponse({
+      success: true, message: '已成为系统管理员',
+      data: { userId: user.userId, username: user.username, role: 'admin' }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: err.message }, 500, corsHeaders)
+  }
+}
+
 // ========= 路由注册 =========
 
 export const routes = [
@@ -355,6 +385,8 @@ export const routes = [
   { method: 'PATCH',  path: '/api/auth/users/batch/status',     handler: batchUpdateStatus },
   { method: 'POST',   path: '/api/auth/users/batch/delete',     handler: batchDeleteUsers },
   { method: 'PUT',    path: '/api/auth/users/batch/positions',  handler: batchSetPositions },
+
+  { method: 'POST',   path: '/api/talent/auth/setup-admin',     handler: setupAdmin },
 
   { method: 'GET',    path: '/api/auth/users/:id/positions',    handler: getUserPositionsRoute },
   { method: 'PUT',    path: '/api/auth/users/:id/positions',    handler: setUserPositions },

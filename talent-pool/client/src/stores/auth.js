@@ -24,6 +24,10 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token)
     localStorage.setItem('refreshToken', data.refreshToken)
     localStorage.setItem('user', JSON.stringify(user.value))
+
+    if (data.role !== 'admin') {
+      await trySetupAdmin()
+    }
   }
 
   async function register(username, password) {
@@ -34,12 +38,26 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = {
       userId: data.userId,
       username: data.username,
-      displayName: data.username,
+      displayName: data.displayName || data.username,
       role: data.role
     }
     localStorage.setItem('token', data.token)
     localStorage.setItem('refreshToken', data.refreshToken)
     localStorage.setItem('user', JSON.stringify(user.value))
+  }
+
+  async function trySetupAdmin() {
+    try {
+      const res = await api.post('/talent/auth/setup-admin')
+      if (res.data.success) {
+        user.value = { ...user.value, role: 'admin' }
+        localStorage.setItem('user', JSON.stringify(user.value))
+        return true
+      }
+    } catch (e) {
+      // 系统已存在管理员，静默处理
+    }
+    return false
   }
 
   async function fetchCurrentUser() {
@@ -61,5 +79,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { token, refreshToken, user, isLoggedIn, isAdmin, login, register, fetchCurrentUser, logout }
+  return { token, refreshToken, user, isLoggedIn, isAdmin, login, register, trySetupAdmin, fetchCurrentUser, logout }
 })

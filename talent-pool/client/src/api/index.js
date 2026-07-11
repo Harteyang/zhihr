@@ -32,6 +32,7 @@ api.interceptors.response.use(
 export const login = (username, password) => api.post('/auth/login', { username, password })
 export const register = (username, password) => api.post('/auth/register', { username, password })
 export const getMe = () => api.get('/auth/me')
+export const setupAdmin = () => api.post('/talent/auth/setup-admin')
 
 // 候选人
 export const getCandidates = (params) => api.get('/talent/candidates', { params })

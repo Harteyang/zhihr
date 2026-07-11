@@ -39,15 +39,14 @@ async function handleRegister(request, env, corsHeaders) {
 
     const db = env.DB
 
-    const userCount = await db.prepare('SELECT COUNT(*) as count FROM users').first()
-    if (userCount.count > 0) {
-      return jsonResponse({ success: false, message: '请联系管理员创建账号' }, 403, corsHeaders)
-    }
-
     const existing = await db.prepare('SELECT id FROM users WHERE username = ?').bind(username).first()
     if (existing) {
       return jsonResponse({ success: false, message: '用户名已存在' }, 400, corsHeaders)
     }
+
+    const userCount = await db.prepare('SELECT COUNT(*) as count FROM users').first()
+    const isFirstUser = userCount.count === 0
+    const role = isFirstUser ? 'admin' : 'user'
 
     const passwordHash = await hashPassword(password)
     const userId = generateId()
@@ -55,15 +54,15 @@ async function handleRegister(request, env, corsHeaders) {
 
     await db.prepare(
       'INSERT INTO users (id, username, password_hash, role, display_name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(userId, username, passwordHash, 'admin', username, 'active', now, now).run()
+    ).bind(userId, username, passwordHash, role, username, 'active', now, now).run()
 
     const accessToken = await signJwt({ userId, username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY)
     const refreshToken = await signJwt({ userId, username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY)
 
-    debugLog('Auth', 'First admin registered:', username)
+    debugLog('Auth', 'Register success:', username, 'role:', role)
     return jsonResponse({
-      success: true, message: '注册成功，您是系统管理员',
-      data: { userId, username, role: 'admin', token: accessToken, refreshToken }
+      success: true, message: '注册成功',
+      data: { userId, username, role, displayName: username, token: accessToken, refreshToken }
     }, 200, corsHeaders)
   } catch (error) {
     debugLog('Auth', 'Register error:', error)
@@ -107,8 +106,12 @@ async function handleLogin(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '账号或密码错误' }, 400, corsHeaders)
     }
 
-    await db.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?')
-      .bind(new Date().toISOString(), new Date().toISOString(), user.id).run()
+    try {
+      await db.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?')
+        .bind(new Date().toISOString(), new Date().toISOString(), user.id).run()
+    } catch (e) {
+      debugLog('Auth', 'last_login_at update skipped:', e.message)
+    }
 
     const accessToken = await signJwt(
       { userId: user.id, username: user.username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY
