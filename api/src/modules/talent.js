@@ -382,6 +382,10 @@ async function uploadAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
+  if (!env.RESUME_BUCKET) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置，请联系管理员启用 R2' }, 503, corsHeaders)
+  }
+
   try {
     const candidateId = params.id
     const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(candidateId).first()
@@ -482,6 +486,10 @@ async function deleteAttachment(request, env, corsHeaders, params) {
 async function downloadAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
+
+  if (!env.RESUME_BUCKET) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置，请联系管理员启用 R2' }, 503, corsHeaders)
+  }
 
   try {
     const attachment = await env.DB.prepare(

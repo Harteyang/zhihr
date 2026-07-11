@@ -14,10 +14,11 @@ database_name = "zhihr_db"
 database_id = "cd693196-036e-4fd9-9d0c-e077683ce6f3"
 
 # R2 对象存储：简历原件
+# 启用 R2 后取消注释以下配置，然后重新部署
 # 创建命令: wrangler r2 bucket create talent-pool-resumes
-[[r2_buckets]]
-binding = "RESUME_BUCKET"
-bucket_name = "talent-pool-resumes"
+# [[r2_buckets]]
+# binding = "RESUME_BUCKET"
+# bucket_name = "talent-pool-resumes"
 
 # 允许的前端域名（CORS）
 [vars]
