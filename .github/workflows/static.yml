@@ -38,7 +38,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml', 'moodist/pnpm-lock.yaml', 'miaodu/frontend/package-lock.json') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('review-system/pnpm-lock.yaml', 'moodist/pnpm-lock.yaml', 'miaodu/frontend/package-lock.json', 'talent-pool/client/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
@@ -70,16 +70,23 @@ jobs:
           npm ci
           npm run build
 
+      - name: Build talent-pool
+        run: |
+          cd talent-pool/client
+          npm ci
+          VITE_API_BASE="${{ secrets.TALENT_POOL_API_BASE_URL }}" VITE_BASE=/talent-pool/ npm run build
+
       - name: Prepare deployment
         run: |
           mkdir -p /tmp/deploy
-          for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu|pinyin-graph)$'); do
+          for item in $(ls -A | grep -v -E '^(review-system|moodist|miaodu|pinyin-graph|talent-pool)$'); do
             cp -r "$item" /tmp/deploy/
           done
           cp -r review-system/dist /tmp/deploy/review-system
           cp -r moodist/dist /tmp/deploy/moodist
           cp -r miaodu/frontend/dist /tmp/deploy/miaodu
           cp -r pinyin-graph/dist /tmp/deploy/pinyin-graph
+          cp -r talent-pool/client/dist /tmp/deploy/talent-pool
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
