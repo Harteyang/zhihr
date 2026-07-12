@@ -14,7 +14,7 @@
     </el-card>
 
     <el-card shadow="never">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div class="list-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <div style="display: flex; gap: 12px; align-items: center;">
           <el-input v-model="filters.keyword" placeholder="搜索用户名/显示名" clearable style="width: 220px;" @clear="fetchData" @keyup.enter="fetchData">
             <template #prefix><el-icon><Search /></el-icon></template>

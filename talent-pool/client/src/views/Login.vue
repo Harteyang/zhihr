@@ -1,6 +1,6 @@
 <template>
   <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5;">
-    <el-card style="width: 400px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" shadow="never">
+    <el-card class="login-card" style="width: 400px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);" shadow="never">
       <div style="text-align: center; margin-bottom: 24px;">
         <el-icon style="font-size: 40px; color: var(--el-color-primary);"><UserFilled /></el-icon>
         <h2 style="margin: 12px 0 4px; color: var(--el-text-color-primary);">人才库管理</h2>

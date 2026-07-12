@@ -38,7 +38,7 @@
     </el-card>
 
     <el-card shadow="never">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <div class="list-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <span style="color: var(--el-text-color-secondary);">共 {{ store.total }} 条记录</span>
         <el-button type="primary" @click="$router.push('/candidates/new')">
           <el-icon><Plus /></el-icon> 新增候选人

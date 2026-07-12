@@ -16,7 +16,7 @@
             <span v-if="candidate.position"><el-icon><Briefcase /></el-icon> {{ candidate.position }}</span>
           </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+        <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
           <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 13px; color: var(--el-text-color-secondary);">快速改状态:</span>
