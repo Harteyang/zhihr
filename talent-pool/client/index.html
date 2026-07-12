@@ -10,13 +10,12 @@
     <div id="app"></div>
     <script type="text/javascript">
       // GitHub Pages SPA fallback：从 404.html 重定向回来时恢复原始路径
+      // _p 中保存了完整原始路径（含 search 和 hash）
       (function () {
         var match = location.search.match(/[?&]_p=([^&]+)/)
         if (match) {
           var originalPath = decodeURIComponent(match[1])
-          var cleanSearch = location.search.replace(/[?&]_p=[^&]+/, '').replace(/^\?&/, '?').replace(/\?&/g, '?').replace(/\?$/, '')
-          var newUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + originalPath + cleanSearch + location.hash
-          history.replaceState(null, '', newUrl)
+          history.replaceState(null, '', originalPath)
         }
       })()
     </script>

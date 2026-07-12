@@ -6,16 +6,10 @@
   <title>人才库管理</title>
   <script type="text/javascript">
     // GitHub Pages SPA fallback：将未知路径重定向到入口 index.html
-    // 同时通过 search 参数保留原始路径，由入口脚本恢复
+    // 同时通过 _p 参数保留完整原始路径，由入口脚本恢复
     (function () {
-      var base = '/talent-pool/'
-      var segmentCount = base.split('/').length - 1
-      var location = window.location
-      var origin = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')
-      var pathParts = location.pathname.split('/').filter(Boolean)
-      var newPathname = '/' + pathParts.slice(0, segmentCount).join('/') + '/'
-      var restPath = '/' + pathParts.slice(segmentCount).join('/')
-      var redirectUrl = origin + newPathname + '?_p=' + encodeURIComponent(restPath + location.search + location.hash)
+      var originalPath = location.pathname + location.search + location.hash
+      var redirectUrl = '/talent-pool/?_p=' + encodeURIComponent(originalPath)
       location.replace(redirectUrl)
     })()
   </script>

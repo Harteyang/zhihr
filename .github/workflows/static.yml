@@ -87,6 +87,10 @@ jobs:
           cp -r miaodu/frontend/dist /tmp/deploy/miaodu
           cp -r pinyin-graph/dist /tmp/deploy/pinyin-graph
           cp -r talent-pool/client/dist /tmp/deploy/talent-pool
+          # 根目录 404 fallback 必须显式保留，避免被前面的 cp -r 覆盖或忽略
+          if [ -f 404.html ]; then
+            cp 404.html /tmp/deploy/404.html
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面未找到</title>
+  <script type="text/javascript">
+    // GitHub Pages 根目录 SPA fallback
+    // 将子应用路径重定向到对应入口，并在 URL 中保留完整原始路径
+    (function () {
+      var apps = {
+        'talent-pool': '/talent-pool/',
+        'review-system': '/review-system/',
+        'miaodu': '/miaodu/',
+        'pinyin-graph': '/pinyin-graph/'
+      }
+      var path = location.pathname
+      var matchedBase = '/'
+      var matchedApp = null
+      var maxDepth = 0
+
+      for (var key in apps) {
+        if (!apps.hasOwnProperty(key)) continue
+        var base = apps[key]
+        if (path.indexOf(base) === 0 && base.split('/').length > maxDepth) {
+          matchedBase = base
+          matchedApp = key
+          maxDepth = base.split('/').length
+        }
+      }
+
+      if (matchedApp) {
+        var originalPath = path + location.search + location.hash
+        var redirectUrl = matchedBase + '?_p=' + encodeURIComponent(originalPath)
+        location.replace(redirectUrl)
+      } else {
+        location.replace('/')
+      }
+    })()
+  </script>
+</head>
+<body>
+  正在跳转...
+</body>
+</html>
