@@ -172,7 +172,7 @@ async function createCandidate(request, env, corsHeaders) {
       body.status || 'pending', body.source || null, body.summary || null
     ).run()
 
-    const newId = result.meta.last_row_id_string
+    const newId = result.meta.last_row_id
     await logOperation(env, user, 'create_candidate', 'candidate', String(newId), { name: body.name }, getClientIp(request))
 
     return getCandidate(request, env, corsHeaders, { id: newId })
@@ -322,7 +322,7 @@ async function addExperience(request, env, corsHeaders, params) {
       VALUES (?, ?, ?, ?, ?, ?)
     `).bind(params.id, body.company, body.title, body.start_date || null, body.end_date || null, body.description || null).run()
 
-    const exp = await env.DB.prepare('SELECT * FROM talent_work_experiences WHERE id = ?').bind(result.meta.last_row_id_string).first()
+    const exp = await env.DB.prepare('SELECT * FROM talent_work_experiences WHERE id = ?').bind(result.meta.last_row_id).first()
     return jsonResponse({ success: true, data: exp }, 201, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
@@ -427,7 +427,7 @@ async function uploadAttachment(request, env, corsHeaders, params) {
 
     const attachment = await env.DB.prepare(
       'SELECT id, candidate_id, file_name, file_type, file_size, created_at FROM talent_attachments WHERE id = ?'
-    ).bind(result.meta.last_row_id_string).first()
+    ).bind(result.meta.last_row_id).first()
 
     await logOperation(env, user, 'upload_attachment', 'attachment', String(attachment.id), { candidate_id: candidateId, file_name: fileName }, getClientIp(request))
 
