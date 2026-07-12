@@ -8,6 +8,18 @@
   </head>
   <body>
     <div id="app"></div>
+    <script type="text/javascript">
+      // GitHub Pages SPA fallback：从 404.html 重定向回来时恢复原始路径
+      (function () {
+        var match = location.search.match(/[?&]_p=([^&]+)/)
+        if (match) {
+          var originalPath = decodeURIComponent(match[1])
+          var cleanSearch = location.search.replace(/[?&]_p=[^&]+/, '').replace(/^\?&/, '?').replace(/\?&/g, '?').replace(/\?$/, '')
+          var newUrl = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + originalPath + cleanSearch + location.hash
+          history.replaceState(null, '', newUrl)
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
