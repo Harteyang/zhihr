@@ -150,10 +150,17 @@ function findChineseName(line) {
 function extractName(sections, fullText) {
   const profileText = sections.profile.join('\n')
 
-  const labelMatch = profileText.match(/(?:姓名|name)[\s:：]+([^\n]{2,20})/i)
+  const labelMatch = profileText.match(/(?:姓名|名字|name)\s*[:：\s]\s*([^\n]{2,30})/i)
   if (labelMatch) {
-    const name = labelMatch[1].trim().replace(/[\s\d]/g, '')
-    if (isValidChineseName(name)) return { value: name, confidence: CONFIDENCE.HIGH }
+    let raw = labelMatch[1].trim()
+    // 截断后续标签内容（如"张三 手机：138..."）
+    raw = raw.split(/\s+(?:手机|电话|邮箱|email|phone|联系方式|出生|地址|性别|年龄)/i)[0].trim()
+    const cleaned = raw.replace(/[\s\d]/g, '')
+    if (isValidChineseName(cleaned)) return { value: cleaned, confidence: CONFIDENCE.HIGH }
+    // 英文名支持
+    if (/^[a-zA-Z][a-zA-Z\s.\-']{1,29}$/.test(raw)) {
+      return { value: raw.trim(), confidence: CONFIDENCE.HIGH }
+    }
   }
 
   const candidates = sections.profile.slice(0, 5)
@@ -449,17 +456,33 @@ function extractInfo(rawText) {
 }
 
 async function parseDocx(arrayBuffer) {
-  const files = unzipSync(new Uint8Array(arrayBuffer))
-  const docPath = Object.keys(files).find(k => k === 'word/document.xml')
-  if (!docPath) return { summary: '无法解析 Word 文件内容' }
+  let files
+  try {
+    files = unzipSync(new Uint8Array(arrayBuffer))
+  } catch (err) {
+    throw new Error('无法解压 Word 文件: ' + err.message)
+  }
+
+  const docPath = Object.keys(files).find(k => /^word\/document\d*\.xml$/i.test(k))
+  if (!docPath) {
+    throw new Error('无法解析 Word 文件内容：找不到 document.xml')
+  }
 
   const xmlText = new TextDecoder().decode(files[docPath])
+
+  // Preserve paragraph/line breaks and tabs before stripping tags
+  const normalizedXml = xmlText
+    .replace(/<\/w:p>/gi, '\n')
+    .replace(/<w:br\s*\/>/gi, '\n')
+    .replace(/<w:tab\s*\/>/gi, '\t')
+
   const texts = []
-  const regex = /<w:t[^>]*>([^<]*)<\/w:t>/g
+  const regex = /<w:t[^>]*>([^<]*)<\/w:t>/gi
   let match
-  while ((match = regex.exec(xmlText)) !== null) {
+  while ((match = regex.exec(normalizedXml)) !== null) {
     texts.push(match[1])
   }
+
   const fullText = texts.join('')
 
   return extractInfo(fullText)
@@ -469,6 +492,104 @@ async function parsePdf(arrayBuffer) {
   const { extractText } = await import('unpdf')
   const { text } = await extractText(arrayBuffer, { mergePages: true })
   return extractInfo(text)
+}
+
+// ========= .doc 文件解析（支持 OLE 二进制 / RTF / HTML 伪装格式）=========
+
+function isDocTextChar(code) {
+  if (code >= 0x20 && code <= 0x7E) return true   // ASCII 可打印
+  if (code >= 0x4E00 && code <= 0x9FFF) return true // CJK 统一汉字
+  if (code >= 0x3000 && code <= 0x303F) return true // CJK 标点
+  if (code >= 0xFF00 && code <= 0xFFEF) return true // 全角符号
+  if (code === 0x09 || code === 0x0A || code === 0x0D) return true
+  return false
+}
+
+function extractTextFromDocBinary(bytes) {
+  const chunks = []
+  let current = ''
+
+  for (let i = 0; i + 1 < bytes.length; i += 2) {
+    const code = bytes[i] | (bytes[i + 1] << 8)
+    if (code === 0x0D || code === 0x0A) {
+      if (current.trim().length >= 2) chunks.push(current.trim())
+      current = ''
+      continue
+    }
+    if (isDocTextChar(code)) {
+      current += String.fromCharCode(code)
+    } else {
+      if (current.trim().length >= 4) chunks.push(current.trim())
+      current = ''
+    }
+  }
+  if (current.trim().length >= 2) chunks.push(current.trim())
+
+  const text = chunks.join('\n')
+  if (text.length < 20) {
+    throw new Error('无法从 .doc 文件中提取足够文本，请尝试另存为 .docx 或 PDF 格式')
+  }
+  return text
+}
+
+function parseRtf(text) {
+  const plain = text
+    .replace(/\\par[d]?/gi, '\n')
+    .replace(/\\tab/gi, '\t')
+    .replace(/\\'([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\u(-?\d+)\??\*?/g, (_, code) => String.fromCharCode(parseInt(code)))
+    .replace(/\\[a-zA-Z]+-?\d* ?/g, '')
+    .replace(/[{}]/g, '')
+    .trim()
+  return extractInfo(plain)
+}
+
+function parseHtml(text) {
+  const plain = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim()
+  return extractInfo(plain)
+}
+
+async function parseDoc(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer)
+
+  // ZIP 魔数 → 实际是 docx
+  if (bytes[0] === 0x50 && bytes[1] === 0x4B) {
+    return parseDocx(arrayBuffer)
+  }
+
+  const headerStr = new TextDecoder().decode(bytes.slice(0, 20))
+
+  // RTF 格式
+  if (headerStr.startsWith('{\\rtf')) {
+    return parseRtf(new TextDecoder().decode(bytes))
+  }
+
+  // HTML 格式（部分系统导出的 .doc 实际是 HTML）
+  const lower = headerStr.toLowerCase()
+  if (lower.includes('<html') || lower.includes('<!doctype') || lower.includes('<meta')) {
+    return parseHtml(new TextDecoder().decode(bytes))
+  }
+
+  // OLE Compound File（真正的 .doc 二进制格式）
+  if (bytes[0] === 0xD0 && bytes[1] === 0xCF && bytes[2] === 0x11 && bytes[3] === 0xE0) {
+    const text = extractTextFromDocBinary(bytes)
+    return extractInfo(text)
+  }
+
+  // 兜底：尝试当纯文本解析
+  const text = new TextDecoder().decode(bytes)
+  if (text.length > 20) return extractInfo(text)
+
+  throw new Error('无法识别的 Word 文件格式，请尝试另存为 .docx 或 PDF 格式')
 }
 
 const FIELD_MAP = {
@@ -517,6 +638,8 @@ async function parseFile(fileName, arrayBuffer) {
   switch (ext) {
     case '.docx':
       return parseDocx(arrayBuffer)
+    case '.doc':
+      return parseDoc(arrayBuffer)
     case '.pdf':
       return parsePdf(arrayBuffer)
     case '.xlsx':

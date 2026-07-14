@@ -33,6 +33,25 @@ function strToU8(str) {
   return new TextEncoder().encode(str)
 }
 
+function toUtf16Le(text) {
+  const bytes = []
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i)
+    bytes.push(code & 0xFF, (code >> 8) & 0xFF)
+  }
+  return new Uint8Array(bytes)
+}
+
+function buildDocBuffer(text) {
+  // OLE Compound File 魔数 + UTF-16LE 编码的文本
+  const oleHeader = new Uint8Array([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])
+  const textBytes = toUtf16Le(text)
+  const buf = new Uint8Array(oleHeader.length + textBytes.length)
+  buf.set(oleHeader, 0)
+  buf.set(textBytes, oleHeader.length)
+  return buf
+}
+
 function test(name, fn) {
   try {
     fn()
@@ -74,6 +93,57 @@ Java、Spring、MySQL、Redis、Docker`
   assert.equal(result.experiences.length, 1)
   assert.ok(result.experiences[0].company.includes('ABC'))
   assert.ok(result.skills.includes('Java'))
+})
+
+test('parse DOC resume file (OLE binary with UTF-16LE text)', async () => {
+  const text = `姓名：王五
+手机：13700137000
+邮箱：wangwu@company.com
+求职意向：前端开发工程师
+
+教育背景
+某某大学 本科 计算机科学 2016-2020
+
+工作经历
+XYZ科技有限公司 前端工程师
+2020.06 - 2023.08
+负责前端开发。
+
+专业技能
+JavaScript、Vue、React、HTML、CSS`
+
+  const buf = buildDocBuffer(text)
+  const result = await parseFile('resume.doc', buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength))
+
+  assert.equal(result.name, '王五')
+  assert.equal(result.phone, '13700137000')
+  assert.equal(result.email, 'wangwu@company.com')
+  assert.ok(result.position.includes('前端'))
+  assert.equal(result.education, '本科')
+  assert.ok(result.skills.includes('Vue'))
+})
+
+test('parse DOC file that is actually HTML (common export format)', async () => {
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body>
+<p>姓名：赵六</p>
+<p>手机：13600136000</p>
+<p>邮箱：zhaoliu@company.com</p>
+<p>求职意向：后端工程师</p>
+<p>教育背景</p>
+<p>某某大学 本科 软件工程 2015-2019</p>
+<p>专业技能</p>
+<p>Java、Spring、MySQL、Redis</p>
+</body></html>`
+
+  const buf = strToU8(html)
+  const result = await parseFile('resume.doc', buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength))
+
+  assert.equal(result.name, '赵六')
+  assert.equal(result.phone, '13600136000')
+  assert.equal(result.email, 'zhaoliu@company.com')
+  assert.ok(result.position.includes('后端'))
+  assert.equal(result.education, '本科')
 })
 
 console.log('File parse tests complete')

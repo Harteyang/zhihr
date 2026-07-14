@@ -147,6 +147,7 @@ const route = useRoute()
 const router = useRouter()
 const isEdit = computed(() => !!route.params.id)
 const formRef = ref(null)
+const uploadRef = ref(null)
 const saving = ref(false)
 const fieldConfidence = ref({})
 
@@ -222,6 +223,9 @@ async function handleFileChange(uploadFile) {
     ElMessage.success('解析完成，请确认并补充信息')
   } catch (e) {
     ElMessage.warning('文件解析失败，请手动填写')
+  } finally {
+    // 重置上传组件内部文件列表，允许连续上传多个文件
+    uploadRef.value?.clearFiles()
   }
 }
 

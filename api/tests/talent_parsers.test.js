@@ -90,4 +90,22 @@ test('returns missing confidence for empty fields', () => {
   assert.equal(result.confidence.email, 'missing')
 })
 
+test('extracts name when label shares line with other fields', () => {
+  const sample = `姓名：张三 手机：13800138000 邮箱：zhangsan@qq.com`
+  const result = extractInfo(sample)
+  assert.equal(result.name, '张三')
+  assert.equal(result.phone, '13800138000')
+  assert.equal(result.email, 'zhangsan@qq.com')
+})
+
+test('extracts English name from labeled profile', () => {
+  const sample = `Name: John Smith
+Phone: 13800138000
+Email: john@company.com`
+  const result = extractInfo(sample)
+  assert.equal(result.name, 'John Smith')
+  assert.equal(result.phone, '13800138000')
+  assert.equal(result.email, 'john@company.com')
+})
+
 console.log('Parser tests complete')
