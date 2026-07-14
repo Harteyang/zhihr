@@ -131,6 +131,145 @@ function splitSections(text) {
   return sections
 }
 
+// ========= 字段提取 =========
+
+const NAME_BLACKLIST = ['有限公司', '科技有限公司', '大学', '学院', '学校', '简历', '求职', '应聘', '招聘']
+const INVALID_EMAIL_DOMAINS = ['example.com', 'test.com', 'email.com']
+
+function isValidChineseName(name) {
+  return /^[\u4e00-\u9fa5]{2,4}$/.test(name)
+}
+
+function findChineseName(line) {
+  const matches = line.match(/[\u4e00-\u9fa5]{2,4}/g) || []
+  for (const m of matches) {
+    if (NAME_BLACKLIST.some(b => m.includes(b))) continue
+    return m
+  }
+  return null
+}
+
+function extractName(sections, fullText) {
+  const profileText = sections.profile.join('\n')
+
+  const labelMatch = profileText.match(/(?:姓名|name)[\s:：]+([^\n]{2,20})/i)
+  if (labelMatch) {
+    const name = labelMatch[1].trim().replace(/[\s\d]/g, '')
+    if (isValidChineseName(name)) return { value: name, confidence: CONFIDENCE.HIGH }
+  }
+
+  const candidates = sections.profile.slice(0, 5)
+  for (const line of candidates) {
+    const name = findChineseName(line)
+    if (name) return { value: name, confidence: CONFIDENCE.MEDIUM }
+  }
+
+  const allLines = fullText.split('\n').slice(0, 10)
+  for (const line of allLines) {
+    const name = findChineseName(line)
+    if (name) return { value: name, confidence: CONFIDENCE.LOW }
+  }
+
+  return { value: null, confidence: CONFIDENCE.MISSING }
+}
+
+function extractPhone(text) {
+  const match = text.match(/1[3-9]\d{9}/)
+  if (match) {
+    const segment = match[0].slice(0, 2)
+    if (['13', '14', '15', '16', '17', '18', '19'].includes(segment)) {
+      return { value: match[0], confidence: CONFIDENCE.HIGH }
+    }
+  }
+  return { value: null, confidence: CONFIDENCE.MISSING }
+}
+
+function extractEmail(text) {
+  const match = text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)
+  if (match) {
+    const email = match[0].toLowerCase()
+    if (!INVALID_EMAIL_DOMAINS.some(d => email.endsWith(d))) {
+      return { value: email, confidence: CONFIDENCE.HIGH }
+    }
+  }
+  return { value: null, confidence: CONFIDENCE.MISSING }
+}
+
+function extractPosition(sections, fullText) {
+  const keywords = ['意向岗位', '期望职位', '应聘岗位', '求职意向', '目标岗位', 'position wanted', 'job objective', '期望岗位']
+  const text = sections.profile.join('\n') + '\n' + fullText
+  for (const kw of keywords) {
+    const regex = new RegExp(`${kw}[\s:：]+([^\n，,；;]{2,30})`, 'i')
+    const match = text.match(regex)
+    if (match) {
+      const value = match[1].trim().replace(/（.*?）/g, '').replace(/\(.*?\)/g, '')
+      if (value && !value.includes('面议') && !value.includes('不限')) {
+        return { value, confidence: CONFIDENCE.MEDIUM }
+      }
+    }
+  }
+  return { value: null, confidence: CONFIDENCE.MISSING }
+}
+
+function extractEducation(sections) {
+  const text = sections.education.join('\n') + '\n' + sections.profile.join('\n')
+  let level = null
+  let confidence = CONFIDENCE.MISSING
+
+  for (const lvl of EDUCATION_LEVELS) {
+    const regex = new RegExp(lvl, 'i')
+    if (regex.test(text)) {
+      level = lvl === '研究生' ? '硕士' : lvl
+      confidence = CONFIDENCE.MEDIUM
+      break
+    }
+  }
+
+  const schoolMatch = text.match(/([^\n，,；;]{2,20}(?:大学|学院|学校|University|College))/i)
+  const school = schoolMatch ? schoolMatch[1].trim() : null
+
+  const majorMatch = text.match(/(?:专业|major)[\s:：]+([^\n，,；;]{2,20})/i)
+  const major = majorMatch ? majorMatch[1].trim() : null
+
+  return {
+    value: { education: level, school, major },
+    confidence: confidence === CONFIDENCE.MISSING && (school || major) ? CONFIDENCE.LOW : confidence
+  }
+}
+
+function extractExperienceYears(sections, fullText) {
+  const text = sections.profile.join('\n') + '\n' + fullText
+  const directMatch = text.match(/(\d+)\s*[年余]?\s*(?:工作|相关|开发|从业|专业)?\s*经验/)
+  if (directMatch) {
+    return { value: parseInt(directMatch[1], 10), confidence: CONFIDENCE.MEDIUM }
+  }
+  return { value: null, confidence: CONFIDENCE.MISSING }
+}
+
+function extractSkills(sections) {
+  const text = sections.skills.join('\n')
+  if (!text.trim()) return { value: [], confidence: CONFIDENCE.MISSING }
+
+  const separators = /[,，、;；\n]/
+  const tokens = text.split(separators).map(s => s.trim()).filter(Boolean)
+  const skills = []
+
+  for (const token of tokens) {
+    const normalized = token.replace(/[（(].*?[）)]/g, '').trim()
+    if (COMMON_SKILLS.some(s => s.toLowerCase() === normalized.toLowerCase())) {
+      skills.push(normalized)
+    } else if (normalized.length >= 2 && normalized.length <= 20 && !/公司|大学|学院/.test(normalized)) {
+      skills.push(normalized)
+    }
+  }
+
+  const unique = [...new Set(skills)].slice(0, 20)
+  return {
+    value: unique,
+    confidence: unique.length > 0 ? CONFIDENCE.MEDIUM : CONFIDENCE.MISSING
+  }
+}
+
 function extractInfo(text) {
   const info = {}
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
