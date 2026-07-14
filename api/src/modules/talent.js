@@ -547,6 +547,12 @@ async function parseResume(request, env, corsHeaders) {
 
     const arrayBuffer = await file.arrayBuffer()
     const parsed = await parseFile(file.name, arrayBuffer)
+
+    // 避免返回过大的原始文本
+    if (parsed.raw_text && parsed.raw_text.length > 5000) {
+      parsed.raw_text = parsed.raw_text.slice(0, 5000) + '\n...（已截断）'
+    }
+
     return jsonResponse({ success: true, data: parsed }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
