@@ -121,7 +121,7 @@ const candidate = ref({})
 const activeTab = ref('info')
 
 const uploadAction = computed(() => {
-  const base = import.meta.env.VITE_API_BASE || '/api'
+  const base = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip/api'
   return `${base}/talent/candidates/${route.params.id}/attachments`
 })
 
