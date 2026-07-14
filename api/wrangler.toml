@@ -26,7 +26,7 @@ ALLOWED_ORIGINS = "https://zhihr.vip,https://www.zhihr.vip,http://localhost:5173
 
 # 阿里云 OSS 配置（简历文件存储）
 OSS_ACCESS_KEY_ID = "LTAI5t8woxmzKqZJK2SoT6bQ"
-OSS_BUCKET = "jianlihua-ya"
+OSS_BUCKET = "jianliku-yq"
 OSS_REGION = "cn-chengdu"
 # OSS_ACCESS_KEY_SECRET 通过 wrangler secret put OSS_ACCESS_KEY_SECRET 设置
 
