@@ -21,38 +21,80 @@
     <el-card shadow="never" v-loading="saving">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="姓名" prop="name">
-          <el-input v-model="form.name" placeholder="必填" style="max-width: 300px;" />
+          <el-input v-model="form.name" placeholder="必填" style="max-width: 300px;" :class="confidenceClass('name')">
+            <template #suffix>
+              <el-tooltip v-if="confidenceIcon('name')" :content="confidenceTip('name')" placement="top">
+                <el-icon :class="confidenceClass('name') + '-icon'">
+                  <WarningFilled v-if="confidenceIcon('name') === 'WarningFilled'" />
+                  <CircleCloseFilled v-else />
+                </el-icon>
+              </el-tooltip>
+            </template>
+          </el-input>
+          <div v-if="confidenceTip('name')" class="confidence-tip">{{ confidenceTip('name') }}</div>
         </el-form-item>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="手机号" prop="phone">
-              <el-input v-model="form.phone" placeholder="11位手机号" />
+              <el-input v-model="form.phone" placeholder="11位手机号" :class="confidenceClass('phone')">
+                <template #suffix>
+                  <el-tooltip v-if="confidenceIcon('phone')" :content="confidenceTip('phone')" placement="top">
+                    <el-icon :class="confidenceClass('phone') + '-icon'">
+                      <WarningFilled v-if="confidenceIcon('phone') === 'WarningFilled'" />
+                      <CircleCloseFilled v-else />
+                    </el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+              <div v-if="confidenceTip('phone')" class="confidence-tip">{{ confidenceTip('phone') }}</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" placeholder="email@example.com" />
+              <el-input v-model="form.email" placeholder="email@example.com" :class="confidenceClass('email')">
+                <template #suffix>
+                  <el-tooltip v-if="confidenceIcon('email')" :content="confidenceTip('email')" placement="top">
+                    <el-icon :class="confidenceClass('email') + '-icon'">
+                      <WarningFilled v-if="confidenceIcon('email') === 'WarningFilled'" />
+                      <CircleCloseFilled v-else />
+                    </el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+              <div v-if="confidenceTip('email')" class="confidence-tip">{{ confidenceTip('email') }}</div>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="目标岗位">
-              <el-input v-model="form.position" placeholder="期望职位" />
+              <el-input v-model="form.position" placeholder="期望职位" :class="confidenceClass('position')">
+                <template #suffix>
+                  <el-tooltip v-if="confidenceIcon('position')" :content="confidenceTip('position')" placement="top">
+                    <el-icon :class="confidenceClass('position') + '-icon'">
+                      <WarningFilled v-if="confidenceIcon('position') === 'WarningFilled'" />
+                      <CircleCloseFilled v-else />
+                    </el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+              <div v-if="confidenceTip('position')" class="confidence-tip">{{ confidenceTip('position') }}</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="学历">
-              <el-select v-model="form.education" placeholder="请选择" clearable style="width: 100%;">
+              <el-select v-model="form.education" placeholder="请选择" clearable style="width: 100%;" :class="confidenceClass('education')">
                 <el-option v-for="e in EDUCATION_OPTIONS" :key="e" :label="e" :value="e" />
               </el-select>
+              <div v-if="confidenceTip('education')" class="confidence-tip">{{ confidenceTip('education') }}</div>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="工作年限">
-              <el-input-number v-model="form.experience_years" :min="0" :max="50" style="width: 100%;" />
+              <el-input-number v-model="form.experience_years" :min="0" :max="50" style="width: 100%;" :class="confidenceClass('experience_years')" />
+              <div v-if="confidenceTip('experience_years')" class="confidence-tip">{{ confidenceTip('experience_years') }}</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -63,9 +105,11 @@
         </el-row>
         <el-form-item label="技能标签">
           <SkillTags v-model="form.skills" />
+          <div v-if="confidenceTip('skills')" class="confidence-tip">{{ confidenceTip('skills') }}</div>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="form.summary" type="textarea" :rows="3" placeholder="简要评价或备注" />
+          <div v-if="confidenceTip('summary')" class="confidence-tip">{{ confidenceTip('summary') }}</div>
         </el-form-item>
 
         <el-divider content-position="left">工作经历</el-divider>
@@ -91,7 +135,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getCandidate, createCandidate, updateCandidate, parseResume } from '../api'
 import { addExperience as addExpApi, updateExperience } from '../api'
@@ -120,6 +164,27 @@ const rules = {
 
 function addExperience() {
   form.experiences.push({ company: '', title: '', start_date: '', end_date: '', description: '' })
+}
+
+function confidenceClass(field) {
+  const c = fieldConfidence.value[field]
+  if (c === 'low' || c === 'missing') return 'low-confidence'
+  if (c === 'medium') return 'medium-confidence'
+  return ''
+}
+
+function confidenceIcon(field) {
+  const c = fieldConfidence.value[field]
+  if (c === 'low' || c === 'missing') return 'CircleCloseFilled'
+  if (c === 'medium') return 'WarningFilled'
+  return null
+}
+
+function confidenceTip(field) {
+  const c = fieldConfidence.value[field]
+  if (c === 'low' || c === 'missing') return '未识别或可信度低，请补充'
+  if (c === 'medium') return '请确认'
+  return ''
 }
 
 async function handleFileChange(uploadFile) {
@@ -210,3 +275,30 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.low-confidence :deep(.el-input__wrapper),
+.low-confidence :deep(.el-textarea__inner),
+.low-confidence :deep(.el-input-number__decrease),
+.low-confidence :deep(.el-input-number__increase) {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+}
+.medium-confidence :deep(.el-input__wrapper),
+.medium-confidence :deep(.el-textarea__inner),
+.medium-confidence :deep(.el-input-number__decrease),
+.medium-confidence :deep(.el-input-number__increase) {
+  box-shadow: 0 0 0 1px var(--el-color-warning) inset;
+}
+.low-confidence-icon {
+  color: var(--el-color-danger);
+}
+.medium-confidence-icon {
+  color: var(--el-color-warning);
+}
+.confidence-tip {
+  font-size: 12px;
+  color: var(--el-color-danger);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+</style>
