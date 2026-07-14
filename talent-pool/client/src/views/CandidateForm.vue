@@ -104,6 +104,7 @@ const router = useRouter()
 const isEdit = computed(() => !!route.params.id)
 const formRef = ref(null)
 const saving = ref(false)
+const fieldConfidence = ref({})
 
 const form = reactive({
   name: '', phone: '', email: '', position: '',
@@ -129,9 +130,30 @@ async function handleFileChange(uploadFile) {
     ElMessage.info('正在解析文件...')
     const res = await parseResume(formData)
     const data = res.data.data || res.data
+
+    if (data.name) form.name = data.name
     if (data.phone) form.phone = data.phone
     if (data.email) form.email = data.email
+    if (data.position) form.position = data.position
+    if (data.education) form.education = data.education
+    if (data.experience_years !== null && data.experience_years !== undefined) {
+      form.experience_years = data.experience_years
+    }
     if (data.summary) form.summary = data.summary
+    if (Array.isArray(data.skills)) form.skills = data.skills
+
+    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
+      form.experiences = data.experiences.map(exp => ({
+        company: exp.company || '',
+        title: exp.title || '',
+        start_date: exp.start_date || '',
+        end_date: exp.end_date || '',
+        description: exp.description || ''
+      }))
+    }
+
+    fieldConfidence.value = data.confidence || {}
+
     ElMessage.success('解析完成，请确认并补充信息')
   } catch (e) {
     ElMessage.warning('文件解析失败，请手动填写')
