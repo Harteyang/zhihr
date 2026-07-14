@@ -77,19 +77,35 @@
         </el-tab-pane>
 
         <el-tab-pane :label="`附件 (${candidate.attachments?.length || 0})`" name="attachments">
-          <div style="margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
             <el-upload
               :auto-upload="true"
               :action="uploadAction"
               :show-file-list="false"
               :on-success="handleUploadSuccess"
-              :on-error="() => ElMessage.error('上传失败')"
+              :on-error="handleUploadError"
               :headers="uploadHeaders"
+              :disabled="quota && !quota.unlimited && quota.remaining <= 0"
               name="file"
             >
-              <el-button type="primary" size="small">上传附件</el-button>
+              <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传附件</el-button>
             </el-upload>
+            <span v-if="quota && quota.unlimited" style="font-size: 12px; color: var(--el-text-color-secondary);">
+              管理员账户：上传不受限制
+            </span>
+            <span v-else-if="quota" style="font-size: 12px;" :style="{ color: quota.remaining <= 10 ? 'var(--el-color-danger)' : 'var(--el-text-color-secondary)' }">
+              今日剩余上传：{{ quota.remaining }} / {{ quota.limit }} 份
+            </span>
           </div>
+          <el-alert
+            v-if="quota && !quota.unlimited && quota.remaining <= 0"
+            type="warning"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 12px;"
+          >
+            每日简历上传上限为 {{ quota.limit }} 份，今日已达上限，无法继续上传。管理员账户不受此限制。
+          </el-alert>
           <el-table :data="candidate.attachments || []" v-if="candidate.attachments && candidate.attachments.length > 0" stripe>
             <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
             <el-table-column prop="file_type" label="类型" width="80" />
@@ -97,15 +113,10 @@
               <template #default="{ row }">{{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}</template>
             </el-table-column>
             <el-table-column prop="created_at" label="上传时间" width="170" />
-            <el-table-column label="操作" width="180">
+            <el-table-column label="操作" width="140">
               <template #default="{ row }">
                 <el-button type="primary" link size="small" @click="handlePreview(row)">预览</el-button>
                 <el-button type="success" link size="small" @click="handleDownload(row)">下载</el-button>
-                <el-popconfirm title="确定删除该附件吗？" @confirm="handleDeleteAttachment(row)">
-                  <template #reference>
-                    <el-button type="danger" link size="small">删除</el-button>
-                  </template>
-                </el-popconfirm>
               </template>
             </el-table-column>
           </el-table>
@@ -125,7 +136,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
-import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, fetchAttachmentBlob } from '../api'
+import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, fetchAttachmentBlob, getUploadQuota } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
 import { getStatusLabel, getStatusType } from '../utils/constants'
 
@@ -141,6 +152,9 @@ const previewType = ref('') // 'pdf' | 'html'
 const previewHtml = ref('')
 const previewBlobUrl = ref('')
 const previewFileName = ref('')
+
+// 上传配额
+const quota = ref(null)
 
 const uploadAction = computed(() => {
   const base = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip/api'
@@ -253,20 +267,44 @@ async function handleDownload(row) {
 }
 
 async function handleDeleteAttachment(row) {
+  // 简历附件上传后不支持删除（后端会返回 403）
   try {
     await deleteAttachment(candidate.value.id, row.id)
-    ElMessage.success('删除成功')
-    // 如果删除的是当前预览的附件，关闭预览
-    if (previewFileName.value === row.file_name) closePreview()
-    fetchCandidate()
   } catch (e) {
-    ElMessage.error('删除失败')
+    ElMessage.warning(e.response?.data?.message || '简历附件上传后不支持删除操作')
   }
 }
 
-function handleUploadSuccess() {
+function handleUploadSuccess(response) {
   ElMessage.success('上传成功')
+  // 后端返回最新配额信息，同步更新前端
+  if (response?.quota) {
+    quota.value = response.quota
+  }
   fetchCandidate()
+}
+
+function handleUploadError(err) {
+  let message = '上传失败，请稍后重试'
+  try {
+    // el-upload 错误对象的 message 为后端响应体文本
+    const parsed = JSON.parse(err?.message || err || '{}')
+    message = parsed.message || message
+  } catch {
+    // 非 JSON 响应，使用默认消息
+  }
+  ElMessage.error(message)
+  // 达到上限时刷新配额状态
+  fetchQuota()
+}
+
+async function fetchQuota() {
+  try {
+    const res = await getUploadQuota()
+    quota.value = res.data.data
+  } catch {
+    // 配额查询失败不阻塞页面
+  }
 }
 
 async function initAutoPreview() {
@@ -282,7 +320,7 @@ async function initAutoPreview() {
 }
 
 onMounted(async () => {
-  await fetchCandidate()
+  await Promise.all([fetchCandidate(), fetchQuota()])
   await initAutoPreview()
 })
 </script>

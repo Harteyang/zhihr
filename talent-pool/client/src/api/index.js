@@ -57,6 +57,7 @@ export const deleteAttachment = (candidateId, attachId) => api.delete(`/talent/c
 export const downloadUrl = (attachId) => `${baseURL}/talent/attachments/${attachId}/download`
 export const previewAttachment = (attachId) => api.get(`/talent/attachments/${attachId}/preview`)
 export const fetchAttachmentBlob = (attachId) => api.get(`/talent/attachments/${attachId}/download`, { responseType: 'blob' })
+export const getUploadQuota = () => api.get('/talent/upload-quota')
 
 // 批量导入
 export const importCandidates = (formData) => api.post('/talent/candidates/import', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 })

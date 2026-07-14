@@ -264,8 +264,9 @@ async function handleSubmit() {
         const attachFormData = new FormData()
         attachFormData.append('file', selectedFile.value)
         await uploadAttachment(candidateId, attachFormData)
-      } catch {
-        ElMessage.warning('候选人已创建，但简历附件上传失败，可在详情页重新上传')
+      } catch (uploadErr) {
+        const errMsg = uploadErr.response?.data?.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'
+        ElMessage.warning(errMsg)
       }
     }
 

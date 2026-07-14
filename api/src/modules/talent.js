@@ -384,6 +384,27 @@ async function deleteExperience(request, env, corsHeaders, params) {
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.csv']
 const MAX_FILE_SIZE = 10 * 1024 * 1024
+// 普通用户每日简历上传上限（管理员不受限制）
+const DAILY_UPLOAD_LIMIT = 100
+
+// 统计今日（中国时区 UTC+8）该用户的简历上传数量
+async function getDailyUploadCount(env, userId) {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) as count FROM talent_operation_logs
+     WHERE user_id = ? AND action = 'upload_attachment'
+     AND date(created_at, '+8 hours') = date('now', '+8 hours')`
+  ).bind(String(userId)).first()
+  return row?.count || 0
+}
+
+// 构建上传配额信息
+async function buildUploadQuota(env, user) {
+  if (user.role === 'admin') {
+    return { limit: -1, used: 0, remaining: -1, unlimited: true }
+  }
+  const used = await getDailyUploadCount(env, user.userId)
+  return { limit: DAILY_UPLOAD_LIMIT, used, remaining: Math.max(0, DAILY_UPLOAD_LIMIT - used), unlimited: false }
+}
 
 async function uploadAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
@@ -392,6 +413,19 @@ async function uploadAttachment(request, env, corsHeaders, params) {
   const oss = new OSSClient(env)
   if (!oss.isConfigured()) {
     return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）', status: 'oss_not_configured' }, 503, corsHeaders)
+  }
+
+  // 普通用户每日上传量限制校验（管理员不受限）
+  if (user.role !== 'admin') {
+    const usedCount = await getDailyUploadCount(env, user.userId)
+    if (usedCount >= DAILY_UPLOAD_LIMIT) {
+      return jsonResponse({
+        success: false,
+        message: `每日简历上传上限为 ${DAILY_UPLOAD_LIMIT} 份，今日已上传 ${usedCount} 份，已达上限。管理员账户不受此限制。`,
+        code: 'UPLOAD_LIMIT_EXCEEDED',
+        data: { limit: DAILY_UPLOAD_LIMIT, used: usedCount, remaining: 0 }
+      }, 429, corsHeaders)
+    }
   }
 
   try {
@@ -439,7 +473,8 @@ async function uploadAttachment(request, env, corsHeaders, params) {
 
     await logOperation(env, user, 'upload_attachment', 'attachment', String(attachment.id), { candidate_id: candidateId, file_name: fileName }, getClientIp(request))
 
-    return jsonResponse({ success: true, data: attachment }, 201, corsHeaders)
+    const quota = await buildUploadQuota(env, user)
+    return jsonResponse({ success: true, data: attachment, quota }, 201, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
@@ -468,28 +503,22 @@ async function listAttachments(request, env, corsHeaders, params) {
 }
 
 async function deleteAttachment(request, env, corsHeaders, params) {
+  const { error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+  // 简历附件一旦上传不支持删除，防止已入库简历被误删或恶意清除
+  return jsonResponse({
+    success: false,
+    message: '简历附件上传后不支持删除操作'
+  }, 403, corsHeaders)
+}
+
+// 查询当前用户今日上传配额
+async function getUploadQuota(request, env, corsHeaders) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
-
-  const oss = new OSSClient(env)
-
   try {
-    const attachment = await env.DB.prepare(
-      'SELECT * FROM talent_attachments WHERE id = ? AND candidate_id = ?'
-    ).bind(params.attachId, params.id).first()
-    if (!attachment) {
-      return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
-    }
-
-    if (oss.isConfigured() && attachment.oss_key) {
-      try { await oss.delete(attachment.oss_key) } catch (e) { debugLog('Talent', 'OSS delete failed:', e.message) }
-    }
-
-    await env.DB.prepare('DELETE FROM talent_attachments WHERE id = ?').bind(params.attachId).run()
-
-    await logOperation(env, user, 'delete_attachment', 'attachment', String(params.attachId), { file_name: attachment.file_name }, getClientIp(request))
-
-    return jsonResponse({ success: true, message: '删除成功' }, 200, corsHeaders)
+    const quota = await buildUploadQuota(env, user)
+    return jsonResponse({ success: true, data: quota }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
@@ -704,4 +733,5 @@ export const routes = [
   { method: 'DELETE',path: '/api/talent/candidates/:id/attachments/:attachId',handler: deleteAttachment },
   { method: 'GET',   path: '/api/talent/attachments/:id/download',            handler: downloadAttachment },
   { method: 'GET',   path: '/api/talent/attachments/:id/preview',             handler: previewAttachment },
+  { method: 'GET',   path: '/api/talent/upload-quota',                        handler: getUploadQuota },
 ]
