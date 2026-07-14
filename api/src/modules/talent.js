@@ -1,5 +1,6 @@
 import { debugLog, jsonResponse, maskError, parsePagination, requireAuth, requireAdmin, getUserPositions, logOperation, getClientIp } from '../utils/router.js'
 import { parseFile, parseExcel, generateTemplateBuffer } from './talent_parsers.js'
+import { OSSClient } from '../utils/oss.js'
 
 const VALID_STATUSES = ['pending', 'contacted', 'interviewing', 'offered', 'rejected']
 
@@ -250,6 +251,8 @@ async function deleteCandidate(request, env, corsHeaders, params) {
   const { user, error } = await requireAdmin(request, env, corsHeaders)
   if (error) return error
 
+  const oss = new OSSClient(env)
+
   try {
     const id = params.id
     const existing = await env.DB.prepare('SELECT * FROM talent_candidates WHERE id = ?').bind(id).first()
@@ -258,8 +261,12 @@ async function deleteCandidate(request, env, corsHeaders, params) {
     }
 
     const attachments = await env.DB.prepare('SELECT r2_key FROM talent_attachments WHERE candidate_id = ?').bind(id).all()
-    for (const att of attachments.results) {
-      try { await env.RESUME_BUCKET.delete(att.r2_key) } catch (e) { debugLog('Talent', 'R2 delete failed:', att.r2_key) }
+    if (oss.isConfigured()) {
+      for (const att of attachments.results) {
+        if (att.r2_key) {
+          try { await oss.delete(att.r2_key) } catch (e) { debugLog('Talent', 'OSS delete failed:', e.message) }
+        }
+      }
     }
 
     await env.DB.batch([
@@ -382,8 +389,9 @@ async function uploadAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
-  if (!env.RESUME_BUCKET) {
-    return jsonResponse({ success: false, message: '文件存储服务未配置，请联系管理员启用 R2' }, 503, corsHeaders)
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）', status: 'oss_not_configured' }, 503, corsHeaders)
   }
 
   try {
@@ -413,17 +421,17 @@ async function uploadAttachment(request, env, corsHeaders, params) {
     }
 
     const timestamp = Date.now()
-    const r2Key = `resumes/${candidateId}/${timestamp}_${fileName}`
+    const ossKey = `resumes/${candidateId}/${timestamp}_${fileName}`
 
-    await env.RESUME_BUCKET.put(r2Key, file.stream(), {
-      httpMetadata: { contentType: file.type }
-    })
+    // 上传到阿里云 OSS
+    const arrayBuffer = await file.arrayBuffer()
+    await oss.put(ossKey, arrayBuffer, file.type)
 
     const fileType = ext.replace('.', '')
     const result = await env.DB.prepare(`
       INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(candidateId, fileName, fileType, r2Key, file.size).run()
+    `).bind(candidateId, fileName, fileType, ossKey, file.size).run()
 
     const attachment = await env.DB.prepare(
       'SELECT id, candidate_id, file_name, file_type, file_size, created_at FROM talent_attachments WHERE id = ?'
@@ -463,6 +471,8 @@ async function deleteAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
+  const oss = new OSSClient(env)
+
   try {
     const attachment = await env.DB.prepare(
       'SELECT * FROM talent_attachments WHERE id = ? AND candidate_id = ?'
@@ -471,7 +481,9 @@ async function deleteAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
     }
 
-    try { await env.RESUME_BUCKET.delete(attachment.r2_key) } catch (e) { debugLog('Talent', 'R2 delete failed:', attachment.r2_key) }
+    if (oss.isConfigured() && attachment.oss_key) {
+      try { await oss.delete(attachment.oss_key) } catch (e) { debugLog('Talent', 'OSS delete failed:', e.message) }
+    }
 
     await env.DB.prepare('DELETE FROM talent_attachments WHERE id = ?').bind(params.attachId).run()
 
@@ -487,8 +499,9 @@ async function downloadAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
-  if (!env.RESUME_BUCKET) {
-    return jsonResponse({ success: false, message: '文件存储服务未配置，请联系管理员启用 R2' }, 503, corsHeaders)
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）', status: 'oss_not_configured' }, 503, corsHeaders)
   }
 
   try {
@@ -504,17 +517,16 @@ async function downloadAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无权下载该附件' }, 403, corsHeaders)
     }
 
-    const object = await env.RESUME_BUCKET.get(attachment.r2_key)
-    if (!object) {
+    const ossRes = await oss.get(attachment.r2_key)
+    if (!ossRes) {
       return jsonResponse({ success: false, message: '文件已被删除' }, 404, corsHeaders)
     }
 
-    const headers = new Headers()
-    object.writeHttpMetadata(headers)
+    const headers = new Headers(ossRes.headers)
     headers.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(attachment.file_name)}`)
     headers.set('Access-Control-Allow-Origin', corsHeaders['Access-Control-Allow-Origin'] || '*')
 
-    return new Response(object.body, { headers })
+    return new Response(ossRes.body, { headers })
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
