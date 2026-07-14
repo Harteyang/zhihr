@@ -92,6 +92,45 @@ function normalizePunctuation(text) {
     .replace(/\s{2,}/g, ' ')
 }
 
+// ========= 区块分割 =========
+
+function detectSection(line) {
+  const lower = line.toLowerCase()
+  for (const [section, keywords] of Object.entries(SECTION_KEYWORDS)) {
+    for (const kw of keywords) {
+      const regex = new RegExp(`(^|[\\s\\/:])${kw}($|[\\s\\/:：])`, 'i')
+      if (regex.test(lower) || lower.includes(kw.toLowerCase())) {
+        return section
+      }
+    }
+  }
+  return null
+}
+
+function splitSections(text) {
+  const lines = text.split('\n')
+  const sections = {
+    profile: [],
+    education: [],
+    experience: [],
+    skills: [],
+    projects: [],
+    other: [],
+    unclassified: []
+  }
+  let current = 'unclassified'
+
+  for (const line of lines) {
+    const section = detectSection(line)
+    if (section) {
+      current = section
+      continue
+    }
+    sections[current].push(line)
+  }
+  return sections
+}
+
 function extractInfo(text) {
   const info = {}
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
