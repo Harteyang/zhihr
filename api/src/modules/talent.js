@@ -1,5 +1,5 @@
 import { debugLog, jsonResponse, maskError, parsePagination, requireAuth, requireAdmin, getUserPositions, logOperation, getClientIp } from '../utils/router.js'
-import { parseFile, parseExcel, generateTemplateBuffer } from './talent_parsers.js'
+import { parseFile, parseExcel, generateTemplateBuffer, docxToHtml, docToHtml } from './talent_parsers.js'
 import { OSSClient } from '../utils/oss.js'
 
 const VALID_STATUSES = ['pending', 'contacted', 'interviewing', 'offered', 'rejected']
@@ -532,6 +532,52 @@ async function downloadAttachment(request, env, corsHeaders, params) {
   }
 }
 
+async function previewAttachment(request, env, corsHeaders, params) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）' }, 503, corsHeaders)
+  }
+
+  try {
+    const attachment = await env.DB.prepare(
+      'SELECT * FROM talent_attachments WHERE id = ?'
+    ).bind(params.id).first()
+    if (!attachment) {
+      return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
+    }
+
+    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
+    if (candidate && !(await checkPositionPermission(env, user, candidate.position))) {
+      return jsonResponse({ success: false, message: '无权预览该附件' }, 403, corsHeaders)
+    }
+
+    const ossRes = await oss.get(attachment.r2_key)
+    if (!ossRes) {
+      return jsonResponse({ success: false, message: '文件已被删除' }, 404, corsHeaders)
+    }
+
+    const arrayBuffer = await ossRes.arrayBuffer()
+    const fileType = attachment.file_type?.toLowerCase()
+
+    if (fileType === 'docx') {
+      const html = docxToHtml(arrayBuffer)
+      return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
+    } else if (fileType === 'doc') {
+      const html = docToHtml(arrayBuffer)
+      return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
+    } else if (fileType === 'pdf') {
+      return jsonResponse({ success: true, data: { type: 'pdf' } }, 200, corsHeaders)
+    } else {
+      return jsonResponse({ success: false, message: '该文件类型不支持在线预览，请下载后查看' }, 400, corsHeaders)
+    }
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
 // ========= 简历解析与批量导入 =========
 
 async function parseResume(request, env, corsHeaders) {
@@ -657,4 +703,5 @@ export const routes = [
   { method: 'GET',   path: '/api/talent/candidates/:id/attachments',          handler: listAttachments },
   { method: 'DELETE',path: '/api/talent/candidates/:id/attachments/:attachId',handler: deleteAttachment },
   { method: 'GET',   path: '/api/talent/attachments/:id/download',            handler: downloadAttachment },
+  { method: 'GET',   path: '/api/talent/attachments/:id/preview',             handler: previewAttachment },
 ]

@@ -137,7 +137,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCandidate, createCandidate, updateCandidate, parseResume } from '../api'
+import { getCandidate, createCandidate, updateCandidate, parseResume, uploadAttachment } from '../api'
 import { addExperience as addExpApi, updateExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
@@ -150,6 +150,7 @@ const formRef = ref(null)
 const uploadRef = ref(null)
 const saving = ref(false)
 const fieldConfidence = ref({})
+const selectedFile = ref(null)
 
 const form = reactive({
   name: '', phone: '', email: '', position: '',
@@ -190,6 +191,7 @@ function confidenceTip(field) {
 
 async function handleFileChange(uploadFile) {
   if (!uploadFile.raw) return
+  selectedFile.value = uploadFile.raw
   const formData = new FormData()
   formData.append('file', uploadFile.raw)
   try {
@@ -253,6 +255,17 @@ async function handleSubmit() {
         await updateExperience(candidateId, exp.id, exp)
       } else {
         await addExpApi(candidateId, exp)
+      }
+    }
+
+    // 创建候选人后同步上传简历附件
+    if (!isEdit.value && selectedFile.value) {
+      try {
+        const attachFormData = new FormData()
+        attachFormData.append('file', selectedFile.value)
+        await uploadAttachment(candidateId, attachFormData)
+      } catch {
+        ElMessage.warning('候选人已创建，但简历附件上传失败，可在详情页重新上传')
       }
     }
 

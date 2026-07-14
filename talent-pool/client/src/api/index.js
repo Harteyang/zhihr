@@ -55,6 +55,8 @@ export const getAttachments = (candidateId) => api.get(`/talent/candidates/${can
 export const uploadAttachment = (candidateId, formData) => api.post(`/talent/candidates/${candidateId}/attachments`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
 export const deleteAttachment = (candidateId, attachId) => api.delete(`/talent/candidates/${candidateId}/attachments/${attachId}`)
 export const downloadUrl = (attachId) => `${baseURL}/talent/attachments/${attachId}/download`
+export const previewAttachment = (attachId) => api.get(`/talent/attachments/${attachId}/preview`)
+export const fetchAttachmentBlob = (attachId) => api.get(`/talent/attachments/${attachId}/download`, { responseType: 'blob' })
 
 // 批量导入
 export const importCandidates = (formData) => api.post('/talent/candidates/import', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 })
