@@ -243,6 +243,12 @@ function extractExperienceYears(sections, fullText) {
   if (directMatch) {
     return { value: parseInt(directMatch[1], 10), confidence: CONFIDENCE.MEDIUM }
   }
+
+  const years = calculateYearsFromExperience(sections.experience)
+  if (years !== null) {
+    return { value: years, confidence: CONFIDENCE.LOW }
+  }
+
   return { value: null, confidence: CONFIDENCE.MISSING }
 }
 
@@ -268,6 +274,125 @@ function extractSkills(sections) {
     value: unique,
     confidence: unique.length > 0 ? CONFIDENCE.MEDIUM : CONFIDENCE.MISSING
   }
+}
+
+// ========= 工作经历提取 =========
+
+const TIME_PATTERNS = [
+  { regex: /(\d{4})\.(\d{1,2})\s*[-~至]\s*(\d{4})\.(\d{1,2}|至今)/ },
+  { regex: /(\d{4})\/(\d{1,2})\s*[-~至]\s*(\d{4})\/(\d{1,2}|至今)/ },
+  { regex: /(\d{4})\s*年\s*(\d{1,2})\s*月\s*[-~至]\s*(\d{4})\s*年\s*(\d{1,2})\s*月/ },
+  { regex: /(\d{4})\s*年\s*(\d{1,2})\s*月\s*[-~至]\s*至今/ },
+  { regex: /(\d{4})\.(\d{1,2})\s*[-~至]\s*至今/ }
+]
+
+function parseTimeRange(text) {
+  for (const pattern of TIME_PATTERNS) {
+    const match = text.match(pattern.regex)
+    if (match) {
+      const startYear = match[1].padStart(4, '20')
+      const startMonth = match[2].padStart(2, '0')
+      let endDate = 'present'
+      if (match[3] && match[3] !== '至今') {
+        const endYear = match[3].padStart(4, '20')
+        const endMonth = match[4] ? match[4].padStart(2, '0') : '12'
+        endDate = `${endYear}-${endMonth}`
+      }
+      return { start_date: `${startYear}-${startMonth}`, end_date: endDate }
+    }
+  }
+  return null
+}
+
+function extractCompany(text) {
+  const lines = text.split('\n')
+  for (const line of lines) {
+    const match = line.match(/([^\n，,；;]{2,40}(?:公司|科技|网络|集团|信息|软件|Corp|Ltd|Limited|Inc))/i)
+    if (match) return match[1].trim()
+  }
+  return null
+}
+
+function extractTitle(text) {
+  const lines = text.split('\n')
+  for (const line of lines) {
+    for (const title of JOB_TITLES) {
+      if (line.includes(title)) {
+        const match = line.match(new RegExp(`([^\\n，,；;]{2,30}${title})`))
+        if (match) return match[1].trim()
+      }
+    }
+  }
+  return null
+}
+
+function splitExperienceEntries(text) {
+  const entries = []
+  let current = ''
+  const lines = text.split('\n')
+
+  for (const line of lines) {
+    if (parseTimeRange(line) && current.trim()) {
+      entries.push(current.trim())
+      current = line
+    } else {
+      current += '\n' + line
+    }
+  }
+  if (current.trim()) entries.push(current.trim())
+
+  return entries.length > 0 ? entries : [text]
+}
+
+function extractExperiences(sections) {
+  const text = sections.experience.join('\n')
+  if (!text.trim()) return { value: [], confidence: CONFIDENCE.MISSING }
+
+  const entries = splitExperienceEntries(text)
+  const experiences = []
+
+  for (const entry of entries) {
+    const timeRange = parseTimeRange(entry)
+    const company = extractCompany(entry)
+    const title = extractTitle(entry)
+
+    experiences.push({
+      company: company || '',
+      title: title || '',
+      start_date: timeRange ? timeRange.start_date : '',
+      end_date: timeRange ? timeRange.end_date : '',
+      description: entry.replace(/\n/g, ' ').trim()
+    })
+  }
+
+  const validCount = experiences.filter(e => e.company && e.title && e.start_date).length
+  const confidence = validCount === experiences.length && experiences.length > 0
+    ? CONFIDENCE.MEDIUM
+    : (experiences.length > 0 ? CONFIDENCE.LOW : CONFIDENCE.MISSING)
+
+  return { value: experiences, confidence }
+}
+
+function calculateYearsFromExperience(experienceLines) {
+  const text = experienceLines.join('\n')
+  const ranges = []
+  let match
+  const regex = /(\d{4})[./](\d{1,2})\s*[-~至]\s*(\d{4})[./](\d{1,2}|至今)/g
+  while ((match = regex.exec(text)) !== null) {
+    const start = new Date(`${match[1].padStart(4, '20')}-${match[2].padStart(2, '0')}-01`)
+    let end = new Date()
+    if (match[3] !== '至今') {
+      end = new Date(`${match[3].padStart(4, '20')}-${match[4].padStart(2, '0')}-01`)
+    }
+    ranges.push({ start, end })
+  }
+
+  if (ranges.length === 0) return null
+
+  const earliest = new Date(Math.min(...ranges.map(r => r.start)))
+  const latest = new Date(Math.max(...ranges.map(r => r.end)))
+  const months = (latest.getFullYear() - earliest.getFullYear()) * 12 + (latest.getMonth() - earliest.getMonth())
+  return Math.max(1, Math.round(months / 12))
 }
 
 function extractInfo(text) {
