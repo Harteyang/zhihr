@@ -395,18 +395,47 @@ function calculateYearsFromExperience(experienceLines) {
   return Math.max(1, Math.round(months / 12))
 }
 
-function extractInfo(text) {
-  const info = {}
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+function extractInfo(rawText) {
+  const cleaned = normalizePunctuation(mergeBrokenLines(cleanText(rawText)))
+  const sections = splitSections(cleaned)
 
-  const phoneMatch = text.match(/1[3-9]\d{9}/)
-  if (phoneMatch) info.phone = phoneMatch[0]
+  const nameResult = extractName(sections, cleaned)
+  const phoneResult = extractPhone(cleaned)
+  const emailResult = extractEmail(cleaned)
+  const positionResult = extractPosition(sections, cleaned)
+  const educationResult = extractEducation(sections)
+  const yearsResult = extractExperienceYears(sections, cleaned)
+  const skillsResult = extractSkills(sections)
+  const experiencesResult = extractExperiences(sections)
 
-  const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/)
-  if (emailMatch) info.email = emailMatch[0]
+  const summary = sections.skills.slice(0, 5).join('\n') || cleaned.split('\n').slice(0, 5).join('\n')
 
-  info.summary = lines.slice(0, 10).join('\n')
-  return info
+  return {
+    name: nameResult.value,
+    phone: phoneResult.value,
+    email: emailResult.value,
+    position: positionResult.value,
+    education: educationResult.value.education,
+    school: educationResult.value.school,
+    major: educationResult.value.major,
+    experience_years: yearsResult.value,
+    skills: skillsResult.value,
+    summary,
+    experiences: experiencesResult.value,
+    raw_text: cleaned,
+    confidence: {
+      name: nameResult.confidence,
+      phone: phoneResult.confidence,
+      email: emailResult.confidence,
+      position: positionResult.confidence,
+      education: educationResult.confidence,
+      school: educationResult.value.school ? CONFIDENCE.MEDIUM : CONFIDENCE.MISSING,
+      major: educationResult.value.major ? CONFIDENCE.MEDIUM : CONFIDENCE.MISSING,
+      experience_years: yearsResult.confidence,
+      skills: skillsResult.confidence,
+      experiences: experiencesResult.confidence
+    }
+  }
 }
 
 async function parseDocx(arrayBuffer) {
@@ -489,4 +518,4 @@ async function parseFile(fileName, arrayBuffer) {
   }
 }
 
-export { parseFile, parseExcel, generateTemplateBuffer }
+export { parseFile, parseExcel, generateTemplateBuffer, extractInfo }
