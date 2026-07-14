@@ -67,14 +67,13 @@ function mergeBrokenLines(text) {
 
   for (const line of lines) {
     const trimmed = line.trim()
-    const isShort = trimmed.length < 40
-    const endsWithPunctuation = /[。，；：！？.!,;:?]$/.test(trimmed)
-    const isListItem = /^[\d一二三四五六七八九十]+[.．、\s]/.test(trimmed)
+    if (!trimmed) continue
 
-    if (buffer && (isListItem || endsWithPunctuation || !isShort)) {
-      merged.push(buffer.trim())
-      buffer = trimmed
-    } else if (isShort && !endsWithPunctuation && !isListItem) {
+    // Only merge lines that look like a PDF line-break inside an English/number token.
+    const endsWithContinuation = buffer && /^[a-zA-Z0-9]$/.test(buffer.slice(-1)) && !/[\-]$/.test(buffer)
+    const startsWithContinuation = /^[a-zA-Z0-9]/.test(trimmed)
+
+    if (buffer && endsWithContinuation && startsWithContinuation) {
       buffer += ' ' + trimmed
     } else {
       if (buffer) merged.push(buffer.trim())
@@ -124,7 +123,6 @@ function splitSections(text) {
     const section = detectSection(line)
     if (section) {
       current = section
-      continue
     }
     sections[current].push(line)
   }
@@ -133,7 +131,7 @@ function splitSections(text) {
 
 // ========= 字段提取 =========
 
-const NAME_BLACKLIST = ['有限公司', '科技有限公司', '大学', '学院', '学校', '简历', '求职', '应聘', '招聘']
+const NAME_BLACKLIST = ['有限公司', '科技有限公司', '大学', '学院', '学校', '简历', '求职', '应聘', '招聘', '姓名', '名字', '手机', '电话', '邮箱', '邮箱地址', '联系方式', '这是', '一份', '几乎', '为空', '的简历', '教育背景', '教育经历', '工作经历', '工作经验', '工作履历', '实习经历', '专业技能', '技能', '项目经历', '项目经验', '个人信息', '基本信息', '联系方式', '自我评价', '个人优势', '求职意向']
 const INVALID_EMAIL_DOMAINS = ['example.com', 'test.com', 'email.com']
 
 function isValidChineseName(name) {
@@ -225,11 +223,19 @@ function extractEducation(sections) {
     }
   }
 
-  const schoolMatch = text.match(/([^\n，,；;]{2,20}(?:大学|学院|学校|University|College))/i)
+  const schoolMatch = text.match(/([^\n，,；;]{2,20}?(?:大学|学院|学校|University|College))/i)
   const school = schoolMatch ? schoolMatch[1].trim() : null
 
-  const majorMatch = text.match(/(?:专业|major)[\s:：]+([^\n，,；;]{2,20})/i)
-  const major = majorMatch ? majorMatch[1].trim() : null
+  let major = null
+  const majorLabelMatch = text.match(/(?:专业|major)[\s:：]+([^\n，,；;]{2,20})/i)
+  if (majorLabelMatch) {
+    major = majorLabelMatch[1].trim()
+  } else if (schoolMatch) {
+    const afterSchool = text.slice(text.indexOf(schoolMatch[0]) + schoolMatch[0].length)
+    const cleanedAfter = afterSchool.replace(new RegExp(`^\\s*[,，]?\\s*(${EDUCATION_LEVELS.join('|')})\\s*`), '').trim()
+    const majorMatch = cleanedAfter.match(/^[^\n\d，,；;]{2,20}/)
+    if (majorMatch) major = majorMatch[0].trim()
+  }
 
   return {
     value: { education: level, school, major },
@@ -307,8 +313,11 @@ function parseTimeRange(text) {
 function extractCompany(text) {
   const lines = text.split('\n')
   for (const line of lines) {
-    const match = line.match(/([^\n，,；;]{2,40}(?:公司|科技|网络|集团|信息|软件|Corp|Ltd|Limited|Inc))/i)
-    if (match) return match[1].trim()
+    const match = line.match(/([^\n，,；;]{2,30}(?:公司|科技|网络|集团|信息|软件|Corp|Ltd|Limited|Inc))/i)
+    if (match) {
+      const company = match[1].trim()
+      if (!/^(负责|在|到|于|就职|担任|任职)/.test(company)) return company
+    }
   }
   return null
 }
@@ -318,7 +327,7 @@ function extractTitle(text) {
   for (const line of lines) {
     for (const title of JOB_TITLES) {
       if (line.includes(title)) {
-        const match = line.match(new RegExp(`([^\\n，,；;]{2,30}${title})`))
+        const match = line.match(new RegExp(`(?:^|[\\s，,；;])([^\\s，,；;]{0,15}${title})(?:$|[\\s，,；;])`))
         if (match) return match[1].trim()
       }
     }
@@ -327,25 +336,26 @@ function extractTitle(text) {
 }
 
 function splitExperienceEntries(text) {
+  const pattern = /(\d{4}[./]\d{1,2}\s*[-~至]\s*(?:\d{4}[./]\d{1,2}|至今))/g
+  const parts = text.split(pattern)
+  if (parts.length < 3) return [text]
+
   const entries = []
-  let current = ''
-  const lines = text.split('\n')
+  let header = parts[0].trim()
 
-  for (const line of lines) {
-    if (parseTimeRange(line) && current.trim()) {
-      entries.push(current.trim())
-      current = line
-    } else {
-      current += '\n' + line
-    }
+  for (let i = 1; i < parts.length; i += 2) {
+    const time = parts[i]
+    const body = parts[i + 1] || ''
+    entries.push(`${header}\n${time}\n${body}`.trim())
+    const bodyLines = body.split('\n').filter(Boolean)
+    header = bodyLines.slice(-2).join('\n')
   }
-  if (current.trim()) entries.push(current.trim())
 
-  return entries.length > 0 ? entries : [text]
+  return entries
 }
 
 function extractExperiences(sections) {
-  const text = sections.experience.join('\n')
+  const text = sections.experience.filter(line => !detectSection(line)).join('\n')
   if (!text.trim()) return { value: [], confidence: CONFIDENCE.MISSING }
 
   const entries = splitExperienceEntries(text)
