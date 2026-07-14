@@ -1,6 +1,97 @@
 import { read, utils, write } from 'xlsx'
 import { unzipSync } from 'fflate'
 
+// ========= 简历区块关键词常量 =========
+
+const SECTION_KEYWORDS = {
+  profile: ['个人信息', '基本信息', '联系方式', 'profile', '姓名', 'name'],
+  education: ['教育背景', '教育经历', '学历', '毕业院校', 'education', '教育'],
+  experience: ['工作经历', '工作经验', '工作履历', '实习经历', 'experience', '职业经历', '工作'],
+  skills: ['技能', '专业技能', 'skills', '技术栈', 'self-assessment', '自我评价', '个人优势'],
+  projects: ['项目经历', '项目经验', 'projects', '项目'],
+  other: ['证书', 'languages', '语言能力', '获奖', '荣誉']
+}
+
+const CONFIDENCE = {
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low',
+  MISSING: 'missing'
+}
+
+const EDUCATION_LEVELS = ['博士', '硕士', '研究生', '本科', '大专', '专科', '高中', '中专', 'MBA', 'EMBA']
+
+const JOB_TITLES = ['工程师', '经理', '总监', '主管', '开发', '产品经理', '设计师', '架构师', '负责人', '专员', '顾问']
+
+const COMPANY_SUFFIXES = ['公司', '科技', '网络', '集团', '信息', '软件', 'Corp', 'Ltd', 'Limited', 'Inc']
+
+const COMMON_SKILLS = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'C++', 'C#', 'Rust', 'PHP', 'Ruby',
+  'Vue', 'React', 'Angular', 'Svelte', 'Next.js', 'Nuxt.js',
+  'Node.js', 'Express', 'Koa', 'NestJS', 'Django', 'Flask', 'Spring',
+  'HTML', 'CSS', 'Sass', 'Less', 'Webpack', 'Vite', 'Rollup',
+  'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Elasticsearch',
+  'Docker', 'Kubernetes', 'AWS', '阿里云', '腾讯云', 'Git', 'Linux'
+]
+
+// ========= 文本清洗与标准化工具 =========
+
+function cleanText(rawText) {
+  return rawText
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/[\u00A0\u2002-\u200B\u3000]/g, ' ')
+    .replace(/([a-zA-Z0-9])\n(?=[a-zA-Z0-9])/g, '$1 ')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0 && !isHeaderFooter(line))
+    .join('\n')
+}
+
+function isHeaderFooter(line) {
+  const footerPatterns = [
+    /^第\s*\d+\s*页/,
+    /^\d+\s*\/\s*\d+$/,
+    /^\s*\d+\s*$/,
+    /^https?:\/\//,
+    /^简历\s*更新/,
+    /^ID:\s*\d+/
+  ]
+  return footerPatterns.some(p => p.test(line))
+}
+
+function mergeBrokenLines(text) {
+  const lines = text.split('\n')
+  const merged = []
+  let buffer = ''
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    const isShort = trimmed.length < 40
+    const endsWithPunctuation = /[。，；：！？.!,;:?]$/.test(trimmed)
+    const isListItem = /^[\d一二三四五六七八九十]+[.．、\s]/.test(trimmed)
+
+    if (buffer && (isListItem || endsWithPunctuation || !isShort)) {
+      merged.push(buffer.trim())
+      buffer = trimmed
+    } else if (isShort && !endsWithPunctuation && !isListItem) {
+      buffer += ' ' + trimmed
+    } else {
+      if (buffer) merged.push(buffer.trim())
+      buffer = trimmed
+    }
+  }
+  if (buffer) merged.push(buffer.trim())
+  return merged.join('\n')
+}
+
+function normalizePunctuation(text) {
+  return text
+    .replace(/：/g, ':')
+    .replace(/　/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+}
+
 function extractInfo(text) {
   const info = {}
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
