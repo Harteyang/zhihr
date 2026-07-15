@@ -132,16 +132,17 @@ export class OSSClient {
     const expires = timestamp + expiresIn
 
     // 构造待签名字符串
+    // OSS 预签名 URL 的签名格式：VERB + "\n" + Content-MD5 + "\n" + Content-Type + "\n" + Expires + "\n" + CanonicalizedResource
     const verb = method.toUpperCase()
     const contentMd5 = ''
-    const contentType = ''
-    const date = '' // 签名 URL 不使用 Date
+    const contentType = 'application/octet-stream' // 浏览器 XHR 上传文件时默认 Content-Type
+    const expiresStr = String(expires) // 签名 URL 使用 Expires 时间戳而非 Date 头
 
     // 将 extraQuery 和签名参数合并，按字典序排序
     const queryParams = {
       ...extraQuery,
       OSSAccessKeyId: this.accessKeyId,
-      Expires: String(expires)
+      Expires: expiresStr
     }
     const sortedKeys = Object.keys(queryParams).sort()
     const canonicalizedQuery = sortedKeys.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`).join('&')
@@ -154,7 +155,7 @@ export class OSSClient {
       verb,
       contentMd5,
       contentType,
-      date,
+      expiresStr,
       canonicalizedResource
     ].join('\n')
 

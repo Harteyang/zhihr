@@ -224,7 +224,8 @@ async function handleFileChange(uploadFile) {
 
     ElMessage.success('解析完成，请确认并补充信息')
   } catch (e) {
-    ElMessage.warning('文件解析失败，请手动填写')
+    const errMsg = e?.response?.data?.message || '文件解析失败，请手动填写'
+    ElMessage.warning(errMsg)
   } finally {
     // 重置上传组件内部文件列表，允许连续上传多个文件
     uploadRef.value?.clearFiles()
@@ -271,7 +272,8 @@ async function handleSubmit() {
         const xhr = new XMLHttpRequest()
         await new Promise((resolve, reject) => {
           xhr.open('PUT', uploadUrl, true)
-          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+          // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
+          xhr.setRequestHeader('Content-Type', 'application/octet-stream')
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) resolve()
             else reject(new Error(`OSS 上传失败 (${xhr.status})`))

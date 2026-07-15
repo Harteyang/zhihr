@@ -169,7 +169,8 @@ async function handleUploadRequest(options) {
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open('PUT', uploadUrl, true)
-      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+      // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
           onProgress({ percent: Math.round((e.loaded / e.total) * 100) })
@@ -319,9 +320,14 @@ function handleUploadSuccess(response) {
 function handleUploadError(err) {
   let message = '上传失败，请稍后重试'
   try {
-    // el-upload 错误对象的 message 为后端响应体文本
-    const parsed = JSON.parse(err?.message || err || '{}')
-    message = parsed.message || message
+    // 优先从 axios 响应中提取服务端错误消息
+    if (err?.response?.data?.message) {
+      message = err.response.data.message
+    } else if (err?.message) {
+      // el-upload 错误对象的 message 为后端响应体文本
+      const parsed = JSON.parse(err.message)
+      message = parsed.message || message
+    }
   } catch {
     // 非 JSON 响应，使用默认消息
   }
