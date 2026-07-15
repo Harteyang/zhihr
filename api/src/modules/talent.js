@@ -406,7 +406,7 @@ async function buildUploadQuota(env, user) {
   return { limit: DAILY_UPLOAD_LIMIT, used, remaining: Math.max(0, DAILY_UPLOAD_LIMIT - used), unlimited: false }
 }
 
-async function uploadAttachment(request, env, corsHeaders, params) {
+async function getUploadUrl(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
@@ -438,17 +438,8 @@ async function uploadAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file')
-    if (!file || !(file instanceof File)) {
-      return jsonResponse({ success: false, message: '请选择文件' }, 400, corsHeaders)
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return jsonResponse({ success: false, message: '文件大小不能超过 10MB' }, 400, corsHeaders)
-    }
-
-    const fileName = file.name
+    const url = new URL(request.url)
+    const fileName = url.searchParams.get('file_name') || 'attachment'
     const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase()
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
       return jsonResponse({ success: false, message: `不支持的文件类型: ${ext}，允许: ${ALLOWED_EXTENSIONS.join(', ')}` }, 400, corsHeaders)
@@ -456,16 +447,50 @@ async function uploadAttachment(request, env, corsHeaders, params) {
 
     const timestamp = Date.now()
     const ossKey = `resumes/${candidateId}/${timestamp}_${fileName}`
-
-    // 上传到阿里云 OSS
-    const arrayBuffer = await file.arrayBuffer()
-    await oss.put(ossKey, arrayBuffer, file.type)
-
     const fileType = ext.replace('.', '')
+    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300)
+
+    const quota = await buildUploadQuota(env, user)
+    return jsonResponse({
+      success: true,
+      data: {
+        uploadUrl: signedUrl,
+        ossKey,
+        fileName,
+        fileType,
+        fileSize: parseInt(url.searchParams.get('file_size') || '0', 10) || null
+      },
+      quota
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+async function confirmUpload(request, env, corsHeaders, params) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const candidateId = params.id
+    const body = await request.json()
+    const { ossKey, fileName, fileType, fileSize } = body
+    if (!ossKey || !fileName) {
+      return jsonResponse({ success: false, message: '参数不完整' }, 400, corsHeaders)
+    }
+
+    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(candidateId).first()
+    if (!candidate) {
+      return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
+    }
+    if (!(await checkPositionPermission(env, user, candidate.position))) {
+      return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
+    }
+
     const result = await env.DB.prepare(`
       INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size)
       VALUES (?, ?, ?, ?, ?)
-    `).bind(candidateId, fileName, fileType, ossKey, file.size).run()
+    `).bind(candidateId, fileName, fileType || '', ossKey, fileSize || 0).run()
 
     const attachment = await env.DB.prepare(
       'SELECT id, candidate_id, file_name, file_type, file_size, created_at FROM talent_attachments WHERE id = ?'
@@ -478,6 +503,11 @@ async function uploadAttachment(request, env, corsHeaders, params) {
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
+}
+
+// 旧的 Worker 代理上传接口保留作为兼容性占位（当前前端已不再使用）
+async function uploadAttachment(request, env, corsHeaders, params) {
+  return jsonResponse({ success: false, message: '请使用直传接口：GET /api/talent/candidates/:id/attachments/upload-url', status: 'use_direct_upload' }, 410, corsHeaders)
 }
 
 async function listAttachments(request, env, corsHeaders, params) {
@@ -524,7 +554,7 @@ async function getUploadQuota(request, env, corsHeaders) {
   }
 }
 
-async function downloadAttachment(request, env, corsHeaders, params) {
+async function getDownloadUrl(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
@@ -546,19 +576,15 @@ async function downloadAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无权下载该附件' }, 403, corsHeaders)
     }
 
-    const ossRes = await oss.get(attachment.r2_key)
-    if (!ossRes) {
-      return jsonResponse({ success: false, message: '文件已被删除' }, 404, corsHeaders)
-    }
-
-    const headers = new Headers(ossRes.headers)
-    headers.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(attachment.file_name)}`)
-    headers.set('Access-Control-Allow-Origin', corsHeaders['Access-Control-Allow-Origin'] || '*')
-
-    return new Response(ossRes.body, { headers })
+    const signedUrl = await oss.getSignedUrl('GET', attachment.r2_key, 300)
+    return jsonResponse({ success: true, data: { url: signedUrl, fileName: attachment.file_name } }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
+}
+
+async function downloadAttachment(request, env, corsHeaders, params) {
+  return jsonResponse({ success: false, message: '请使用直链接口：GET /api/talent/attachments/:id/download-url', status: 'use_direct_download' }, 410, corsHeaders)
 }
 
 async function previewAttachment(request, env, corsHeaders, params) {
@@ -730,8 +756,11 @@ export const routes = [
 
   { method: 'POST',  path: '/api/talent/candidates/:id/attachments',          handler: uploadAttachment },
   { method: 'GET',   path: '/api/talent/candidates/:id/attachments',          handler: listAttachments },
+  { method: 'GET',   path: '/api/talent/candidates/:id/attachments/upload-url', handler: getUploadUrl },
+  { method: 'POST',  path: '/api/talent/candidates/:id/attachments/confirm',  handler: confirmUpload },
   { method: 'DELETE',path: '/api/talent/candidates/:id/attachments/:attachId',handler: deleteAttachment },
   { method: 'GET',   path: '/api/talent/attachments/:id/download',            handler: downloadAttachment },
+  { method: 'GET',   path: '/api/talent/attachments/:id/download-url',        handler: getDownloadUrl },
   { method: 'GET',   path: '/api/talent/attachments/:id/preview',             handler: previewAttachment },
   { method: 'GET',   path: '/api/talent/upload-quota',                        handler: getUploadQuota },
 ]

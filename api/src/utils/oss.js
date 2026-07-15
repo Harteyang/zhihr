@@ -119,4 +119,56 @@ export class OSSClient {
       throw err
     }
   }
+
+  /**
+   * 生成 OSS 临时签名 URL（用于浏览器直传/直链）
+   * @param {string} method HTTP 方法（GET/PUT/DELETE）
+   * @param {string} key 对象键
+   * @param {number} expiresIn 过期时间（秒），默认 300 秒
+   * @param {Object} extraQuery 额外查询参数
+   */
+  async getSignedUrl(method, key, expiresIn = 300, extraQuery = {}) {
+    const timestamp = Math.floor(Date.now() / 1000)
+    const expires = timestamp + expiresIn
+
+    // 构造待签名字符串
+    const verb = method.toUpperCase()
+    const contentMd5 = ''
+    const contentType = ''
+    const date = '' // 签名 URL 不使用 Date
+
+    // 将 extraQuery 和签名参数合并，按字典序排序
+    const queryParams = {
+      ...extraQuery,
+      OSSAccessKeyId: this.accessKeyId,
+      Expires: String(expires)
+    }
+    const sortedKeys = Object.keys(queryParams).sort()
+    const canonicalizedQuery = sortedKeys.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`).join('&')
+
+    const canonicalizedResource = `/${this.bucket}/${key}`
+    const stringToSign = [
+      verb,
+      contentMd5,
+      contentType,
+      date,
+      canonicalizedResource
+    ].join('\n')
+
+    const encoder = new TextEncoder()
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', encoder.encode(this.accessKeySecret),
+      { name: 'HMAC', hash: 'SHA-1' },
+      false, ['sign']
+    )
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(stringToSign))
+    const signBytes = new Uint8Array(signature)
+    let binary = ''
+    for (let i = 0; i < signBytes.length; i++) {
+      binary += String.fromCharCode(signBytes[i])
+    }
+    const signatureEncoded = encodeURIComponent(btoa(binary))
+
+    return `https://${this.endpoint}/${encodeURIComponent(key)}?${canonicalizedQuery}&Signature=${signatureEncoded}`
+  }
 }

@@ -54,6 +54,9 @@ export const deleteExperience = (candidateId, expId) => api.delete(`/talent/cand
 export const getAttachments = (candidateId) => api.get(`/talent/candidates/${candidateId}/attachments`)
 export const uploadAttachment = (candidateId, formData) => api.post(`/talent/candidates/${candidateId}/attachments`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
 export const deleteAttachment = (candidateId, attachId) => api.delete(`/talent/candidates/${candidateId}/attachments/${attachId}`)
+export const getUploadUrl = (candidateId, params) => api.get(`/talent/candidates/${candidateId}/attachments/upload-url`, { params })
+export const confirmUpload = (candidateId, data) => api.post(`/talent/candidates/${candidateId}/attachments/confirm`, data)
+export const getDownloadUrl = (attachId) => api.get(`/talent/attachments/${attachId}/download-url`)
 export const downloadUrl = (attachId) => `${baseURL}/talent/attachments/${attachId}/download`
 export const previewAttachment = (attachId) => api.get(`/talent/attachments/${attachId}/preview`)
 export const fetchAttachmentBlob = (attachId) => api.get(`/talent/attachments/${attachId}/download`, { responseType: 'blob' })

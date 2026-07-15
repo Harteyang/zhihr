@@ -80,13 +80,10 @@
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
             <el-upload
               :auto-upload="true"
-              :action="uploadAction"
+              action="#"
               :show-file-list="false"
-              :on-success="handleUploadSuccess"
-              :on-error="handleUploadError"
-              :headers="uploadHeaders"
+              :http-request="handleUploadRequest"
               :disabled="quota && !quota.unlimited && quota.remaining <= 0"
-              name="file"
             >
               <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传附件</el-button>
             </el-upload>
@@ -136,7 +133,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
-import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, fetchAttachmentBlob, getUploadQuota } from '../api'
+import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
 import { getStatusLabel, getStatusType } from '../utils/constants'
 
@@ -156,15 +153,50 @@ const previewFileName = ref('')
 // 上传配额
 const quota = ref(null)
 
-const uploadAction = computed(() => {
-  const base = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip/api'
-  return `${base}/talent/candidates/${route.params.id}/attachments`
-})
+async function handleUploadRequest(options) {
+  const { file, onProgress, onSuccess, onError } = options
+  try {
+    // 1. 从 Worker 获取 OSS 预签名上传 URL
+    const urlRes = await getUploadUrl(route.params.id, {
+      file_name: file.name,
+      file_size: file.size
+    })
+    const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
 
-const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-})
+    // 2. 使用 XMLHttpRequest 直传到 OSS，支持进度
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('PUT', uploadUrl, true)
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+      xhr.upload.onprogress = (e) => {
+        if (e.total > 0) {
+          onProgress({ percent: Math.round((e.loaded / e.total) * 100) })
+        }
+      }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve()
+        } else {
+          reject(new Error(`OSS 上传失败 (${xhr.status})`))
+        }
+      }
+      xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+      xhr.send(file)
+    })
+
+    // 3. 通知后端写入数据库
+    const confirmRes = await confirmUpload(route.params.id, {
+      ossKey,
+      fileName,
+      fileType,
+      fileSize: fileSize || file.size
+    })
+
+    onSuccess(confirmRes.data)
+  } catch (e) {
+    onError(e)
+  }
+}
 
 const parsedSkills = computed(() => {
   if (!candidate.value.skills) return []
@@ -209,10 +241,9 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：拉取 Blob 并通过 iframe 内嵌预览
-      const res = await fetchAttachmentBlob(row.id)
-      const blob = new Blob([res.data], { type: 'application/pdf' })
-      previewBlobUrl.value = URL.createObjectURL(blob)
+      // PDF：获取 OSS 直链并通过 iframe 内嵌预览
+      const res = await getDownloadUrl(row.id)
+      previewBlobUrl.value = res.data.data.url
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx') {
       // Word：调用预览接口拿到 HTML 后渲染
@@ -251,16 +282,15 @@ function closePreview() {
 
 async function handleDownload(row) {
   try {
-    const res = await fetchAttachmentBlob(row.id)
-    const blob = new Blob([res.data])
-    const url = URL.createObjectURL(blob)
+    const res = await getDownloadUrl(row.id)
+    const { url, fileName } = res.data.data
     const a = document.createElement('a')
     a.href = url
-    a.download = row.file_name || 'attachment'
+    a.download = fileName || row.file_name || 'attachment'
+    a.target = '_blank'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   } catch (e) {
     ElMessage.error(e.response?.data?.message || '下载失败')
   }
