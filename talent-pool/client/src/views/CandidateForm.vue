@@ -3,7 +3,7 @@
     <el-page-header @back="$router.back()" :content="isEdit ? '编辑候选人' : '新增候选人'" style="margin-bottom: 20px;" />
 
     <el-card v-if="!isEdit" shadow="never" style="margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
         <el-upload
           ref="uploadRef"
           :auto-upload="false"
@@ -14,7 +14,20 @@
         >
           <el-button type="primary" plain>上传简历文件解析</el-button>
         </el-upload>
-        <span style="color: var(--el-text-color-secondary); font-size: 13px;">支持 PDF、Word 格式，解析结果自动填充表单</span>
+        <el-button
+          v-if="selectedFile"
+          type="warning"
+          plain
+          :loading="aiParsing"
+          :disabled="!selectedFile"
+          @click="handleAiParse"
+        >
+          <el-icon><MagicStick /></el-icon> AI 解析
+        </el-button>
+        <span style="color: var(--el-text-color-secondary); font-size: 13px;">
+          支持 PDF、Word 格式，解析结果自动填充表单
+          <template v-if="selectedFile">（已选择文件：{{ selectedFile.name }}）</template>
+        </span>
       </div>
     </el-card>
 
@@ -135,9 +148,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
+import { Plus, WarningFilled, CircleCloseFilled, MagicStick } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCandidate, createCandidate, updateCandidate, parseResume, getUploadUrl, confirmUpload } from '../api'
+import { getCandidate, createCandidate, updateCandidate, parseResume, aiParseResume, getUploadUrl, confirmUpload } from '../api'
 import { addExperience as addExpApi, updateExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
@@ -149,6 +162,7 @@ const isEdit = computed(() => !!route.params.id)
 const formRef = ref(null)
 const uploadRef = ref(null)
 const saving = ref(false)
+const aiParsing = ref(false)
 const fieldConfidence = ref({})
 const selectedFile = ref(null)
 
@@ -239,6 +253,55 @@ async function handleFileChange(uploadFile) {
   } finally {
     // 重置上传组件内部文件列表，允许连续上传多个文件
     uploadRef.value?.clearFiles()
+  }
+}
+
+async function handleAiParse() {
+  if (!selectedFile.value) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+  aiParsing.value = true
+  const formData = new FormData()
+  formData.append('file', selectedFile.value)
+  try {
+    ElMessage.info('正在调用 AI 解析简历...', { duration: 0, key: 'aiParseMsg' })
+    const res = await aiParseResume(formData)
+    const data = res.data.data || res.data
+
+    // 填充表单
+    if (data.name) form.name = data.name
+    if (data.phone) form.phone = data.phone
+    if (data.email) form.email = data.email
+    if (data.position) form.position = data.position
+    if (data.education) {
+      const validEducation = ['大专', '本科', '硕士', '博士', '其他']
+      form.education = validEducation.includes(data.education) ? data.education : data.education
+    }
+    if (data.school) form.school = data.school
+    if (data.major) form.major = data.major
+    if (data.experience_years !== null && data.experience_years !== undefined) {
+      form.experience_years = data.experience_years
+    }
+    if (data.summary) form.summary = data.summary
+    if (Array.isArray(data.skills)) form.skills = data.skills
+
+    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
+      form.experiences = data.experiences.map(exp => ({
+        company: exp.company || '',
+        title: exp.title || '',
+        start_date: exp.start_date || '',
+        end_date: exp.end_date || '',
+        description: exp.description || ''
+      }))
+    }
+
+    ElMessage.success({ content: 'AI 解析完成，请确认并补充信息', key: 'aiParseMsg' })
+  } catch (e) {
+    const errMsg = e?.response?.data?.message || 'AI 解析失败，请稍后重试'
+    ElMessage.warning(errMsg)
+  } finally {
+    aiParsing.value = false
   }
 }
 

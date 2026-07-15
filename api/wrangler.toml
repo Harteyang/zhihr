@@ -30,6 +30,9 @@ OSS_BUCKET = "jianliku-yq"
 OSS_REGION = "cn-chengdu"
 # OSS_ACCESS_KEY_SECRET 通过 wrangler secret put OSS_ACCESS_KEY_SECRET 设置
 
+# Agnes AI 配置（简历 AI 解析）
+AI_API_KEY = "sk-7RPNHYYFoiOrQ9JjAmqBQPy332xPKVe6o82TQCYcUUu0HPtT"
+
 # JWT_SECRET 必须通过 wrangler secret put JWT_SECRET 设置
 # ADMIN_SECRET 必须通过 wrangler secret put ADMIN_SECRET 设置
 # 切勿在此文件中写入密钥

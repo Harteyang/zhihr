@@ -669,6 +669,124 @@ async function parseResume(request, env, corsHeaders) {
   }
 }
 
+// AI 简历解析（调用 Agnes AI 模型，适用于本地解析不准确的情况）
+const AI_API_BASE = 'https://apihub.agnes-ai.com/v1'
+const AI_MODEL = 'agnes-2.0-flash'
+
+const AI_SYSTEM_PROMPT = `你是一个专业的简历信息提取助手。请从以下简历文本中提取候选人信息，并以严格的JSON格式返回。
+
+必须返回以下结构的JSON（不要包含任何markdown包裹标记，只返回纯JSON）：
+{
+  "name": "姓名（字符串）",
+  "phone": "手机号（字符串，如13800138000）",
+  "email": "邮箱地址（字符串）",
+  "position": "求职意向/目标岗位（字符串）",
+  "education": "最高学历（大专/本科/硕士/博士/其他）",
+  "school": "毕业院校（字符串）",
+  "major": "专业（字符串）",
+  "experience_years": "工作年限（数字，整数）",
+  "skills": ["技能1", "技能2"],
+  "summary": "自我评价或备注（字符串）",
+  "experiences": [
+    {
+      "company": "公司名称",
+      "title": "职位名称",
+      "start_date": "开始年月，格式YYYY-MM",
+      "end_date": "结束年月，格式YYYY-MM，或至今",
+      "description": "工作描述"
+    }
+  ]
+}
+
+注意事项：
+1. name、phone、email、position 如果无法识别请返回null
+2. education 只能从：大专、本科、硕士、博士、其他 中选择
+3. experience_years 根据工作经历计算，如果无法确定返回null
+4. skills 格式化为标准技能名称列表
+5. experiences 按照时间倒序排列
+6. 所有字段都必须存在，不确定的字段用null或空数组替代`
+
+async function aiParseResume(request, env, corsHeaders) {
+  const { error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const formData = await request.formData()
+    const file = formData.get('file')
+    if (!file || !(file instanceof File)) {
+      return jsonResponse({ success: false, message: '请选择文件' }, 400, corsHeaders)
+    }
+
+    // 1. 先使用本地解析器提取文本
+    const arrayBuffer = await file.arrayBuffer()
+    const parsed = await parseFile(file.name, arrayBuffer)
+    const resumeText = parsed.raw_text || ''
+
+    if (!resumeText || resumeText.trim().length < 10) {
+      return jsonResponse({ success: false, message: '无法从文件中提取足够文本，请确认文件内容是否正常' }, 400, corsHeaders)
+    }
+
+    // 2. 调用 Agnes AI 解析
+    const aiApiKey = env.AI_API_KEY
+    if (!aiApiKey) {
+      return jsonResponse({ success: false, message: 'AI 解析服务未配置（缺少 API Key）' }, 503, corsHeaders)
+    }
+
+    const aiResponse = await fetch(`${AI_API_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${aiApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        messages: [
+          { role: 'system', content: AI_SYSTEM_PROMPT },
+          { role: 'user', content: `请解析以下简历内容，提取结构化信息：\n\n${resumeText}` }
+        ],
+        temperature: 0.1,
+        max_tokens: 4096
+      })
+    })
+
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text().catch(() => '')
+      throw new Error(`AI 模型调用失败 (${aiResponse.status}): ${errText}`)
+    }
+
+    const aiData = await aiResponse.json()
+    const content = aiData?.choices?.[0]?.message?.content
+    if (!content) {
+      throw new Error('AI 模型返回内容为空')
+    }
+
+    // 3. 解析 AI 返回的 JSON
+    // 处理可能的 markdown 包裹
+    let cleanContent = content.trim()
+    const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (jsonMatch) {
+      cleanContent = jsonMatch[1].trim()
+    }
+
+    let aiResult
+    try {
+      aiResult = JSON.parse(cleanContent)
+    } catch {
+      // 尝试从内容中提取 JSON 对象
+      const objMatch = cleanContent.match(/\{[\s\S]*\}/)
+      if (objMatch) {
+        aiResult = JSON.parse(objMatch[0])
+      } else {
+        throw new Error('AI 返回格式无法解析为 JSON')
+      }
+    }
+
+    return jsonResponse({ success: true, data: aiResult }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
 async function batchImport(request, env, corsHeaders) {
   const { user, error } = await requireAdmin(request, env, corsHeaders)
   if (error) return error
@@ -750,6 +868,7 @@ export const routes = [
   { method: 'GET',  path: '/api/talent/candidates',                   handler: listCandidates },
   { method: 'GET',  path: '/api/talent/candidates/filter-options',    handler: getFilterOptions },
   { method: 'POST', path: '/api/talent/candidates/parse-resume',      handler: parseResume },
+  { method: 'POST', path: '/api/talent/candidates/ai-parse-resume',   handler: aiParseResume },
   { method: 'POST', path: '/api/talent/candidates/import',            handler: batchImport },
   { method: 'GET',  path: '/api/talent/candidates/import/template',   handler: downloadTemplate },
   { method: 'GET',  path: '/api/talent/candidates/:id',               handler: getCandidate },

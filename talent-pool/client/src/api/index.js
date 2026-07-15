@@ -43,6 +43,7 @@ export const updateCandidate = (id, data) => api.put(`/talent/candidates/${id}`,
 export const updateCandidateStatus = (id, status) => api.patch(`/talent/candidates/${id}/status`, { status })
 export const deleteCandidate = (id) => api.delete(`/talent/candidates/${id}`)
 export const parseResume = (formData) => api.post('/talent/candidates/parse-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+export const aiParseResume = (formData) => api.post('/talent/candidates/ai-parse-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120000 })
 
 // 工作经历
 export const getExperiences = (candidateId) => api.get(`/talent/candidates/${candidateId}/experiences`)
