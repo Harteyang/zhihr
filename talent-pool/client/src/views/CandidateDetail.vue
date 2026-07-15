@@ -81,10 +81,12 @@
             <el-upload
               :auto-upload="true"
               action="#"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+              accept=".pdf,.doc,.docx"
               :show-file-list="false"
               :http-request="handleUploadRequest"
-              :on-error="handleUploadError"
+              :before-upload="beforeUpload"
+              @success="handleUploadSuccess"
+              @error="handleUploadError"
               :disabled="quota && !quota.unlimited && quota.remaining <= 0"
             >
               <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传简历附件</el-button>
@@ -154,6 +156,18 @@ const previewFileName = ref('')
 
 // 上传配额
 const quota = ref(null)
+
+// 文件大小限制：10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+// 上传前校验（Element Plus before-upload 返回 false 阻止上传）
+function beforeUpload(file) {
+  if (file.size > MAX_FILE_SIZE) {
+    ElMessage.error(`文件大小不能超过 ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB（当前 ${(file.size / 1024 / 1024).toFixed(2)}MB）`)
+    return false
+  }
+  return true
+}
 
 async function handleUploadRequest(options) {
   const { file, onProgress, onSuccess, onError } = options

@@ -189,8 +189,18 @@ function confidenceTip(field) {
   return ''
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
 async function handleFileChange(uploadFile) {
   if (!uploadFile.raw) return
+
+  // 文件大小校验
+  if (uploadFile.raw.size > MAX_FILE_SIZE) {
+    ElMessage.error(`文件大小不能超过 ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB（当前 ${(uploadFile.raw.size / 1024 / 1024).toFixed(2)}MB）`)
+    uploadRef.value?.clearFiles()
+    return
+  }
+
   selectedFile.value = uploadFile.raw
   const formData = new FormData()
   formData.append('file', uploadFile.raw)
@@ -269,11 +279,19 @@ async function handleSubmit() {
         })
         const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
 
+        // 带进度提示的上传
+        const uploadProgressMsg = ElMessage.info('正在上传简历附件...', { duration: 0 })
         const xhr = new XMLHttpRequest()
         await new Promise((resolve, reject) => {
           xhr.open('PUT', uploadUrl, true)
           // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
           xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+          xhr.upload.onprogress = (e) => {
+            if (e.total > 0) {
+              const pct = Math.round((e.loaded / e.total) * 100)
+              uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
+            }
+          }
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) resolve()
             else reject(new Error(`OSS 上传失败 (${xhr.status})`))
@@ -281,6 +299,7 @@ async function handleSubmit() {
           xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
           xhr.send(file)
         })
+        uploadProgressMsg.close()
 
         await confirmUpload(candidateId, {
           ossKey,
@@ -288,6 +307,7 @@ async function handleSubmit() {
           fileType,
           fileSize: fileSize || file.size
         })
+        ElMessage.success('简历附件上传成功')
       } catch (uploadErr) {
         const errMsg = uploadErr.response?.data?.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'
         ElMessage.warning(errMsg)

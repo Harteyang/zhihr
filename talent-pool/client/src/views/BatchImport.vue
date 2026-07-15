@@ -169,7 +169,14 @@ async function handleImport() {
     importResult.value = {
       success: data.success || 0,
       failed: data.failed || 0,
-      errors: data.errors || []
+      errors: (data.errors || []).map(errMsg => {
+        // 后端返回 "第 N 行: 错误描述" 格式的字符串，解析为结构化对象
+        const match = String(errMsg).match(/^第\s*(\d+)\s*行[：:]?\s*(.*)/)
+        if (match) {
+          return { row: parseInt(match[1], 10), name: '', error: match[2] }
+        }
+        return { row: '-', name: '', error: errMsg }
+      })
     }
     step.value = 3
     if (data.success > 0) {

@@ -445,6 +445,15 @@ async function getUploadUrl(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: `不支持的文件类型: ${ext}，允许: ${ALLOWED_EXTENSIONS.join(', ')}` }, 400, corsHeaders)
     }
 
+    // 验证文件大小（管理员不受限制，但文件超过最大值仍拒绝）
+    const fileSize = parseInt(url.searchParams.get('file_size') || '0', 10)
+    if (fileSize > MAX_FILE_SIZE) {
+      return jsonResponse({
+        success: false,
+        message: `文件大小不能超过 ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB（当前 ${Math.round(fileSize / 1024 / 1024 * 100) / 100}MB）`
+      }, 400, corsHeaders)
+    }
+
     const timestamp = Date.now()
     const ossKey = `resumes/${candidateId}/${timestamp}_${fileName}`
     const fileType = ext.replace('.', '')
@@ -458,7 +467,7 @@ async function getUploadUrl(request, env, corsHeaders, params) {
         ossKey,
         fileName,
         fileType,
-        fileSize: parseInt(url.searchParams.get('file_size') || '0', 10) || null
+        fileSize: fileSize || null
       },
       quota
     }, 200, corsHeaders)
