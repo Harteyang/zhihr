@@ -81,11 +81,13 @@
             <el-upload
               :auto-upload="true"
               action="#"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
               :show-file-list="false"
               :http-request="handleUploadRequest"
+              :on-error="handleUploadError"
               :disabled="quota && !quota.unlimited && quota.remaining <= 0"
             >
-              <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传附件</el-button>
+              <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传简历附件</el-button>
             </el-upload>
             <span v-if="quota && quota.unlimited" style="font-size: 12px; color: var(--el-text-color-secondary);">
               管理员账户：上传不受限制
