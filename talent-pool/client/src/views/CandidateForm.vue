@@ -137,7 +137,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCandidate, createCandidate, updateCandidate, parseResume, uploadAttachment } from '../api'
+import { getCandidate, createCandidate, updateCandidate, parseResume, getUploadUrl, confirmUpload } from '../api'
 import { addExperience as addExpApi, updateExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
@@ -258,12 +258,34 @@ async function handleSubmit() {
       }
     }
 
-    // 创建候选人后同步上传简历附件
+    // 创建候选人后同步上传简历附件（OSS 直传）
     if (!isEdit.value && selectedFile.value) {
       try {
-        const attachFormData = new FormData()
-        attachFormData.append('file', selectedFile.value)
-        await uploadAttachment(candidateId, attachFormData)
+        const file = selectedFile.value
+        const urlRes = await getUploadUrl(candidateId, {
+          file_name: file.name,
+          file_size: file.size
+        })
+        const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
+
+        const xhr = new XMLHttpRequest()
+        await new Promise((resolve, reject) => {
+          xhr.open('PUT', uploadUrl, true)
+          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) resolve()
+            else reject(new Error(`OSS 上传失败 (${xhr.status})`))
+          }
+          xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+          xhr.send(file)
+        })
+
+        await confirmUpload(candidateId, {
+          ossKey,
+          fileName,
+          fileType,
+          fileSize: fileSize || file.size
+        })
       } catch (uploadErr) {
         const errMsg = uploadErr.response?.data?.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'
         ElMessage.warning(errMsg)
