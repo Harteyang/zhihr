@@ -147,10 +147,11 @@ export class OSSClient {
     const sortedKeys = Object.keys(queryParams).sort()
     const canonicalizedQuery = sortedKeys.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`).join('&')
 
-    // OSS 要求 URL 路径和 canonicalizedResource 使用一致的编码 key
-    // 空格编码为 %20（与 encodeURIComponent 一致），保留路径分隔符 /
+    // OSS 预签名 URL 的 URL 路径需要使用 URL 编码
     const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/')
-    const canonicalizedResource = `/${this.bucket}/${encodedKey}`
+    // canonicalizedResource 必须使用原始 key（未编码），OSS 会解码 URL 路径后与签名对比
+    // 如果使用 encodedKey，当文件名包含中文等非 ASCII 字符时代码签名与 OSS 计算值不匹配，返回 403
+    const canonicalizedResource = `/${this.bucket}/${key}`
     const stringToSign = [
       verb,
       contentMd5,

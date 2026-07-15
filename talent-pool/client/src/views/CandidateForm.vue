@@ -281,25 +281,28 @@ async function handleSubmit() {
 
         // 带进度提示的上传
         const uploadProgressMsg = ElMessage.info('正在上传简历附件...', { duration: 0 })
-        const xhr = new XMLHttpRequest()
-        await new Promise((resolve, reject) => {
-          xhr.open('PUT', uploadUrl, true)
-          // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
-          xhr.setRequestHeader('Content-Type', 'application/octet-stream')
-          xhr.upload.onprogress = (e) => {
-            if (e.total > 0) {
-              const pct = Math.round((e.loaded / e.total) * 100)
-              uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
+        try {
+          const xhr = new XMLHttpRequest()
+          await new Promise((resolve, reject) => {
+            xhr.open('PUT', uploadUrl, true)
+            // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+            xhr.upload.onprogress = (e) => {
+              if (e.total > 0) {
+                const pct = Math.round((e.loaded / e.total) * 100)
+                uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
+              }
             }
-          }
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) resolve()
-            else reject(new Error(`OSS 上传失败 (${xhr.status})`))
-          }
-          xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
-          xhr.send(file)
-        })
-        uploadProgressMsg.close()
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) resolve()
+              else reject(new Error(`OSS 上传失败 (${xhr.status})`))
+            }
+            xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+            xhr.send(file)
+          })
+        } finally {
+          uploadProgressMsg.close()
+        }
 
         await confirmUpload(candidateId, {
           ossKey,
