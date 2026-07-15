@@ -146,7 +146,10 @@ export class OSSClient {
     const sortedKeys = Object.keys(queryParams).sort()
     const canonicalizedQuery = sortedKeys.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`).join('&')
 
-    const canonicalizedResource = `/${this.bucket}/${key}`
+    // OSS 要求 URL 路径和 canonicalizedResource 使用一致的编码 key
+    // 空格编码为 %20（与 encodeURIComponent 一致），保留路径分隔符 /
+    const encodedKey = key.split('/').map(segment => encodeURIComponent(segment)).join('/')
+    const canonicalizedResource = `/${this.bucket}/${encodedKey}`
     const stringToSign = [
       verb,
       contentMd5,
@@ -169,6 +172,6 @@ export class OSSClient {
     }
     const signatureEncoded = encodeURIComponent(btoa(binary))
 
-    return `https://${this.endpoint}/${encodeURIComponent(key)}?${canonicalizedQuery}&Signature=${signatureEncoded}`
+    return `https://${this.endpoint}/${encodedKey}?${canonicalizedQuery}&Signature=${signatureEncoded}`
   }
 }
