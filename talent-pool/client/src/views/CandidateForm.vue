@@ -80,7 +80,7 @@
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="目标岗位">
+            <el-form-item label="目标岗位" prop="position">
               <el-input v-model="form.position" placeholder="期望职位" :class="confidenceClass('position')">
                 <template #suffix>
                   <el-tooltip v-if="confidenceIcon('position')" :content="confidenceTip('position')" placement="top">
@@ -174,6 +174,7 @@ const form = reactive({
 
 const rules = {
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  position: [{ required: true, message: '请输入岗位', trigger: 'blur' }],
   phone: [{ pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }],
   email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }]
 }

@@ -30,11 +30,14 @@ async function listCandidates(request, env, corsHeaders) {
     const params = []
 
     if (allowedPositions !== null) {
+      // 普通用户：只能查看自己创建的，或被分配了对应岗位权限的候选人
       if (allowedPositions.length === 0) {
-        return jsonResponse({ success: true, data: [], total: 0, page, pageSize }, 200, corsHeaders)
+        conditions.push('created_by = ?')
+        params.push(user.userId)
+      } else {
+        conditions.push(`(created_by = ? OR position IN (${allowedPositions.map(() => '?').join(',')}))`)
+        params.push(user.userId, ...allowedPositions)
       }
-      conditions.push(`position IN (${allowedPositions.map(() => '?').join(',')})`)
-      params.push(...allowedPositions)
     }
 
     const keyword = url.searchParams.get('keyword')
@@ -125,7 +128,7 @@ async function getCandidate(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
 
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -152,25 +155,22 @@ async function createCandidate(request, env, corsHeaders) {
 
   try {
     const body = await request.json()
-    if (!body.name) {
+    if (!body.name || !body.name.trim()) {
       return jsonResponse({ success: false, message: '姓名为必填项' }, 400, corsHeaders)
     }
-
-    if (user.role !== 'admin') {
-      const allowedPositions = await getUserPositions(env, user.userId, user.role)
-      if (body.position && allowedPositions !== null && !allowedPositions.includes(body.position)) {
-        return jsonResponse({ success: false, message: '无权创建该岗位的候选人' }, 403, corsHeaders)
-      }
+    if (!body.position || !body.position.trim()) {
+      return jsonResponse({ success: false, message: '岗位为必填项' }, 400, corsHeaders)
     }
 
+    // 创建候选人无需岗位权限鉴权
     const skillsJson = Array.isArray(body.skills) ? JSON.stringify(body.skills) : (body.skills || null)
     const result = await env.DB.prepare(`
-      INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      body.name, body.phone || null, body.email || null, body.position || null,
+      body.name.trim(), body.phone || null, body.email || null, body.position.trim(),
       skillsJson, body.education || null, body.experience_years || null,
-      body.status || 'pending', body.source || null, body.summary || null
+      body.status || 'pending', body.source || null, body.summary || null, user.userId
     ).run()
 
     const newId = result.meta.last_row_id
@@ -193,7 +193,7 @@ async function updateCandidate(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
 
-    if (!(await checkPositionPermission(env, user, existing.position))) {
+    if (existing.created_by !== user.userId && !(await checkPositionPermission(env, user, existing.position))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -290,11 +290,11 @@ async function listExperiences(request, env, corsHeaders, params) {
   if (error) return error
 
   try {
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(params.id).first()
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(params.id).first()
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -312,11 +312,11 @@ async function addExperience(request, env, corsHeaders, params) {
   if (error) return error
 
   try {
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(params.id).first()
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(params.id).first()
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -337,10 +337,18 @@ async function addExperience(request, env, corsHeaders, params) {
 }
 
 async function updateExperience(request, env, corsHeaders, params) {
-  const { error } = await requireAuth(request, env, corsHeaders)
+  const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
   try {
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(params.id).first()
+    if (!candidate) {
+      return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
+    }
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+      return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
+    }
+
     const existing = await env.DB.prepare(
       'SELECT * FROM talent_work_experiences WHERE id = ? AND candidate_id = ?'
     ).bind(params.expId, params.id).first()
@@ -369,10 +377,18 @@ async function updateExperience(request, env, corsHeaders, params) {
 }
 
 async function deleteExperience(request, env, corsHeaders, params) {
-  const { error } = await requireAuth(request, env, corsHeaders)
+  const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
   try {
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(params.id).first()
+    if (!candidate) {
+      return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
+    }
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+      return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
+    }
+
     await env.DB.prepare('DELETE FROM talent_work_experiences WHERE id = ? AND candidate_id = ?').bind(params.expId, params.id).run()
     return jsonResponse({ success: true, message: '删除成功' }, 200, corsHeaders)
   } catch (err) {
@@ -430,11 +446,11 @@ async function getUploadUrl(request, env, corsHeaders, params) {
 
   try {
     const candidateId = params.id
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(candidateId).first()
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(candidateId).first()
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -488,11 +504,11 @@ async function confirmUpload(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '参数不完整' }, 400, corsHeaders)
     }
 
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(candidateId).first()
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(candidateId).first()
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -524,11 +540,11 @@ async function listAttachments(request, env, corsHeaders, params) {
   if (error) return error
 
   try {
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(params.id).first()
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(params.id).first()
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (!(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -580,8 +596,8 @@ async function getDownloadUrl(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
     }
 
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
-    if (candidate && !(await checkPositionPermission(env, user, candidate.position))) {
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
+    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权下载该附件' }, 403, corsHeaders)
     }
 
@@ -613,8 +629,8 @@ async function previewAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
     }
 
-    const candidate = await env.DB.prepare('SELECT position FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
-    if (candidate && !(await checkPositionPermission(env, user, candidate.position))) {
+    const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
+    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
       return jsonResponse({ success: false, message: '无权预览该附件' }, 403, corsHeaders)
     }
 
@@ -810,7 +826,7 @@ async function batchImport(request, env, corsHeaders) {
 
     for (let i = 0; i < candidates.length; i++) {
       const row = candidates[i]
-      if (!row.name) {
+      if (!row.name || !row.name.trim()) {
         results.failed++
         results.errors.push(`第 ${i + 2} 行: 姓名为空，已跳过`)
         continue
@@ -822,12 +838,12 @@ async function batchImport(request, env, corsHeaders) {
         const expYears = row.experience_years ? parseInt(row.experience_years, 10) : null
 
         await env.DB.prepare(`
-          INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)
+          INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
         `).bind(
-          row.name, row.phone || null, row.email || null, row.position || null,
+          row.name.trim(), row.phone || null, row.email || null, row.position || null,
           Array.isArray(skills) ? JSON.stringify(skills) : null,
-          row.education || null, expYears, row.source || null, row.summary || null
+          row.education || null, expYears, row.source || null, row.summary || null, user.userId
         ).run()
         results.success++
       } catch (err) {

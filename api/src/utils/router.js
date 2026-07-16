@@ -273,7 +273,10 @@ async function getUserPositions(env, userId, role) {
   const rows = await env.DB.prepare(
     'SELECT position FROM talent_user_positions WHERE user_id = ?'
   ).bind(userId).all()
-  return rows.results.map(r => r.position)
+  const positions = rows.results.map(r => r.position)
+  // '*' 表示全部岗位权限，等效于管理员
+  if (positions.includes('*')) return null
+  return positions
 }
 
 async function logOperation(env, user, action, resourceType, resourceId, detail, ipAddress) {

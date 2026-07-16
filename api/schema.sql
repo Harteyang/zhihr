@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS talent_candidates (
     status TEXT DEFAULT 'pending',
     source TEXT,
     summary TEXT,
+    created_by TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
@@ -119,6 +120,7 @@ CREATE TABLE IF NOT EXISTS talent_attachments (
 CREATE INDEX IF NOT EXISTS idx_talent_candidates_status ON talent_candidates(status);
 CREATE INDEX IF NOT EXISTS idx_talent_candidates_position ON talent_candidates(position);
 CREATE INDEX IF NOT EXISTS idx_talent_candidates_name ON talent_candidates(name);
+CREATE INDEX IF NOT EXISTS idx_talent_candidates_created_by ON talent_candidates(created_by);
 CREATE INDEX IF NOT EXISTS idx_talent_work_exp_candidate ON talent_work_experiences(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_talent_attachments_candidate ON talent_attachments(candidate_id);
 

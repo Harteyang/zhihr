@@ -26,10 +26,11 @@
 
         <el-form-item v-if="form.role === 'user'" label="岗位权限">
           <el-select v-model="form.positions" multiple filterable allow-create default-first-option placeholder="选择或输入岗位" style="width: 100%;">
+            <el-option label="全部岗位" value="*" />
             <el-option v-for="p in availablePositions" :key="p" :label="p" :value="p" />
           </el-select>
           <div style="color: var(--el-text-color-secondary); font-size: 12px; margin-top: 4px;">
-            限制该用户只能查看对应岗位的候选人
+            限制该用户只能查看对应岗位的候选人；选择"全部岗位"后可查看所有岗位候选人（非管理员）
           </div>
         </el-form-item>
 
