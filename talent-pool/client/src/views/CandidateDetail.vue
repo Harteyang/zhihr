@@ -183,8 +183,6 @@ async function handleUploadRequest(options) {
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open('PUT', uploadUrl, true)
-      // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
           onProgress({ percent: Math.round((e.loaded / e.total) * 100) })
@@ -194,10 +192,18 @@ async function handleUploadRequest(options) {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve()
         } else {
-          reject(new Error(`OSS 上传失败 (${xhr.status})`))
+          // 解析 OSS XML 错误响应，提取具体错误码和消息便于定位
+          let detail = `HTTP ${xhr.status}`
+          try {
+            const xml = xhr.responseText || ''
+            const codeMatch = xml.match(/<Code>([^<]+)<\/Code>/)
+            const msgMatch = xml.match(/<Message>([^<]+)<\/Message>/)
+            if (codeMatch) detail = `${codeMatch[1]}: ${msgMatch ? msgMatch[1] : ''} (${xhr.status})`
+          } catch { /* 忽略解析失败 */ }
+          reject(new Error(`OSS 上传失败 - ${detail}`))
         }
       }
-      xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+      xhr.onerror = () => reject(new Error('OSS 上传网络错误（可能是 CORS 或网络中断）'))
       xhr.send(file)
     })
 
@@ -211,6 +217,9 @@ async function handleUploadRequest(options) {
 
     onSuccess(confirmRes.data)
   } catch (e) {
+    // 显示具体错误原因（OSS 错误码或接口错误消息），便于定位
+    const errMsg = e.response?.data?.message || e.message || '上传失败'
+    ElMessage.error(errMsg)
     onError(e)
   }
 }

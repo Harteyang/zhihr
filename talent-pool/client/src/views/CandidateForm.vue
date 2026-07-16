@@ -296,8 +296,6 @@ async function uploadAttachmentToCandidate(candidateId, file) {
     const xhr = new XMLHttpRequest()
     await new Promise((resolve, reject) => {
       xhr.open('PUT', uploadUrl, true)
-      // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
           const pct = Math.round((e.loaded / e.total) * 100)
@@ -306,9 +304,19 @@ async function uploadAttachmentToCandidate(candidateId, file) {
       }
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve()
-        else reject(new Error(`OSS 上传失败 (${xhr.status})`))
+        else {
+          // 解析 OSS XML 错误响应，提取具体错误码和消息便于定位
+          let detail = `HTTP ${xhr.status}`
+          try {
+            const xml = xhr.responseText || ''
+            const codeMatch = xml.match(/<Code>([^<]+)<\/Code>/)
+            const msgMatch = xml.match(/<Message>([^<]+)<\/Message>/)
+            if (codeMatch) detail = `${codeMatch[1]}: ${msgMatch ? msgMatch[1] : ''} (${xhr.status})`
+          } catch { /* 忽略解析失败 */ }
+          reject(new Error(`OSS 上传失败 - ${detail}`))
+        }
       }
-      xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+      xhr.onerror = () => reject(new Error('OSS 上传网络错误（可能是 CORS 或网络中断）'))
       xhr.send(file)
     })
   } finally {
@@ -364,7 +372,7 @@ async function handleSubmit() {
           }
           router.push(`/candidates/${match.id}`)
         } catch (uploadErr) {
-          const errMsg = uploadErr.response?.data?.message || '附件上传失败，可在详情页重新上传'
+          const errMsg = uploadErr.response?.data?.message || uploadErr.message || '附件上传失败，可在详情页重新上传'
           ElMessage.warning(errMsg)
           router.push(`/candidates/${match.id}`)
         } finally {
@@ -419,7 +427,8 @@ async function handleSubmit() {
         await uploadAttachmentToCandidate(candidateId, selectedFile.value)
         ElMessage.success('简历附件上传成功')
       } catch (uploadErr) {
-        const errMsg = uploadErr.response?.data?.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'
+        // 显示具体错误原因（OSS 错误码或网络错误），便于定位
+        const errMsg = uploadErr.response?.data?.message || uploadErr.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'
         ElMessage.warning(errMsg)
       }
     }
