@@ -152,8 +152,8 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, WarningFilled, CircleCloseFilled, MagicStick, Upload, Loading } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import { getCandidate, createCandidate, updateCandidate, aiParseResume, getUploadUrl, confirmUpload } from '../api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getCandidate, createCandidate, updateCandidate, aiParseResume, getUploadUrl, confirmUpload, checkCandidateDuplicate } from '../api'
 import { addExperience as addExpApi, updateExperience, deleteExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
@@ -282,9 +282,104 @@ async function handleAiParse() {
   }
 }
 
+// 上传简历附件到指定候选人（OSS 直传 + confirmUpload）
+// 复用于"新建候选人后上传"与"重复简历合并附件到已存在人员"两个场景
+async function uploadAttachmentToCandidate(candidateId, file) {
+  const urlRes = await getUploadUrl(candidateId, {
+    file_name: file.name,
+    file_size: file.size
+  })
+  const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
+
+  const uploadProgressMsg = ElMessage.info('正在上传简历附件...', { duration: 0 })
+  try {
+    const xhr = new XMLHttpRequest()
+    await new Promise((resolve, reject) => {
+      xhr.open('PUT', uploadUrl, true)
+      // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+      xhr.upload.onprogress = (e) => {
+        if (e.total > 0) {
+          const pct = Math.round((e.loaded / e.total) * 100)
+          uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
+        }
+      }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve()
+        else reject(new Error(`OSS 上传失败 (${xhr.status})`))
+      }
+      xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
+      xhr.send(file)
+    })
+  } finally {
+    uploadProgressMsg.close()
+  }
+
+  await confirmUpload(candidateId, {
+    ossKey,
+    fileName,
+    fileType,
+    fileSize: fileSize || file.size
+  })
+}
+
 async function handleSubmit() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
+
+  // 新建模式下，先进行"姓名+电话"重复比对
+  if (!isEdit.value && form.name && form.phone) {
+    saving.value = true
+    try {
+      const dupRes = await checkCandidateDuplicate(form.name, form.phone)
+      const { duplicate, matches } = dupRes.data.data
+      if (duplicate && matches.length > 0) {
+        saving.value = false
+        const match = matches[0]
+        const matchDesc = `${match.name} / ${match.phone || '无电话'} / ${match.position || '无岗位'}${matches.length > 1 ? `（共 ${matches.length} 条重复）` : ''}`
+        try {
+          await ElMessageBox.confirm(
+            `该简历信息已存在。检测到"姓名+电话"组合与以下记录重复：${matchDesc}。是否将当前简历附件添加到已存在的人员信息记录下？`,
+            '发现重复简历',
+            {
+              confirmButtonText: '添加附件到已存在人员',
+              cancelButtonText: '取消操作',
+              type: 'warning',
+              distinguishCancelAndClose: true
+            }
+          )
+        } catch (action) {
+          // 用户点击"取消操作"或关闭对话框，终止入库流程
+          ElMessage.info('已取消简历入库')
+          return
+        }
+        // 用户确认：将新简历附件关联到已存在人员，避免数据重复
+        saving.value = true
+        try {
+          if (selectedFile.value) {
+            await uploadAttachmentToCandidate(match.id, selectedFile.value)
+            ElMessage.success('简历附件已添加到已存在人员记录')
+          } else {
+            ElMessage.info('未选择附件，已跳转至已存在人员详情')
+          }
+          router.push(`/candidates/${match.id}`)
+        } catch (uploadErr) {
+          const errMsg = uploadErr.response?.data?.message || '附件上传失败，可在详情页重新上传'
+          ElMessage.warning(errMsg)
+          router.push(`/candidates/${match.id}`)
+        } finally {
+          saving.value = false
+        }
+        return
+      }
+      // 未重复，继续正常创建流程
+    } catch (e) {
+      // 重复检查接口失败不阻断入库流程，记录警告后继续
+      console.warn('重复检查失败，继续创建:', e?.message)
+    } finally {
+      saving.value = false
+    }
+  }
 
   saving.value = true
   try {
@@ -321,44 +416,7 @@ async function handleSubmit() {
     // 创建候选人后同步上传简历附件（OSS 直传）
     if (!isEdit.value && selectedFile.value) {
       try {
-        const file = selectedFile.value
-        const urlRes = await getUploadUrl(candidateId, {
-          file_name: file.name,
-          file_size: file.size
-        })
-        const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
-
-        // 带进度提示的上传
-        const uploadProgressMsg = ElMessage.info('正在上传简历附件...', { duration: 0 })
-        try {
-          const xhr = new XMLHttpRequest()
-          await new Promise((resolve, reject) => {
-            xhr.open('PUT', uploadUrl, true)
-            // OSS 预签名 URL 的签名使用 application/octet-stream，保持一致
-            xhr.setRequestHeader('Content-Type', 'application/octet-stream')
-            xhr.upload.onprogress = (e) => {
-              if (e.total > 0) {
-                const pct = Math.round((e.loaded / e.total) * 100)
-                uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
-              }
-            }
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) resolve()
-              else reject(new Error(`OSS 上传失败 (${xhr.status})`))
-            }
-            xhr.onerror = () => reject(new Error('OSS 上传网络错误'))
-            xhr.send(file)
-          })
-        } finally {
-          uploadProgressMsg.close()
-        }
-
-        await confirmUpload(candidateId, {
-          ossKey,
-          fileName,
-          fileType,
-          fileSize: fileSize || file.size
-        })
+        await uploadAttachmentToCandidate(candidateId, selectedFile.value)
         ElMessage.success('简历附件上传成功')
       } catch (uploadErr) {
         const errMsg = uploadErr.response?.data?.message || '候选人已创建，但简历附件上传失败，可在详情页重新上传'

@@ -152,6 +152,76 @@ async function getCandidate(request, env, corsHeaders, params) {
   }
 }
 
+// ========= 简历重复比对 =========
+
+// 姓名标准化：去除所有空白字符（含全角空格），统一为小写比较
+function normalizeName(name) {
+  if (!name) return ''
+  return String(name).replace(/[\s\u3000\u00A0]+/g, '').toLowerCase()
+}
+
+// 电话标准化：仅保留数字，去除国际区号前缀 86
+function normalizePhone(phone) {
+  if (!phone) return ''
+  let digits = String(phone).replace(/\D/g, '')
+  // 去除中国手机号前缀 86（11 位手机号场景）
+  if (digits.length === 13 && digits.startsWith('86')) {
+    digits = digits.slice(2)
+  }
+  return digits
+}
+
+// 候选人重复比对：检查"姓名+电话"组合是否已存在
+// GET /api/talent/candidates/check-duplicate?name=xxx&phone=xxx
+async function checkDuplicate(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const url = new URL(request.url)
+    const rawName = url.searchParams.get('name') || ''
+    const rawPhone = url.searchParams.get('phone') || ''
+
+    const normalizedName = normalizeName(rawName)
+    const normalizedPhone = normalizePhone(rawPhone)
+
+    // 姓名和电话均为空时无法比对，直接返回未重复
+    if (!normalizedName || !normalizedPhone) {
+      await logOperation(env, user, 'check_duplicate_candidate', 'candidate', null, {
+        name: rawName, phone: rawPhone, found: false, reason: 'missing_required_field'
+      }, getClientIp(request))
+      return jsonResponse({ success: true, data: { duplicate: false, matches: [] } }, 200, corsHeaders)
+    }
+
+    // 利用 name 索引快速筛选同名候选人，再在应用层做标准化电话比对
+    // 应用层比对兼容各种电话格式（如 138-1234-5678 / +86 138 1234 5678），
+    // 避免因格式差异导致误判。LIMIT 50 防止同名过多拖慢响应（实际同名候选人很少）
+    const rows = await env.DB.prepare(
+      `SELECT id, name, phone, email, position, status, created_at
+       FROM talent_candidates
+       WHERE name = ?
+       ORDER BY created_at DESC
+       LIMIT 50`
+    ).bind(rawName.trim()).all()
+
+    // 标准化电话后做精确匹配，确保比对算法准确无误
+    const matches = (rows.results || []).filter(c => normalizePhone(c.phone) === normalizedPhone)
+    const found = matches.length > 0
+
+    await logOperation(env, user, 'check_duplicate_candidate', 'candidate', null, {
+      name: rawName, phone: rawPhone, found, matchCount: matches.length,
+      matchIds: matches.map(m => m.id)
+    }, getClientIp(request))
+
+    return jsonResponse({
+      success: true,
+      data: { duplicate: found, matches }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
 async function createCandidate(request, env, corsHeaders) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
@@ -1338,6 +1408,7 @@ export const routes = [
   { method: 'POST', path: '/api/talent/candidates/ai-parse-resume',   handler: aiParseResume },
   { method: 'POST', path: '/api/talent/candidates/import',            handler: batchImport },
   { method: 'GET',  path: '/api/talent/candidates/import/template',   handler: downloadTemplate },
+  { method: 'GET',  path: '/api/talent/candidates/check-duplicate',   handler: checkDuplicate },
   { method: 'POST', path: '/api/talent/parse-tasks/batch-upload-url', handler: getBatchUploadUrl },
   { method: 'POST', path: '/api/talent/parse-tasks/batch',            handler: createBatchParseTasks },
   { method: 'GET',  path: '/api/talent/parse-tasks/batch/:batchId',   handler: getBatchStatus },

@@ -38,6 +38,7 @@ export const getCandidates = (params) => api.get('/talent/candidates', { params 
 export const getFilterOptions = () => api.get('/talent/candidates/filter-options')
 export const getCandidate = (id) => api.get(`/talent/candidates/${id}`)
 export const createCandidate = (data) => api.post('/talent/candidates', data)
+export const checkCandidateDuplicate = (name, phone) => api.get('/talent/candidates/check-duplicate', { params: { name, phone } })
 export const updateCandidate = (id, data) => api.put(`/talent/candidates/${id}`, data)
 export const updateCandidateStatus = (id, status) => api.patch(`/talent/candidates/${id}/status`, { status })
 export const deleteCandidate = (id) => api.delete(`/talent/candidates/${id}`)
