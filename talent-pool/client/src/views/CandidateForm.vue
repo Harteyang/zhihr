@@ -217,7 +217,7 @@ async function handleFileChange(uploadFile) {
 
   selectedFile.value = uploadFile.raw
   const formData = new FormData()
-  formData.append('file', uploadFile.raw)
+  formData.append("file", uploadFile.raw)
   try {
     ElMessage.info('正在解析文件...')
     const res = await parseResume(formData)
