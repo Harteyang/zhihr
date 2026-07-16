@@ -8,25 +8,28 @@
           ref="uploadRef"
           :auto-upload="false"
           :limit="1"
-          accept=".pdf,.docx,.doc"
+          accept=".pdf,.docx,.doc,.txt"
           :on-change="handleFileChange"
           :show-file-list="false"
         >
-          <el-button type="primary" plain>上传简历文件解析</el-button>
+          <el-button type="primary" plain :disabled="aiParsing">
+            <el-icon><Upload /></el-icon> 上传简历自动解析
+          </el-button>
         </el-upload>
         <el-button
-          v-if="selectedFile"
+          v-if="selectedFile && !aiParsing"
           type="warning"
           plain
-          :loading="aiParsing"
-          :disabled="!selectedFile"
           @click="handleAiParse"
         >
-          <el-icon><MagicStick /></el-icon> AI 解析
+          <el-icon><MagicStick /></el-icon> 重新解析
         </el-button>
-        <span style="color: var(--el-text-color-secondary); font-size: 13px;">
-          支持 PDF、Word 格式，解析结果自动填充表单
-          <template v-if="selectedFile">（已选择文件：{{ selectedFile.name }}）</template>
+        <span v-if="!aiParsing" style="color: var(--el-text-color-secondary); font-size: 13px;">
+          支持 PDF、Word、TXT 格式，上传后自动 AI 解析
+          <template v-if="selectedFile">（当前文件：{{ selectedFile.name }}）</template>
+        </span>
+        <span v-if="aiParsing" style="color: var(--el-color-primary); font-size: 13px;">
+          <el-icon class="is-loading"><Loading /></el-icon> AI 正在解析简历，请稍候...
         </span>
       </div>
     </el-card>
@@ -148,9 +151,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Plus, WarningFilled, CircleCloseFilled, MagicStick } from '@element-plus/icons-vue'
+import { Plus, WarningFilled, CircleCloseFilled, MagicStick, Upload, Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCandidate, createCandidate, updateCandidate, parseResume, aiParseResume, getUploadUrl, confirmUpload } from '../api'
+import { getCandidate, createCandidate, updateCandidate, aiParseResume, getUploadUrl, confirmUpload } from '../api'
 import { addExperience as addExpApi, updateExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
@@ -217,44 +220,8 @@ async function handleFileChange(uploadFile) {
   }
 
   selectedFile.value = uploadFile.raw
-  const formData = new FormData()
-  formData.append("file", uploadFile.raw)
-  try {
-    ElMessage.info('正在解析文件...')
-    const res = await parseResume(formData)
-    const data = res.data.data || res.data
-
-    if (data.name) form.name = data.name
-    if (data.phone) form.phone = data.phone
-    if (data.email) form.email = data.email
-    if (data.position) form.position = data.position
-    if (data.education) form.education = data.education
-    if (data.experience_years !== null && data.experience_years !== undefined) {
-      form.experience_years = data.experience_years
-    }
-    if (data.summary) form.summary = data.summary
-    if (Array.isArray(data.skills)) form.skills = data.skills
-
-    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
-      form.experiences = data.experiences.map(exp => ({
-        company: exp.company || '',
-        title: exp.title || '',
-        start_date: exp.start_date || '',
-        end_date: exp.end_date || '',
-        description: exp.description || ''
-      }))
-    }
-
-    fieldConfidence.value = data.confidence || {}
-
-    ElMessage.success('解析完成，请确认并补充信息')
-  } catch (e) {
-    const errMsg = e?.response?.data?.message || '文件解析失败，请手动填写'
-    ElMessage.warning(errMsg)
-  } finally {
-    // 重置上传组件内部文件列表，允许连续上传多个文件
-    uploadRef.value?.clearFiles()
-  }
+  // 上传后自动触发 AI 解析，无需人工干预
+  await handleAiParse()
 }
 
 async function handleAiParse() {
@@ -306,6 +273,8 @@ async function handleAiParse() {
     ElMessage.warning(errMsg)
   } finally {
     aiParsing.value = false
+    // 重置上传组件内部文件列表，允许重新选择文件
+    uploadRef.value?.clearFiles()
   }
 }
 

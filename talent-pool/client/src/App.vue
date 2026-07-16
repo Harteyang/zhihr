@@ -20,8 +20,8 @@
           <el-menu-item index="/candidates/new">
             <el-icon><Plus /></el-icon><span>新增候选人</span>
           </el-menu-item>
-          <el-menu-item index="/import" v-if="authStore.isAdmin">
-            <el-icon><Upload /></el-icon><span>批量导入</span>
+          <el-menu-item index="/import">
+            <el-icon><Upload /></el-icon><span>批量上传</span>
           </el-menu-item>
           <el-menu-item index="/users" v-if="authStore.isAdmin">
             <el-icon><UserFilled /></el-icon><span>用户管理</span>
@@ -84,8 +84,8 @@
           <el-menu-item index="/candidates/new">
             <el-icon><Plus /></el-icon><span>新增候选人</span>
           </el-menu-item>
-          <el-menu-item index="/import" v-if="authStore.isAdmin">
-            <el-icon><Upload /></el-icon><span>批量导入</span>
+          <el-menu-item index="/import">
+            <el-icon><Upload /></el-icon><span>批量上传</span>
           </el-menu-item>
           <el-menu-item index="/users" v-if="authStore.isAdmin">
             <el-icon><UserFilled /></el-icon><span>用户管理</span>

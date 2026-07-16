@@ -10,7 +10,8 @@ async function checkPositionPermission(env, user, candidatePosition) {
   if (user.role === 'admin') return true
   const allowedPositions = await getUserPositions(env, user.userId, user.role)
   if (allowedPositions === null) return true
-  if (candidatePosition === null || candidatePosition === undefined) return true
+  // 岗位为空时，非创建者/管理员/全部岗位权限的用户无法查看
+  if (candidatePosition === null || candidatePosition === undefined) return false
   return allowedPositions.includes(candidatePosition)
 }
 
@@ -878,6 +879,399 @@ async function downloadTemplate(request, env, corsHeaders) {
   }
 }
 
+// ========= 批量简历解析队列 =========
+
+const BATCH_MAX_FILES = 10
+const BATCH_MAX_FILE_SIZE = 10 * 1024 * 1024
+const BATCH_ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.doc', '.txt']
+const PARSE_TASK_RETENTION_DAYS = 30
+
+// 获取批量上传签名 URL（无需 candidate_id）
+async function getBatchUploadUrl(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）' }, 503, corsHeaders)
+  }
+
+  try {
+    const body = await request.json()
+    const { file_name, file_size } = body
+    if (!file_name) {
+      return jsonResponse({ success: false, message: 'file_name 为必填' }, 400, corsHeaders)
+    }
+
+    const ext = file_name.substring(file_name.lastIndexOf('.')).toLowerCase()
+    if (!BATCH_ALLOWED_EXTENSIONS.includes(ext)) {
+      return jsonResponse({ success: false, message: `不支持的文件类型: ${ext}，允许: ${BATCH_ALLOWED_EXTENSIONS.join(', ')}` }, 400, corsHeaders)
+    }
+
+    const fileSize = parseInt(file_size || '0', 10)
+    if (fileSize > BATCH_MAX_FILE_SIZE) {
+      return jsonResponse({ success: false, message: `文件大小不能超过 ${BATCH_MAX_FILE_SIZE / 1024 / 1024}MB` }, 400, corsHeaders)
+    }
+
+    const timestamp = Date.now()
+    const ossKey = `batch-resumes/${user.userId}/${timestamp}_${file_name}`
+    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300)
+    const fileType = ext.replace('.', '')
+
+    return jsonResponse({
+      success: true,
+      data: { uploadUrl: signedUrl, ossKey, fileName: file_name, fileType, fileSize: fileSize || null }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+// 创建批量解析任务（文件已上传至 OSS 后调用）
+async function createBatchParseTasks(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const body = await request.json()
+    const { files } = body
+    if (!Array.isArray(files) || files.length === 0) {
+      return jsonResponse({ success: false, message: 'files 为必填且不能为空' }, 400, corsHeaders)
+    }
+    if (files.length > BATCH_MAX_FILES) {
+      return jsonResponse({ success: false, message: `单次最多上传 ${BATCH_MAX_FILES} 个文件` }, 400, corsHeaders)
+    }
+
+    // 验证每个文件
+    for (const f of files) {
+      if (!f.ossKey || !f.fileName) {
+        return jsonResponse({ success: false, message: '每个文件需包含 ossKey 和 fileName' }, 400, corsHeaders)
+      }
+      const ext = f.fileName.substring(f.fileName.lastIndexOf('.')).toLowerCase()
+      if (!BATCH_ALLOWED_EXTENSIONS.includes(ext)) {
+        return jsonResponse({ success: false, message: `不支持的文件类型: ${ext}` }, 400, corsHeaders)
+      }
+    }
+
+    const batchId = crypto.randomUUID()
+
+    // 批量插入任务记录
+    const stmts = files.map(f => {
+      const ext = f.fileName.substring(f.fileName.lastIndexOf('.')).toLowerCase().replace('.', '')
+      return env.DB.prepare(
+        `INSERT INTO talent_parse_tasks (batch_id, user_id, file_name, file_type, file_size, oss_key, status, progress)
+         VALUES (?, ?, ?, ?, ?, ?, 'pending', 0)`
+      ).bind(batchId, user.userId, f.fileName, ext, f.fileSize || null, f.ossKey)
+    })
+    await env.DB.batch(stmts)
+
+    await logOperation(env, user, 'create_batch_parse', 'parse_batch', batchId, { file_count: files.length }, getClientIp(request))
+
+    return jsonResponse({ success: true, data: { batchId, taskCount: files.length } }, 201, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+// 核心解析逻辑：解析单个简历文件并创建候选人
+async function processSingleParseTask(env, task, user) {
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    throw new Error('文件存储服务未配置（OSS）')
+  }
+
+  // 更新进度（任务已由调用方抢占为 parsing 状态）
+  await env.DB.prepare(
+    `UPDATE talent_parse_tasks SET progress = 10, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(task.id).run()
+
+  // 1. 从 OSS 下载文件
+  const ossRes = await oss.get(task.oss_key)
+  if (!ossRes.ok) {
+    throw new Error(`OSS 下载失败 (${ossRes.status})`)
+  }
+  const arrayBuffer = await ossRes.arrayBuffer()
+
+  await env.DB.prepare(
+    `UPDATE talent_parse_tasks SET progress = 30, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(task.id).run()
+
+  // 2. 本地解析提取文本
+  const parsed = await parseFile(task.file_name, arrayBuffer)
+  const resumeText = parsed.raw_text || ''
+
+  if (!resumeText || resumeText.trim().length < 10) {
+    throw new Error('无法从文件中提取足够文本，请确认文件内容是否正常')
+  }
+
+  await env.DB.prepare(
+    `UPDATE talent_parse_tasks SET progress = 50, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(task.id).run()
+
+  // 3. 调用 AI 解析
+  const aiApiKey = env.AI_API_KEY
+  if (!aiApiKey) {
+    throw new Error('AI 解析服务未配置（缺少 API Key）')
+  }
+
+  const aiResponse = await fetch(`${AI_API_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${aiApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      messages: [
+        { role: 'system', content: AI_SYSTEM_PROMPT },
+        { role: 'user', content: `请解析以下简历内容，提取结构化信息：\n\n${resumeText}` }
+      ],
+      temperature: 0.1,
+      max_tokens: 4096
+    })
+  })
+
+  if (!aiResponse.ok) {
+    const errText = await aiResponse.text().catch(() => '')
+    throw new Error(`AI 模型调用失败 (${aiResponse.status}): ${errText}`)
+  }
+
+  const aiData = await aiResponse.json()
+  const content = aiData?.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error('AI 模型返回内容为空')
+  }
+
+  // 4. 解析 AI 返回的 JSON
+  let cleanContent = content.trim()
+  const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  if (jsonMatch) {
+    cleanContent = jsonMatch[1].trim()
+  }
+
+  let aiResult
+  try {
+    aiResult = JSON.parse(cleanContent)
+  } catch {
+    const objMatch = cleanContent.match(/\{[\s\S]*\}/)
+    if (objMatch) {
+      aiResult = JSON.parse(objMatch[0])
+    } else {
+      throw new Error('AI 返回格式无法解析为 JSON')
+    }
+  }
+
+  await env.DB.prepare(
+    `UPDATE talent_parse_tasks SET progress = 80, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(task.id).run()
+
+  // 5. 创建候选人
+  if (!aiResult.name || !String(aiResult.name).trim()) {
+    throw new Error('AI 解析结果缺少姓名字段')
+  }
+  if (!aiResult.position || !String(aiResult.position).trim()) {
+    throw new Error('AI 解析结果缺少岗位字段')
+  }
+
+  const skillsJson = Array.isArray(aiResult.skills) ? JSON.stringify(aiResult.skills) : null
+  const insertResult = await env.DB.prepare(`
+    INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+  `).bind(
+    String(aiResult.name).trim(),
+    aiResult.phone || null,
+    aiResult.email || null,
+    String(aiResult.position).trim(),
+    skillsJson,
+    aiResult.education || null,
+    aiResult.experience_years || null,
+    'AI批量解析',
+    aiResult.summary || null,
+    user.userId
+  ).run()
+
+  const candidateId = insertResult.meta.last_row_id
+
+  // 6. 插入工作经历
+  if (Array.isArray(aiResult.experiences) && aiResult.experiences.length > 0) {
+    const expStmts = aiResult.experiences
+      .filter(exp => exp.company && exp.title)
+      .map(exp => env.DB.prepare(
+        `INSERT INTO talent_work_experiences (candidate_id, company, title, start_date, end_date, description)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).bind(candidateId, exp.company, exp.title, exp.start_date || null, exp.end_date || null, exp.description || null))
+    if (expStmts.length > 0) {
+      await env.DB.batch(expStmts)
+    }
+  }
+
+  // 7. 保存附件元数据
+  await env.DB.prepare(
+    `INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size)
+     VALUES (?, ?, ?, ?, ?)`
+  ).bind(candidateId, task.file_name, task.file_type, task.oss_key, task.file_size || 0).run()
+
+  // 8. 更新任务状态为完成
+  await env.DB.prepare(
+    `UPDATE talent_parse_tasks SET status = 'completed', progress = 100, parsed_data = ?, candidate_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(JSON.stringify(aiResult), candidateId, task.id).run()
+
+  return { candidateId, parsedData: aiResult }
+}
+
+// 获取批次状态（同时触发下一个待处理任务的处理）
+async function getBatchStatus(request, env, corsHeaders, params) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const { batchId } = params
+
+    // 查询该批次的任务
+    const tasks = await env.DB.prepare(
+      `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
+       FROM talent_parse_tasks WHERE batch_id = ? AND user_id = ? ORDER BY id`
+    ).bind(batchId, user.userId).all()
+
+    if (!tasks.results || tasks.results.length === 0) {
+      return jsonResponse({ success: false, message: '批次不存在或无权查看' }, 404, corsHeaders)
+    }
+
+    // 尝试处理下一个全局待处理任务（串行处理，FIFO）
+    try {
+      const nextTask = await env.DB.prepare(
+        `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT 1`
+      ).first()
+
+      if (nextTask) {
+        // 原子性地抢占任务（防止并发重复处理）
+        const claim = await env.DB.prepare(
+          `UPDATE talent_parse_tasks SET status = 'parsing', progress = 5, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'`
+        ).bind(nextTask.id).run()
+
+        if (claim.meta.changes > 0) {
+          // 获取任务完整信息（包含 user_id 用于创建候选人）
+          const taskUser = await env.DB.prepare(
+            'SELECT id, username, role FROM users WHERE id = ?'
+          ).bind(nextTask.user_id).first()
+
+          const taskUserObj = taskUser
+            ? { userId: taskUser.id, username: taskUser.username, role: taskUser.role }
+            : { userId: nextTask.user_id, username: 'unknown', role: 'user' }
+
+          try {
+            await processSingleParseTask(env, nextTask, taskUserObj)
+          } catch (parseErr) {
+            // 标记为失败
+            await env.DB.prepare(
+              `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+            ).bind(parseErr.message || '解析失败', nextTask.id).run()
+            debugLog('ParseQueue', `Task ${nextTask.id} failed:`, parseErr.message)
+          }
+        }
+      }
+    } catch (procErr) {
+      debugLog('ParseQueue', 'Processing error (non-fatal):', procErr.message)
+    }
+
+    // 重新查询该批次最新状态
+    const updatedTasks = await env.DB.prepare(
+      `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
+       FROM talent_parse_tasks WHERE batch_id = ? AND user_id = ? ORDER BY id`
+    ).bind(batchId, user.userId).all()
+
+    const taskList = updatedTasks.results
+    const total = taskList.length
+    const completed = taskList.filter(t => t.status === 'completed').length
+    const failed = taskList.filter(t => t.status === 'failed').length
+    const parsing = taskList.filter(t => t.status === 'parsing').length
+    const pending = taskList.filter(t => t.status === 'pending').length
+    const overallProgress = total > 0 ? Math.round(((completed + failed) / total) * 100) : 0
+    const allDone = completed + failed === total
+
+    return jsonResponse({
+      success: true,
+      data: {
+        batchId,
+        tasks: taskList,
+        total,
+        completed,
+        failed,
+        parsing,
+        pending,
+        overallProgress,
+        allDone
+      }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+// 获取历史解析任务
+async function getParseTaskHistory(request, env, corsHeaders) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const url = new URL(request.url)
+    const { page, pageSize, offset } = parsePagination(url)
+
+    const where = `WHERE user_id = ? AND created_at >= datetime('now', '-${PARSE_TASK_RETENTION_DAYS} days')`
+    const countRow = await env.DB.prepare(
+      `SELECT COUNT(*) as total FROM talent_parse_tasks ${where}`
+    ).bind(user.userId).first()
+    const total = countRow.total
+
+    const rows = await env.DB.prepare(
+      `SELECT t.id, t.batch_id, t.file_name, t.file_type, t.file_size, t.status, t.progress, t.error_message, t.candidate_id, t.created_at, t.updated_at
+       FROM talent_parse_tasks ${where}
+       ORDER BY t.created_at DESC LIMIT ? OFFSET ?`
+    ).bind(user.userId, pageSize, offset).all()
+
+    // 按 batch_id 分组
+    const batches = {}
+    for (const row of rows.results) {
+      if (!batches[row.batch_id]) {
+        batches[row.batch_id] = { batchId: row.batch_id, tasks: [], createdAt: row.created_at }
+      }
+      batches[row.batch_id].tasks.push(row)
+    }
+
+    return jsonResponse({
+      success: true,
+      data: { batches: Object.values(batches), total, page, pageSize }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+// 重试失败的解析任务
+async function retryParseTask(request, env, corsHeaders, params) {
+  const { user, error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const { taskId } = params
+    const task = await env.DB.prepare(
+      'SELECT id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE id = ? AND user_id = ?'
+    ).bind(taskId, user.userId).first()
+
+    if (!task) {
+      return jsonResponse({ success: false, message: '任务不存在或无权操作' }, 404, corsHeaders)
+    }
+
+    await env.DB.prepare(
+      `UPDATE talent_parse_tasks SET status = 'pending', progress = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+    ).bind(taskId).run()
+
+    return jsonResponse({ success: true, message: '已重新加入解析队列' }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
 // ========= 路由注册 =========
 
 export const routes = [
@@ -887,6 +1281,11 @@ export const routes = [
   { method: 'POST', path: '/api/talent/candidates/ai-parse-resume',   handler: aiParseResume },
   { method: 'POST', path: '/api/talent/candidates/import',            handler: batchImport },
   { method: 'GET',  path: '/api/talent/candidates/import/template',   handler: downloadTemplate },
+  { method: 'POST', path: '/api/talent/parse-tasks/batch-upload-url', handler: getBatchUploadUrl },
+  { method: 'POST', path: '/api/talent/parse-tasks/batch',            handler: createBatchParseTasks },
+  { method: 'GET',  path: '/api/talent/parse-tasks/batch/:batchId',   handler: getBatchStatus },
+  { method: 'GET',  path: '/api/talent/parse-tasks/history',          handler: getParseTaskHistory },
+  { method: 'POST', path: '/api/talent/parse-tasks/:taskId/retry',    handler: retryParseTask },
   { method: 'GET',  path: '/api/talent/candidates/:id',               handler: getCandidate },
   { method: 'POST', path: '/api/talent/candidates',                   handler: createCandidate },
   { method: 'PUT',  path: '/api/talent/candidates/:id',               handler: updateCandidate },

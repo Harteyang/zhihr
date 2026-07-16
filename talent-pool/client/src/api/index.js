@@ -67,6 +67,13 @@ export const getUploadQuota = () => api.get('/talent/upload-quota')
 export const importCandidates = (formData) => api.post('/talent/candidates/import', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 })
 export const getImportTemplateUrl = () => `${baseURL}/talent/candidates/import/template`
 
+// 批量简历解析队列
+export const getBatchUploadUrl = (data) => api.post('/talent/parse-tasks/batch-upload-url', data)
+export const createBatchParseTasks = (data) => api.post('/talent/parse-tasks/batch', data)
+export const getBatchStatus = (batchId) => api.get(`/talent/parse-tasks/batch/${batchId}`, { timeout: 120000 })
+export const getParseTaskHistory = (params) => api.get('/talent/parse-tasks/history', { params })
+export const retryParseTask = (taskId) => api.post(`/talent/parse-tasks/${taskId}/retry`)
+
 // 用户管理
 export const getUsers = () => api.get('/auth/users')
 export const createUser = (data) => api.post('/auth/users', data)

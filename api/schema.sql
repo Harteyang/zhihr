@@ -154,3 +154,27 @@ CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_user ON talent_operation_lo
 CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_action ON talent_operation_logs(action);
 CREATE INDEX IF NOT EXISTS idx_talent_operation_logs_created ON talent_operation_logs(created_at);
 
+-- ========= 批量简历解析任务队列 =========
+
+CREATE TABLE IF NOT EXISTS talent_parse_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    batch_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_type TEXT NOT NULL,
+    file_size INTEGER,
+    oss_key TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    progress INTEGER DEFAULT 0,
+    error_message TEXT,
+    parsed_data TEXT,
+    candidate_id INTEGER,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_batch ON talent_parse_tasks(batch_id);
+CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_user ON talent_parse_tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_status ON talent_parse_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_created ON talent_parse_tasks(created_at);
+
