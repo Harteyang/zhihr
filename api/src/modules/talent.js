@@ -6,12 +6,14 @@ const VALID_STATUSES = ['pending', 'contacted', 'interviewing', 'offered', 'reje
 
 // ========= 岗位权限校验工具 =========
 
-async function checkPositionPermission(env, user, candidatePosition) {
+async function checkPositionPermission(env, user, candidatePosition, createdBy = null) {
   if (user.role === 'admin') return true
   const allowedPositions = await getUserPositions(env, user.userId, user.role)
   if (allowedPositions === null) return true
-  // 岗位为空时，非创建者/管理员/全部岗位权限的用户无法查看
-  if (candidatePosition === null || candidatePosition === undefined) return false
+  // 允许创建者查看自己的空岗位候选人
+  if (candidatePosition === null || candidatePosition === undefined) {
+    return createdBy === user.userId
+  }
   return allowedPositions.includes(candidatePosition)
 }
 
@@ -129,7 +131,7 @@ async function getCandidate(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
 
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -194,7 +196,7 @@ async function updateCandidate(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
 
-    if (existing.created_by !== user.userId && !(await checkPositionPermission(env, user, existing.position))) {
+    if (existing.created_by !== user.userId && !(await checkPositionPermission(env, user, existing.position, existing.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -295,7 +297,7 @@ async function listExperiences(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -317,7 +319,7 @@ async function addExperience(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -346,7 +348,7 @@ async function updateExperience(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -386,7 +388,7 @@ async function deleteExperience(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -451,7 +453,7 @@ async function getUploadUrl(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -509,7 +511,7 @@ async function confirmUpload(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
@@ -545,7 +547,7 @@ async function listAttachments(request, env, corsHeaders, params) {
     if (!candidate) {
       return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
     }
-    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权查看该候选人' }, 403, corsHeaders)
     }
 
@@ -598,7 +600,7 @@ async function getDownloadUrl(request, env, corsHeaders, params) {
     }
 
     const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
-    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权下载该附件' }, 403, corsHeaders)
     }
 
@@ -631,7 +633,7 @@ async function previewAttachment(request, env, corsHeaders, params) {
     }
 
     const candidate = await env.DB.prepare('SELECT position, created_by FROM talent_candidates WHERE id = ?').bind(attachment.candidate_id).first()
-    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position))) {
+    if (candidate && candidate.created_by !== user.userId && !(await checkPositionPermission(env, user, candidate.position, candidate.created_by))) {
       return jsonResponse({ success: false, message: '无权预览该附件' }, 403, corsHeaders)
     }
 
