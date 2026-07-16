@@ -315,16 +315,21 @@ function handleFileChange(uploadFile) {
   }
 
   // 检查是否超出最大文件数
-  const currentCount = fileList.value.length
-  if (currentCount >= MAX_FILES) {
+  if (fileList.value.length >= MAX_FILES) {
     ElMessage.warning(`单次最多上传 ${MAX_FILES} 个文件`)
     uploadRef.value?.handleRemove(uploadFile)
     return
   }
+
+  // 添加到文件列表（:file-list 为单向绑定，el-upload 不会自动更新父组件数组）
+  const exists = fileList.value.some(f => f.uid === uploadFile.uid)
+  if (!exists) {
+    fileList.value.push(uploadFile)
+  }
 }
 
-function handleFileRemove(_file) {
-  // el-upload 自动处理 fileList
+function handleFileRemove(uploadFile) {
+  fileList.value = fileList.value.filter(f => f.uid !== uploadFile.uid)
 }
 
 function handleExceed() {
