@@ -55,7 +55,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { createUser, updateUser, getAvailablePositions } from '../api'
+import { createUser, updateUser, getAvailablePositions, getUser } from '../api'
 
 const route = useRoute()
 const router = useRouter()
@@ -111,12 +111,9 @@ const rules = {
 
 async function loadUser() {
   if (!isEdit.value) return
-  // 从用户列表接口拿不到单个用户，但 listUsers 返回全部，这里直接用页面跳转前的列表数据不可靠
-  // 改为：从 router push 时带的 query 或重新拉取。这里用 fetch 全量列表过滤。
   try {
-    const { getUsers } = await import('../api')
-    const res = await getUsers()
-    const u = (res.data.data || []).find(x => x.id === route.params.id)
+    const res = await getUser(route.params.id)
+    const u = res.data.data
     if (!u) {
       ElMessage.error('用户不存在')
       router.push('/users')

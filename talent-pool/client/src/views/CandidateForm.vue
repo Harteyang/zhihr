@@ -154,7 +154,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Plus, WarningFilled, CircleCloseFilled, MagicStick, Upload, Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getCandidate, createCandidate, updateCandidate, aiParseResume, getUploadUrl, confirmUpload } from '../api'
-import { addExperience as addExpApi, updateExperience } from '../api'
+import { addExperience as addExpApi, updateExperience, deleteExperience } from '../api'
 import SkillTags from '../components/SkillTags.vue'
 import ExperienceForm from '../components/ExperienceForm.vue'
 import { EDUCATION_OPTIONS } from '../utils/constants'
@@ -168,6 +168,8 @@ const saving = ref(false)
 const aiParsing = ref(false)
 const fieldConfidence = ref({})
 const selectedFile = ref(null)
+// 编辑模式下记录原始工作经历 ID，用于提交时检测被删除的经历
+const originalExperienceIds = ref([])
 
 const form = reactive({
   name: '', phone: '', email: '', position: '',
@@ -245,10 +247,12 @@ async function handleAiParse() {
     if (data.position) form.position = data.position
     if (data.education) {
       const validEducation = ['大专', '本科', '硕士', '博士', '其他']
-      form.education = validEducation.includes(data.education) ? data.education : data.education
+      // 仅在合法学历范围内赋值，否则保留空值让用户手动选择
+      if (validEducation.includes(data.education)) {
+        form.education = data.education
+      }
     }
-    if (data.school) form.school = data.school
-    if (data.major) form.major = data.major
+    // 注意：AI 返回的 school/major 字段当前无对应数据库列和 UI 输入框，暂不处理（避免幽灵字段）
     if (data.experience_years !== null && data.experience_years !== undefined) {
       form.experience_years = data.experience_years
     }
@@ -294,6 +298,15 @@ async function handleSubmit() {
     } else {
       const res = await createCandidate(candidateData)
       candidateId = res.data.data.id
+    }
+
+    // 编辑模式下：先删除被移除的工作经历
+    if (isEdit.value && originalExperienceIds.value.length > 0) {
+      const currentIds = form.experiences.filter(e => e.id).map(e => e.id)
+      const deletedIds = originalExperienceIds.value.filter(id => !currentIds.includes(id))
+      for (const delId of deletedIds) {
+        try { await deleteExperience(candidateId, delId) } catch { /* 忽略已不存在的记录 */ }
+      }
     }
 
     for (const exp of form.experiences) {
@@ -366,12 +379,15 @@ onMounted(async () => {
   if (isEdit.value) {
     const res = await getCandidate(route.params.id)
     const data = res.data.data
+    const experiences = (data.experiences || []).map(e => ({ ...e }))
+    // 记录原始工作经历 ID，用于提交时检测被删除的经历
+    originalExperienceIds.value = experiences.map(e => e.id).filter(Boolean)
     Object.assign(form, {
       name: data.name, phone: data.phone || '', email: data.email || '',
       position: data.position || '', skills: data.skills ? (typeof data.skills === 'string' ? JSON.parse(data.skills) : data.skills) : [],
       education: data.education || '', experience_years: data.experience_years || null,
       source: data.source || '', summary: data.summary || '',
-      experiences: (data.experiences || []).map(e => ({ ...e }))
+      experiences
     })
   }
 })

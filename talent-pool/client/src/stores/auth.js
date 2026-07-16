@@ -24,10 +24,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', data.token)
     localStorage.setItem('refreshToken', data.refreshToken)
     localStorage.setItem('user', JSON.stringify(user.value))
-
-    if (data.role !== 'admin') {
-      await trySetupAdmin()
-    }
   }
 
   async function register(username, password) {
@@ -46,27 +42,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(user.value))
   }
 
-  async function trySetupAdmin() {
-    try {
-      const res = await api.post('/talent/auth/setup-admin')
-      if (res.data.success) {
-        user.value = { ...user.value, role: 'admin' }
-        localStorage.setItem('user', JSON.stringify(user.value))
-        return true
-      }
-    } catch (e) {
-      // 系统已存在管理员，静默处理
-    }
-    return false
-  }
-
   async function fetchCurrentUser() {
     try {
       const res = await api.get('/auth/me')
       user.value = res.data.data
       localStorage.setItem('user', JSON.stringify(user.value))
     } catch (e) {
-      logout()
+      // 仅在 401（未授权）时登出，其他错误（如网络问题）保留登录状态
+      if (e.response?.status === 401) {
+        logout()
+      }
     }
   }
 
@@ -79,5 +64,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { token, refreshToken, user, isLoggedIn, isAdmin, login, register, trySetupAdmin, fetchCurrentUser, logout }
+  return { token, refreshToken, user, isLoggedIn, isAdmin, login, register, fetchCurrentUser, logout }
 })

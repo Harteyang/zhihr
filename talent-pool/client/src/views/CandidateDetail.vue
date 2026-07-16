@@ -34,7 +34,7 @@
         </div>
       </template>
       <div v-loading="previewLoading" style="min-height: 300px;">
-        <iframe v-if="previewType === 'pdf'" :src="previewBlobUrl" style="width: 100%; height: 600px; border: none;" />
+        <iframe v-if="previewType === 'pdf'" :src="previewUrl" style="width: 100%; height: 600px; border: none;" />
         <div v-else-if="previewType === 'html'" class="word-preview" v-html="previewHtml" />
       </div>
     </el-card>
@@ -151,7 +151,7 @@ const previewVisible = ref(false)
 const previewLoading = ref(false)
 const previewType = ref('') // 'pdf' | 'html'
 const previewHtml = ref('')
-const previewBlobUrl = ref('')
+const previewUrl = ref('')
 const previewFileName = ref('')
 
 // 上传配额
@@ -253,14 +253,14 @@ async function handlePreview(row) {
   previewLoading.value = true
   previewType.value = ''
   previewHtml.value = ''
-  previewBlobUrl.value = ''
+  previewUrl.value = ''
 
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
       // PDF：获取 OSS 直链并通过 iframe 内嵌预览
       const res = await getDownloadUrl(row.id)
-      previewBlobUrl.value = res.data.data.url
+      previewUrl.value = res.data.data.url
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx') {
       // Word：调用预览接口拿到 HTML 后渲染
@@ -287,13 +287,11 @@ async function handlePreview(row) {
 }
 
 function closePreview() {
-  if (previewBlobUrl.value) {
-    URL.revokeObjectURL(previewBlobUrl.value)
-  }
+  // previewUrl 是 OSS 直链（非 blob: URL），无需调用 revokeObjectURL
   previewVisible.value = false
   previewType.value = ''
   previewHtml.value = ''
-  previewBlobUrl.value = ''
+  previewUrl.value = ''
   previewFileName.value = ''
 }
 

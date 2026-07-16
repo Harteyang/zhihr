@@ -59,6 +59,8 @@ async function handleRegister(request, env, corsHeaders) {
     const accessToken = await signJwt({ userId, username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY)
     const refreshToken = await signJwt({ userId, username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY)
 
+    await logOperation(env, { userId, username }, 'register', 'user', userId, { role }, clientIp)
+
     debugLog('Auth', 'Register success:', username, 'role:', role)
     return jsonResponse({
       success: true, message: '注册成功',
@@ -101,9 +103,21 @@ async function handleLogin(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '账号已被禁用，请联系管理员' }, 403, corsHeaders)
     }
 
-    const isValid = await verifyPassword(password, user.password_hash)
-    if (!isValid) {
+    const verifyResult = await verifyPassword(password, user.password_hash)
+    if (!verifyResult.valid) {
       return jsonResponse({ success: false, message: '账号或密码错误' }, 400, corsHeaders)
+    }
+
+    // 如果是旧格式哈希（纯 SHA-256），迁移到 PBKDF2
+    if (verifyResult.needsMigration) {
+      try {
+        const newHash = await hashPassword(password)
+        await db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
+          .bind(newHash, new Date().toISOString(), user.id).run()
+        debugLog('Auth', 'Password hash migrated to PBKDF2 for user:', user.username)
+      } catch (e) {
+        debugLog('Auth', 'Password hash migration failed:', e.message)
+      }
     }
 
     try {
@@ -153,11 +167,20 @@ async function handleRefreshToken(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '无效的 refresh token' }, 401, corsHeaders)
     }
 
+    // 检查用户是否仍然存在且未被禁用
+    const dbUser = await env.DB.prepare(
+      'SELECT id, username, role, status FROM users WHERE id = ?'
+    ).bind(payload.userId).first()
+
+    if (!dbUser || dbUser.status === 'disabled') {
+      return jsonResponse({ success: false, message: '用户不存在或已被禁用' }, 401, corsHeaders)
+    }
+
     const accessToken = await signJwt(
-      { userId: payload.userId, username: payload.username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY
+      { userId: dbUser.id, username: dbUser.username, type: 'access' }, env, ACCESS_TOKEN_EXPIRY
     )
     const newRefreshToken = await signJwt(
-      { userId: payload.userId, username: payload.username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY
+      { userId: dbUser.id, username: dbUser.username, type: 'refresh' }, env, REFRESH_TOKEN_EXPIRY
     )
 
     debugLog('Auth', 'Token refresh success')

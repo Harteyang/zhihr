@@ -1,6 +1,9 @@
-import { jsonResponse, requireAdmin, requireAuth, getUserPositions, logOperation, hashPassword, sanitizeInput, validatePassword, generateId, getClientIp } from '../utils/router.js'
+import { jsonResponse, requireAdmin, requireAuth, getUserPositions, logOperation, hashPassword, sanitizeInput, validatePassword, generateId, getClientIp, parsePagination } from '../utils/router.js'
 
 // ========= 用户管理 =========
+
+// 批量操作最大用户数（防止超出 D1 batch 语句数限制和 Workers 执行时间）
+const MAX_BATCH_USERS = 100
 
 async function listUsers(request, env, corsHeaders) {
   const { error } = await requireAdmin(request, env, corsHeaders)
@@ -18,6 +21,28 @@ async function listUsers(request, env, corsHeaders) {
     }))
 
     return jsonResponse({ success: true, data: usersWithPositions }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: err.message }, 500, corsHeaders)
+  }
+}
+
+// 查询单个用户详情（避免编辑用户时拉取全量列表）
+async function getUser(request, env, corsHeaders, params) {
+  const { error } = await requireAdmin(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const u = await env.DB.prepare(
+      `SELECT id, username, display_name, role, status, last_login_at, created_at
+       FROM users WHERE id = ?`
+    ).bind(params.id).first()
+
+    if (!u) {
+      return jsonResponse({ success: false, message: '用户不存在' }, 404, corsHeaders)
+    }
+
+    const positions = await getUserPositions(env, u.id, u.role)
+    return jsonResponse({ success: true, data: { ...u, positions: positions || [] } }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: err.message }, 500, corsHeaders)
   }
@@ -104,7 +129,12 @@ async function updateUser(request, env, corsHeaders, params) {
       await env.DB.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).bind(...values).run()
     }
 
-    await logOperation(env, admin, 'update_user', 'user', params.id, body, getClientIp(request))
+    // 审计日志：记录变更字段但排除密码（敏感信息不入库）
+    const auditDetail = { ...body }
+    if (auditDetail.password !== undefined) {
+      auditDetail.password = '[REDACTED]'
+    }
+    await logOperation(env, admin, 'update_user', 'user', params.id, auditDetail, getClientIp(request))
 
     return jsonResponse({ success: true, message: '更新成功' }, 200, corsHeaders)
   } catch (err) {
@@ -207,9 +237,7 @@ async function listOperationLogs(request, env, corsHeaders) {
 
   try {
     const url = new URL(request.url)
-    const page = parseInt(url.searchParams.get('page') || '1')
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '50')
-    const offset = (page - 1) * pageSize
+    const { page, pageSize, offset } = parsePagination(url)
 
     const conditions = []
     const params = []
@@ -267,6 +295,9 @@ async function batchUpdateStatus(request, env, corsHeaders) {
     if (userIds.length === 0) {
       return jsonResponse({ success: false, message: '请选择用户' }, 400, corsHeaders)
     }
+    if (userIds.length > MAX_BATCH_USERS) {
+      return jsonResponse({ success: false, message: `单次批量操作不能超过 ${MAX_BATCH_USERS} 个用户` }, 400, corsHeaders)
+    }
     if (status === 'disabled' && userIds.includes(admin.userId)) {
       return jsonResponse({ success: false, message: '不能禁用自己的账号' }, 400, corsHeaders)
     }
@@ -294,6 +325,9 @@ async function batchDeleteUsers(request, env, corsHeaders) {
 
     if (userIds.length === 0) {
       return jsonResponse({ success: false, message: '请选择用户' }, 400, corsHeaders)
+    }
+    if (userIds.length > MAX_BATCH_USERS) {
+      return jsonResponse({ success: false, message: `单次批量操作不能超过 ${MAX_BATCH_USERS} 个用户` }, 400, corsHeaders)
     }
     if (userIds.includes(admin.userId)) {
       return jsonResponse({ success: false, message: '不能删除自己的账号' }, 400, corsHeaders)
@@ -325,6 +359,9 @@ async function batchSetPositions(request, env, corsHeaders) {
 
     if (userIds.length === 0) {
       return jsonResponse({ success: false, message: '请选择用户' }, 400, corsHeaders)
+    }
+    if (userIds.length > MAX_BATCH_USERS) {
+      return jsonResponse({ success: false, message: `单次批量操作不能超过 ${MAX_BATCH_USERS} 个用户` }, 400, corsHeaders)
     }
 
     const stmts = []
@@ -388,6 +425,7 @@ export const routes = [
 
   { method: 'POST',   path: '/api/talent/auth/setup-admin',     handler: setupAdmin },
 
+  { method: 'GET',    path: '/api/auth/users/:id',              handler: getUser },
   { method: 'GET',    path: '/api/auth/users/:id/positions',    handler: getUserPositionsRoute },
   { method: 'PUT',    path: '/api/auth/users/:id/positions',    handler: setUserPositions },
   { method: 'PUT',    path: '/api/auth/users/:id',              handler: updateUser },

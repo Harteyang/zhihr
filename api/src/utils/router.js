@@ -59,7 +59,7 @@ async function verifyPassword(password, storedHash) {
     const salt = bytes.slice(0, SALT_LENGTH)
     const originalHash = bytes.slice(SALT_LENGTH)
     const derived = await deriveKey(password, salt, PBKDF2_ITERATIONS, HASH_LENGTH)
-    return timingSafeEqual(originalHash, derived)
+    return { valid: timingSafeEqual(originalHash, derived), needsMigration: false }
   }
 
   // 旧格式：纯 hash(32) = 32 字节 (64 位十六进制)，使用 SHA-256 直接哈希
@@ -67,13 +67,13 @@ async function verifyPassword(password, storedHash) {
     const encoder = new TextEncoder()
     const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(password)))
     if (timingSafeEqual(bytes, digest)) {
-      // 迁移到新格式
-      return true
+      // 验证通过，标记需要迁移到 PBKDF2 格式
+      return { valid: true, needsMigration: true }
     }
-    return false
+    return { valid: false, needsMigration: false }
   }
 
-  return false
+  return { valid: false, needsMigration: false }
 }
 
 async function deriveKey(password, salt, iterations, length) {

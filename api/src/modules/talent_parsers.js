@@ -653,6 +653,17 @@ async function parseFile(fileName, arrayBuffer) {
 
 // ========= Word → HTML 转换（用于附件在线预览）=========
 
+// HTML 转义，防止 XSS（Word 文档中可能包含恶意内容）
+function escapeHtml(text) {
+  if (!text) return ''
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function docxToHtml(arrayBuffer) {
   let files
   try {
@@ -684,17 +695,19 @@ function docxToHtml(arrayBuffer) {
       const isItalic = /<w:i\s*\/>/i.test(runContent) || /<w:i\s[^>]*w:val="(?:1|true|on)"/i.test(runContent)
       const isUnderline = /<w:u\s*\/>/i.test(runContent) || /<w:u\s[^>]*w:val="single"/i.test(runContent)
 
-      // 提取文本（w:t 标签内容已经是 XML 转义的，与 HTML 实体兼容）
+      // 提取文本（w:t 标签内容是 XML 转义的，需先解码再 HTML 转义以防 XSS）
       const texts = []
       const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/gi
       let textMatch
       while ((textMatch = textRegex.exec(runContent)) !== null) {
         texts.push(textMatch[1])
       }
-      let text = texts.join('')
+      // 先解码 XML 实体，再进行 HTML 转义
+      let text = texts.join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+      text = escapeHtml(text)
 
       // 处理换行符
-      text = text.replace(/<w:br\s*\/>/gi, '<br>')
+      text = text.replace(/&lt;br&gt;/gi, '<br>')
 
       if (text) {
         if (isBold) text = `<strong>${text}</strong>`
@@ -728,23 +741,22 @@ function docToHtml(arrayBuffer) {
   // OLE 二进制 → 提取文本转 HTML
   if (bytes[0] === 0xD0 && bytes[1] === 0xCF) {
     const text = extractTextFromDocBinary(bytes)
-    return text.split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('\n')
+    return text.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
   }
 
   // RTF
   const header = new TextDecoder().decode(bytes.slice(0, 20))
   if (header.startsWith('{\\rtf')) {
-    const plain = header
     // 简单 RTF 文本提取
     const fullText = new TextDecoder().decode(bytes)
       .replace(/\\par[d]?/gi, '\n')
       .replace(/\\[a-zA-Z]+-?\d* ?/g, '')
       .replace(/[{}]/g, '')
       .trim()
-    return fullText.split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('\n')
+    return fullText.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
   }
 
-  // HTML 伪装
+  // HTML 伪装 - 返回原始 HTML 但已是 HTML 格式，浏览器可渲染
   const lower = header.toLowerCase()
   if (lower.includes('<html') || lower.includes('<!doctype') || lower.includes('<meta')) {
     return new TextDecoder().decode(bytes)
@@ -753,4 +765,4 @@ function docToHtml(arrayBuffer) {
   return '<p>无法预览此文档格式</p>'
 }
 
-export { parseFile, parseExcel, generateTemplateBuffer, extractInfo, docxToHtml, docToHtml }
+export { parseFile, parseExcel, generateTemplateBuffer, docxToHtml, docToHtml }

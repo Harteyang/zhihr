@@ -12,7 +12,7 @@ register(miaodu)
 register(talent)
 register(talentAuth)
 
-async function handleRequest(request, env) {
+async function handleRequest(request, env, ctx) {
   debugLog('Request', `${request.method} ${request.url}`)
 
   if (request.method === 'OPTIONS') {
@@ -37,7 +37,7 @@ async function handleRequest(request, env) {
   const route = matchRoute(method, path)
   if (route) {
     debugLog('Router', `Matched ${method} ${path}`)
-    return await route.handler(request, env, corsHeaders, route.params)
+    return await route.handler(request, env, corsHeaders, route.params, ctx)
   }
 
   debugLog('Request', `404 Not found: ${path}`)
@@ -45,7 +45,7 @@ async function handleRequest(request, env) {
 }
 
 export default {
-  async fetch(request, env) {
-    return await handleRequest(request, env)
+  async fetch(request, env, ctx) {
+    return await handleRequest(request, env, ctx)
   }
 }
