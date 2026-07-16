@@ -401,7 +401,7 @@ async function deleteExperience(request, env, corsHeaders, params) {
 
 // ========= 附件管理（R2 存储） =========
 
-const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.csv']
+const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.doc', '.txt', '.xlsx', '.xls', '.csv']
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 // 普通用户每日简历上传上限（管理员不受限制）
 const DAILY_UPLOAD_LIMIT = 100
@@ -650,6 +650,25 @@ async function previewAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'pdf') {
       return jsonResponse({ success: true, data: { type: 'pdf' } }, 200, corsHeaders)
+    } else if (fileType === 'txt') {
+      // TXT 文件预览：自动检测编码并转换为 HTML
+      const bytes = new Uint8Array(arrayBuffer)
+      let text = new TextDecoder('utf-8').decode(bytes)
+      if (text.includes('\uFFFD')) {
+        try {
+          const gbkText = new TextDecoder('gbk').decode(bytes)
+          if (!gbkText.includes('\uFFFD')) text = gbkText
+        } catch { /* 忽略 */ }
+      }
+      const html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .split('\n')
+        .filter(l => l.trim())
+        .map(l => `<p>${l}</p>`)
+        .join('\n')
+      return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else {
       return jsonResponse({ success: false, message: '该文件类型不支持在线预览，请下载后查看' }, 400, corsHeaders)
     }
@@ -1251,19 +1270,21 @@ async function getParseTaskHistory(request, env, corsHeaders) {
     const url = new URL(request.url)
     const { page, pageSize, offset } = parsePagination(url)
 
-    // 计算保留期截止时间（避免在 SQL 中拼接字符串）
-    const cutoffDate = new Date(Date.now() - PARSE_TASK_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    // 计算保留期截止时间，格式与 D1 的 CURRENT_TIMESTAMP（YYYY-MM-DD HH:MM:SS）保持一致
+    // 避免使用 ISO 格式（T 分隔符），因为字符串比较时 T(84) > 空格(32) 会导致边界日期记录被排除
+    const cutoffDate = new Date(Date.now() - PARSE_TASK_RETENTION_DAYS * 24 * 60 * 60 * 1000)
+    const cutoffStr = cutoffDate.toISOString().replace('T', ' ').substring(0, 19)
     const where = `WHERE user_id = ? AND created_at >= ?`
     const countRow = await env.DB.prepare(
       `SELECT COUNT(*) as total FROM talent_parse_tasks ${where}`
-    ).bind(user.userId, cutoffDate).first()
+    ).bind(user.userId, cutoffStr).first()
     const total = countRow.total
 
     const rows = await env.DB.prepare(
-      `SELECT t.id, t.batch_id, t.file_name, t.file_type, t.file_size, t.status, t.progress, t.error_message, t.candidate_id, t.created_at, t.updated_at
+      `SELECT id, batch_id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
        FROM talent_parse_tasks ${where}
-       ORDER BY t.created_at DESC LIMIT ? OFFSET ?`
-    ).bind(user.userId, cutoffDate, pageSize, offset).all()
+       ORDER BY created_at DESC LIMIT ? OFFSET ?`
+    ).bind(user.userId, cutoffStr, pageSize, offset).all()
 
     // 按 batch_id 分组
     const batches = {}

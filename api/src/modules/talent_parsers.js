@@ -642,6 +642,8 @@ async function parseFile(fileName, arrayBuffer) {
       return parseDoc(arrayBuffer)
     case '.pdf':
       return parsePdf(arrayBuffer)
+    case '.txt':
+      return parseTxt(arrayBuffer)
     case '.xlsx':
     case '.xls':
     case '.csv':
@@ -649,6 +651,27 @@ async function parseFile(fileName, arrayBuffer) {
     default:
       throw new Error(`不支持的文件类型: ${ext}`)
   }
+}
+
+// ========= .txt 文件解析（自动检测编码）=========
+
+function parseTxt(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer)
+  // 优先尝试 UTF-8 解码
+  let text = new TextDecoder('utf-8').decode(bytes)
+  // 如果出现替换字符（说明不是有效的 UTF-8），尝试 GBK 解码
+  if (text.includes('\uFFFD')) {
+    try {
+      const gbkText = new TextDecoder('gbk').decode(bytes)
+      // 仅当 GBK 解码结果不含替换字符时才采用
+      if (!gbkText.includes('\uFFFD')) {
+        text = gbkText
+      }
+    } catch {
+      // GBK 解码失败，保留 UTF-8 结果
+    }
+  }
+  return extractInfo(text)
 }
 
 // ========= Word → HTML 转换（用于附件在线预览）=========
@@ -730,6 +753,72 @@ function docxToHtml(arrayBuffer) {
   return htmlParts.join('\n') || '<p>文档内容为空</p>'
 }
 
+// GBK 编码的 .doc 文件文本提取（作为 UTF-16LE 的回退方案）
+function extractTextFromDocBinaryGBK(bytes) {
+  const chunks = []
+  let current = []
+
+  for (let i = 0; i < bytes.length; i++) {
+    const b = bytes[i]
+    if (b === 0x0D || b === 0x0A) {
+      if (current.length >= 4) {
+        try {
+          const decoded = new TextDecoder('gbk').decode(new Uint8Array(current))
+          if (decoded.trim().length >= 2) chunks.push(decoded.trim())
+        } catch { /* 忽略解码失败 */ }
+      }
+      current = []
+      continue
+    }
+    // ASCII 可打印字符
+    if (b >= 0x20 && b <= 0x7E) {
+      current.push(b)
+    } else if (b >= 0x81 && b <= 0xFE && i + 1 < bytes.length) {
+      // GBK 双字节字符的首字节范围
+      const b2 = bytes[i + 1]
+      if ((b2 >= 0x40 && b2 <= 0xFE) && b2 !== 0x7F) {
+        current.push(b, b2)
+        i++
+      } else {
+        if (current.length >= 4) {
+          try {
+            const decoded = new TextDecoder('gbk').decode(new Uint8Array(current))
+            if (decoded.trim().length >= 2) chunks.push(decoded.trim())
+          } catch { /* 忽略解码失败 */ }
+        }
+        current = []
+      }
+    } else {
+      if (current.length >= 4) {
+        try {
+          const decoded = new TextDecoder('gbk').decode(new Uint8Array(current))
+          if (decoded.trim().length >= 2) chunks.push(decoded.trim())
+        } catch { /* 忽略解码失败 */ }
+      }
+      current = []
+    }
+  }
+  if (current.length >= 4) {
+    try {
+      const decoded = new TextDecoder('gbk').decode(new Uint8Array(current))
+      if (decoded.trim().length >= 2) chunks.push(decoded.trim())
+    } catch { /* 忽略解码失败 */ }
+  }
+
+  const text = chunks.join('\n')
+  return text
+}
+
+// 统计文本中常见中文字符的数量，用于判断编码是否正确
+function countCommonChineseChars(text) {
+  const commonChars = '的是不了在有人我他这中大来上个国和也子时道说那要她你'
+  let count = 0
+  for (const ch of text) {
+    if (commonChars.includes(ch)) count++
+  }
+  return count
+}
+
 function docToHtml(arrayBuffer) {
   const bytes = new Uint8Array(arrayBuffer)
 
@@ -740,26 +829,56 @@ function docToHtml(arrayBuffer) {
 
   // OLE 二进制 → 提取文本转 HTML
   if (bytes[0] === 0xD0 && bytes[1] === 0xCF) {
-    const text = extractTextFromDocBinary(bytes)
+    // 先尝试 UTF-16LE 解码（当前方案）
+    const utf16Text = extractTextFromDocBinary(bytes)
+    // 再尝试 GBK 解码（部分旧版 .doc 文件使用 GBK 编码）
+    const gbkText = extractTextFromDocBinaryGBK(bytes)
+    // 通过常见中文字符数量判断哪种编码更正确
+    const utf16Score = countCommonChineseChars(utf16Text)
+    const gbkScore = countCommonChineseChars(gbkText)
+    const text = (gbkScore > utf16Score && gbkText.length >= 20) ? gbkText : utf16Text
     return text.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
   }
 
   // RTF
   const header = new TextDecoder().decode(bytes.slice(0, 20))
   if (header.startsWith('{\\rtf')) {
-    // 简单 RTF 文本提取
+    // RTF 文本提取，处理 \u 和 \' 转义序列以正确支持中文
     const fullText = new TextDecoder().decode(bytes)
       .replace(/\\par[d]?/gi, '\n')
+      .replace(/\\tab/gi, '\t')
+      .replace(/\\'([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/\\u(-?\d+)\??\*?/g, (_, code) => String.fromCharCode(parseInt(code)))
       .replace(/\\[a-zA-Z]+-?\d* ?/g, '')
       .replace(/[{}]/g, '')
       .trim()
     return fullText.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
   }
 
-  // HTML 伪装 - 返回原始 HTML 但已是 HTML 格式，浏览器可渲染
+  // HTML 伪装 - 检测字符编码后再解码，避免非 UTF-8 编码的中文乱码
   const lower = header.toLowerCase()
   if (lower.includes('<html') || lower.includes('<!doctype') || lower.includes('<meta')) {
-    return new TextDecoder().decode(bytes)
+    const utf8Text = new TextDecoder('utf-8').decode(bytes)
+    // 从 meta 标签中检测字符集
+    const charsetMatch = utf8Text.match(/<meta[^>]*charset=["']?([^"'\s;>]+)/i)
+    if (charsetMatch) {
+      const charset = charsetMatch[1].toLowerCase()
+      if (charset !== 'utf-8' && charset !== 'utf8') {
+        try {
+          return new TextDecoder(charset).decode(bytes)
+        } catch {
+          // 不支持的编码，回退到 UTF-8
+        }
+      }
+    }
+    // 如果 UTF-8 解码出现替换字符，尝试 GBK
+    if (utf8Text.includes('\uFFFD')) {
+      try {
+        const gbkText = new TextDecoder('gbk').decode(bytes)
+        if (!gbkText.includes('\uFFFD')) return gbkText
+      } catch { /* 忽略 */ }
+    }
+    return utf8Text
   }
 
   return '<p>无法预览此文档格式</p>'

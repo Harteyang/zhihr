@@ -81,7 +81,7 @@
             <el-upload
               :auto-upload="true"
               action="#"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf,.doc,.docx,.txt"
               :show-file-list="false"
               :http-request="handleUploadRequest"
               :before-upload="beforeUpload"
@@ -262,8 +262,8 @@ async function handlePreview(row) {
       const res = await getDownloadUrl(row.id)
       previewUrl.value = res.data.data.url
       previewType.value = 'pdf'
-    } else if (fileType === 'doc' || fileType === 'docx') {
-      // Word：调用预览接口拿到 HTML 后渲染
+    } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
+      // Word/TXT：调用预览接口拿到 HTML 后渲染
       const res = await previewAttachment(row.id)
       const data = res.data.data
       if (data?.type === 'html') {
