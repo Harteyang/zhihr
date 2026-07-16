@@ -264,8 +264,9 @@ async function handleAiParse() {
   aiParsing.value = true
   const formData = new FormData()
   formData.append('file', selectedFile.value)
+  let aiMsg = null
   try {
-    ElMessage.info('正在调用 AI 解析简历...', { duration: 0, key: 'aiParseMsg' })
+    aiMsg = ElMessage.info({ message: '正在调用 AI 解析简历...', duration: 0 })
     const res = await aiParseResume(formData)
     const data = res.data.data || res.data
 
@@ -296,9 +297,11 @@ async function handleAiParse() {
       }))
     }
 
-    ElMessage.success({ content: 'AI 解析完成，请确认并补充信息', key: 'aiParseMsg' })
+    aiMsg?.close()
+    ElMessage.success({ message: 'AI 解析完成，请确认并补充信息' })
   } catch (e) {
-    const errMsg = e?.response?.data?.message || 'AI 解析失败，请稍后重试'
+    aiMsg?.close()
+    const errMsg = e?.response?.data?.message || e?.message || 'AI 解析失败，请稍后重试'
     ElMessage.warning(errMsg)
   } finally {
     aiParsing.value = false
