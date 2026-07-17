@@ -803,22 +803,25 @@ async function parseResume(request, env, corsHeaders) {
 // 模型配置：按优先级排列，调用时依次尝试，失败自动切换到下一个
 const AI_MODELS = [
   {
-    name: 'sensenova-6.7-flash-lite',
-    apiBase: 'https://token.sensenova.cn/v1',
-    apiKeyEnv: 'SENSENOVA_API_KEY',
-    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9'
-  },
-  {
     name: 'deepseek-v4-flash',
     apiBase: 'https://token.sensenova.cn/v1',
     apiKeyEnv: 'SENSENOVA_API_KEY',
-    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9'
+    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
+    maxTokens: 4096
+  },
+  {
+    name: 'sensenova-6.7-flash-lite',
+    apiBase: 'https://token.sensenova.cn/v1',
+    apiKeyEnv: 'SENSENOVA_API_KEY',
+    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
+    maxTokens: 8192  // 该模型使用 reasoning 模式，需要更大 token 预算
   },
   {
     name: 'agnes-2.0-flash',
     apiBase: 'https://apihub.agnes-ai.com/v1',
     apiKeyEnv: 'AI_API_KEY',
-    apiKeyFallback: null
+    apiKeyFallback: null,
+    maxTokens: 4096
   }
 ]
 
@@ -870,7 +873,7 @@ async function callAIWithFallback(resumeText, env) {
               { role: 'user', content: buildResumeUserMessage(resumeText) }
             ],
             temperature: 0.1,
-            max_tokens: 4096
+            max_tokens: model.maxTokens || 4096
           })
         },
         AI_CALL_TIMEOUT_MS
@@ -882,7 +885,14 @@ async function callAIWithFallback(resumeText, env) {
       }
 
       const data = await response.json()
-      const content = data?.choices?.[0]?.message?.content
+      const message = data?.choices?.[0]?.message
+      // 部分模型（如 sensenova）使用 reasoning 模式，content 可能为空
+      // 优先使用 content，若为空则尝试从 reasoning 中提取 JSON
+      let content = message?.content
+      if (!content && message?.reasoning) {
+        content = message.reasoning
+        debugLog('AI', `模型 ${model.name} 使用 reasoning 输出，尝试从中提取 JSON`)
+      }
       if (!content) {
         throw new Error('AI 返回内容为空')
       }
