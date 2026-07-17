@@ -274,8 +274,9 @@ async function handlePreview(row) {
     if (fileType === 'pdf') {
       // PDF：通过预览接口直接获取二进制数据，生成 blob URL 同源内嵌预览。
       // 使用 fetch + response.blob() 避免 axios 自动解析 JSON，消除 base64 编码错误风险。
+      const apiBase = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip/api'
       const token = localStorage.getItem('token') || ''
-      const res = await fetch(`https://api.zhihr.vip/api/talent/attachments/${row.id}/preview`, {
+      const res = await fetch(`${apiBase}/talent/attachments/${row.id}/preview`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) {
