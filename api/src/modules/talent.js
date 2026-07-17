@@ -724,6 +724,12 @@ async function previewAttachment(request, env, corsHeaders, params) {
     }
 
     const arrayBuffer = await ossRes.arrayBuffer()
+
+    const MAX_PREVIEW_SIZE = 10 * 1024 * 1024
+    if (arrayBuffer.byteLength > MAX_PREVIEW_SIZE) {
+      return jsonResponse({ success: false, message: '文件过大，无法预览，请下载后查看' }, 400, corsHeaders)
+    }
+
     const fileType = attachment.file_type?.toLowerCase()
 
     if (fileType === 'docx') {
@@ -734,13 +740,9 @@ async function previewAttachment(request, env, corsHeaders, params) {
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'pdf') {
       // 将 PDF 内容 base64 编码后返回，前端生成 blob URL 实现同源内嵌预览。
-      // 不直接使用 OSS 预签名 URL 加载是因为 embed/iframe 跨域加载 OSS 资源时，
-      // 浏览器会因 OSS 的跨域导航请求处理不兼容而触发 net::ERR_ABORTED。
-      const bytes = new Uint8Array(arrayBuffer)
-      let binary = ''
-      for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i])
-      }
+      // 使用 TextDecoder('latin1') 替代字符串拼接循环，避免 O(n²) 时间复杂度和内存激增。
+      const decoder = new TextDecoder('latin1')
+      const binary = decoder.decode(new Uint8Array(arrayBuffer))
       const base64 = btoa(binary)
       return jsonResponse({ success: true, data: { type: 'pdf', base64 } }, 200, corsHeaders)
     } else if (fileType === 'txt') {

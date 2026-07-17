@@ -261,10 +261,7 @@ async function handleStatusChange(val) {
 }
 
 async function handlePreview(row) {
-  // 切换到附件 Tab 以便用户能看到附件列表上下文
   activeTab.value = 'attachments'
-  // 关闭上一次预览，释放 ObjectURL
-  closePreview()
   previewFileName.value = row.file_name
   previewVisible.value = true
   previewLoading.value = true
