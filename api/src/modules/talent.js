@@ -801,6 +801,8 @@ async function parseResume(request, env, corsHeaders) {
 
 // AI 简历解析（多模型轮询 + 故障转移）
 // 模型配置：按优先级排列，调用时依次尝试，失败自动切换到下一个
+// 注意：sensenova-6.7-flash-lite 使用 reasoning 模式，复杂简历下易陷入思考循环
+//       实测 60 秒仍无法返回 content，因此降级为最后备选
 const AI_MODELS = [
   {
     name: 'deepseek-v4-flash',
@@ -810,23 +812,24 @@ const AI_MODELS = [
     maxTokens: 4096
   },
   {
-    name: 'sensenova-6.7-flash-lite',
-    apiBase: 'https://token.sensenova.cn/v1',
-    apiKeyEnv: 'SENSENOVA_API_KEY',
-    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
-    maxTokens: 8192  // 该模型使用 reasoning 模式，需要更大 token 预算
-  },
-  {
     name: 'agnes-2.0-flash',
     apiBase: 'https://apihub.agnes-ai.com/v1',
     apiKeyEnv: 'AI_API_KEY',
     apiKeyFallback: null,
     maxTokens: 4096
+  },
+  {
+    name: 'sensenova-6.7-flash-lite',
+    apiBase: 'https://token.sensenova.cn/v1',
+    apiKeyEnv: 'SENSENOVA_API_KEY',
+    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
+    maxTokens: 8192  // reasoning 模式需要更大 token 预算
   }
 ]
 
-// AI 调用超时时间（毫秒）：单个模型最多等待 30 秒
-const AI_CALL_TIMEOUT_MS = 30000
+// AI 调用超时时间（毫秒）：单个模型最多等待 60 秒
+// 复杂简历下 deepseek-v4-flash 实测约 15-20 秒，预留充足时间避免误判超时
+const AI_CALL_TIMEOUT_MS = 60000
 
 // 带超时的 fetch 封装
 function fetchWithTimeout(url, options, timeoutMs) {
@@ -886,15 +889,18 @@ async function callAIWithFallback(resumeText, env) {
 
       const data = await response.json()
       const message = data?.choices?.[0]?.message
-      // 部分模型（如 sensenova）使用 reasoning 模式，content 可能为空
-      // 优先使用 content，若为空则尝试从 reasoning 中提取 JSON
-      let content = message?.content
-      if (!content && message?.reasoning) {
-        content = message.reasoning
-        debugLog('AI', `模型 ${model.name} 使用 reasoning 输出，尝试从中提取 JSON`)
-      }
-      if (!content) {
-        throw new Error('AI 返回内容为空')
+      // 部分模型（如 sensenova-6.7-flash-lite）使用 reasoning 模式
+      // 当 max_tokens 不足时，content 为空且 reasoning 是思考过程（非 JSON）
+      // 此时不应使用 reasoning 替代 content，否则会导致 JSON 解析失败
+      // 正确做法：判定为模型失败，进入下一个模型重试
+      const content = message?.content
+      if (!content || !content.trim()) {
+        const hasReasoning = !!(message?.reasoning && message.reasoning.trim())
+        throw new Error(
+          hasReasoning
+            ? 'AI 返回 content 为空（reasoning 模式可能未完成思考，max_tokens 不足）'
+            : 'AI 返回内容为空'
+        )
       }
 
       // 解析 AI 返回的 JSON
@@ -1133,7 +1139,7 @@ async function getBatchUploadUrl(request, env, corsHeaders) {
 }
 
 // 创建批量解析任务（文件已上传至 OSS 后调用）
-async function createBatchParseTasks(request, env, corsHeaders) {
+async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
 
@@ -1171,6 +1177,42 @@ async function createBatchParseTasks(request, env, corsHeaders) {
     await env.DB.batch(stmts)
 
     await logOperation(env, user, 'create_batch_parse', 'parse_batch', batchId, { file_count: files.length }, getClientIp(request))
+
+    // 创建任务后立即触发第一个任务的处理，避免等待第一次轮询
+    // 使用 ctx.waitUntil 异步处理，不阻塞创建任务的响应
+    try {
+      const runningTask = await env.DB.prepare(
+        `SELECT id FROM talent_parse_tasks WHERE status = 'parsing' LIMIT 1`
+      ).first()
+      if (!runningTask) {
+        const nextTask = await env.DB.prepare(
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT 1`
+        ).first()
+        if (nextTask) {
+          const claim = await env.DB.prepare(
+            `UPDATE talent_parse_tasks SET status = 'parsing', progress = 5, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'`
+          ).bind(nextTask.id).run()
+          if (claim.meta.changes > 0) {
+            const taskUserObj = { userId: user.userId, username: user.username, role: user.role }
+            const processPromise = (async () => {
+              try {
+                await processSingleParseTask(env, nextTask, taskUserObj)
+              } catch (parseErr) {
+                await env.DB.prepare(
+                  `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+                ).bind(parseErr.message || '解析失败', nextTask.id).run()
+                debugLog('ParseQueue', `Task ${nextTask.id} failed:`, parseErr.message)
+              }
+            })()
+            if (ctx && typeof ctx.waitUntil === 'function') {
+              ctx.waitUntil(processPromise)
+            }
+          }
+        }
+      }
+    } catch (triggerErr) {
+      debugLog('ParseQueue', 'Trigger error (non-fatal):', triggerErr.message)
+    }
 
     return jsonResponse({ success: true, data: { batchId, taskCount: files.length } }, 201, corsHeaders)
   } catch (err) {
@@ -1307,11 +1349,10 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
       return jsonResponse({ success: false, message: '批次不存在或无权查看' }, 404, corsHeaders)
     }
 
-    // 检查 parsing 状态任务是否超时（超时阈值：30分钟）
-    // 获取当前时间戳（UTC），格式与 D1 的 CURRENT_TIMESTAMP 保持一致
+    // 检查 parsing 状态任务是否超时（超时阈值：5分钟）
+    // 使用 Date 对象直接比较，避免时区和字符串格式问题
     const now = new Date()
-    const nowStr = now.toISOString().replace('T', ' ').substring(0, 19)
-    
+
     const timeoutTasks = tasks.results.filter(t => {
       if (t.status !== 'parsing') return false
       const updatedAt = new Date(t.updated_at.replace(' ', 'T'))
@@ -1336,7 +1377,15 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
 
     // 尝试处理下一个全局待处理任务（串行处理，FIFO）
     // 使用 ctx.waitUntil 异步处理，避免阻塞状态查询响应
+    // 串行保证：先检查全局是否有 parsing 状态的任务，如果有则跳过，避免并发处理多个任务
     try {
+      const runningTask = await env.DB.prepare(
+        `SELECT id FROM talent_parse_tasks WHERE status = 'parsing' LIMIT 1`
+      ).first()
+      // 有正在处理的任务时，等待当前任务完成再处理下一个，保证真正的串行
+      if (runningTask) {
+        debugLog('ParseQueue', `Task ${runningTask.id} is parsing, skip new task to ensure serial processing`)
+      } else {
       const nextTask = await env.DB.prepare(
         `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT 1`
       ).first()
@@ -1384,6 +1433,7 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
           }
         }
       }
+      }  // end of else (runningTask)
     } catch (procErr) {
       debugLog('ParseQueue', 'Processing error (non-fatal):', procErr.message)
     }
