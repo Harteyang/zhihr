@@ -291,17 +291,17 @@ async function uploadAttachmentToCandidate(candidateId, file) {
   })
   const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
 
-  const uploadProgressMsg = ElMessage.info('正在上传简历附件...', { duration: 0 })
+  // 注意：ElMessage.info() 只接受一个参数（字符串或对象）。
+  // 若写成 ElMessage.info('text', { duration: 0 })，第二个参数会被当作 appContext
+  // 传入 Vue 的 render()，导致 "Object prototype may only be an Object or null: undefined" 错误。
+  // 正确写法是使用对象参数：ElMessage.info({ message, duration })。
+  const uploadProgressMsg = ElMessage.info({ message: '正在上传简历附件...', duration: 0 })
   try {
     const xhr = new XMLHttpRequest()
     await new Promise((resolve, reject) => {
       xhr.open('PUT', uploadUrl, true)
-      xhr.upload.onprogress = (e) => {
-        if (e.total > 0) {
-          const pct = Math.round((e.loaded / e.total) * 100)
-          uploadProgressMsg.content = `正在上传简历附件... ${pct}%`
-        }
-      }
+      // ElMessage 返回的 handler 对象只有 close() 方法，不支持动态修改 content。
+      // 如需显示进度百分比，可考虑使用 ElNotification 或进度条组件，此处保持简单提示。
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve()
         else {
