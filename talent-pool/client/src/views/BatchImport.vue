@@ -88,9 +88,9 @@
           <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
           <el-table-column label="状态" width="120">
             <template #default="{ row }">
-              <el-tag :type="taskStatusTagType(row.status)" size="small">
-                <el-icon v-if="row.status === 'parsing'" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
-                {{ taskStatusText(row.status) }}
+              <el-tag :type="getTaskDisplayStatus(row).type" size="small">
+                <el-icon v-if="row.status === 'parsing' && !isTaskStuck(row)" class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
+                {{ getTaskDisplayStatus(row).text }}
               </el-tag>
             </template>
           </el-table-column>
@@ -99,7 +99,7 @@
               <el-progress :percentage="row.progress" :status="row.status === 'failed' ? 'exception' : row.status === 'completed' ? 'success' : ''" :stroke-width="14" :text-inside="true" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column label="操作" width="140">
             <template #default="{ row }">
               <el-button
                 v-if="row.status === 'failed'"
@@ -109,6 +109,15 @@
                 @click="handleRetry(row.id)"
               >
                 重新解析
+              </el-button>
+              <el-button
+                v-if="row.status === 'parsing' && isTaskStuck(row)"
+                type="danger"
+                size="small"
+                link
+                @click="handleRetry(row.id)"
+              >
+                重启解析
               </el-button>
               <el-button
                 v-if="row.status === 'completed' && row.candidate_id"
@@ -187,31 +196,40 @@
               <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
               <el-table-column label="状态" width="100">
                 <template #default="{ row }">
-                  <el-tag :type="taskStatusTagType(row.status)" size="small">{{ taskStatusText(row.status) }}</el-tag>
+                  <el-tag :type="getTaskDisplayStatus(row).type" size="small">{{ getTaskDisplayStatus(row).text }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="120">
-                <template #default="{ row }">
-                  <el-button
-                    v-if="row.status === 'failed'"
-                    type="primary"
-                    size="small"
-                    link
-                    @click="handleRetry(row.id)"
-                  >
-                    重新解析
-                  </el-button>
-                  <el-button
-                    v-if="row.status === 'completed' && row.candidate_id"
-                    type="primary"
-                    size="small"
-                    link
-                    @click="$router.push(`/candidates/${row.candidate_id}`)"
-                  >
-                    查看
-                  </el-button>
-                </template>
-              </el-table-column>
+              <el-table-column label="操作" width="140">
+                    <template #default="{ row }">
+                      <el-button
+                        v-if="row.status === 'failed'"
+                        type="primary"
+                        size="small"
+                        link
+                        @click="handleRetry(row.id)"
+                      >
+                        重新解析
+                      </el-button>
+                      <el-button
+                        v-if="row.status === 'parsing' && isTaskStuck(row)"
+                        type="danger"
+                        size="small"
+                        link
+                        @click="handleRetry(row.id)"
+                      >
+                        重启解析
+                      </el-button>
+                      <el-button
+                        v-if="row.status === 'completed' && row.candidate_id"
+                        type="primary"
+                        size="small"
+                        link
+                        @click="$router.push(`/candidates/${row.candidate_id}`)"
+                      >
+                        查看
+                      </el-button>
+                    </template>
+                  </el-table-column>
             </el-table>
           </el-card>
         </div>
@@ -232,6 +250,7 @@ const MAX_FILE_MB = 10
 const MAX_FILE_SIZE = MAX_FILE_MB * 1024 * 1024
 const ALLOWED_EXTENSIONS = ['.doc', '.docx', '.pdf', '.txt']
 const POLL_INTERVAL = 3000
+const STUCK_THRESHOLD_MINUTES = 25
 
 const activeTab = ref('upload')
 const uploadRef = ref(null)
@@ -288,9 +307,25 @@ function taskStatusText(status) {
   return map[status] || status
 }
 
+function getTaskDisplayStatus(row) {
+  if (row.status === 'parsing' && isTaskStuck(row)) {
+    return { text: '解析卡住', type: 'danger' }
+  }
+  return { text: taskStatusText(row.status), type: taskStatusTagType(row.status) }
+}
+
 function taskStatusTagType(status) {
   const map = { pending: 'info', parsing: 'warning', completed: 'success', failed: 'danger' }
   return map[status] || 'info'
+}
+
+function isTaskStuck(task) {
+  if (task.status !== 'parsing') return false
+  if (!task.updated_at) return false
+  const updatedAt = new Date(task.updated_at.replace(' ', 'T'))
+  const now = new Date()
+  const elapsedMinutes = (now - updatedAt) / (1000 * 60)
+  return elapsedMinutes > STUCK_THRESHOLD_MINUTES
 }
 
 function handleFileChange(uploadFile) {
@@ -463,21 +498,18 @@ function handleConfirmProgress() {
   ElMessage.info('已确认解析结果，可在"历史记录"中查看')
 }
 
-// 重试失败的解析任务
 async function handleRetry(taskId) {
   try {
-    await retryParseTask(taskId)
-    ElMessage.success('已重新加入解析队列')
-    // 刷新当前批次状态
+    const res = await retryParseTask(taskId)
+    ElMessage.success(res.data.message || '已重新加入解析队列')
     if (currentBatchId.value && activeTab.value === 'progress') {
       startPolling()
     }
-    // 刷新历史
     if (activeTab.value === 'history') {
       loadHistory()
     }
   } catch (e) {
-    ElMessage.error('重试失败：' + (e?.response?.data?.message || e?.message || '未知错误'))
+    ElMessage.error('操作失败：' + (e?.response?.data?.message || e?.message || '未知错误'))
   }
 }
 

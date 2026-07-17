@@ -1251,6 +1251,8 @@ async function processSingleParseTask(env, task, user) {
   return { candidateId, parsedData: aiResult }
 }
 
+const PARSE_TASK_TIMEOUT_MINUTES = 30
+
 // 获取批次状态（同时触发下一个待处理任务的处理）
 async function getBatchStatus(request, env, corsHeaders, params, ctx) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
@@ -1260,13 +1262,40 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
     const { batchId } = params
 
     // 查询该批次的任务
-    const tasks = await env.DB.prepare(
+    let tasks = await env.DB.prepare(
       `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
        FROM talent_parse_tasks WHERE batch_id = ? AND user_id = ? ORDER BY id`
     ).bind(batchId, user.userId).all()
 
     if (!tasks.results || tasks.results.length === 0) {
       return jsonResponse({ success: false, message: '批次不存在或无权查看' }, 404, corsHeaders)
+    }
+
+    // 检查 parsing 状态任务是否超时（超时阈值：30分钟）
+    // 获取当前时间戳（UTC），格式与 D1 的 CURRENT_TIMESTAMP 保持一致
+    const now = new Date()
+    const nowStr = now.toISOString().replace('T', ' ').substring(0, 19)
+    
+    const timeoutTasks = tasks.results.filter(t => {
+      if (t.status !== 'parsing') return false
+      const updatedAt = new Date(t.updated_at.replace(' ', 'T'))
+      const elapsedMinutes = (now - updatedAt) / (1000 * 60)
+      return elapsedMinutes > PARSE_TASK_TIMEOUT_MINUTES
+    })
+
+    if (timeoutTasks.length > 0) {
+      for (const task of timeoutTasks) {
+        await env.DB.prepare(
+          `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'parsing'`
+        ).bind(`任务处理超时（超过 ${PARSE_TASK_TIMEOUT_MINUTES} 分钟），请点击"重启解析"重新处理`, task.id).run()
+        debugLog('ParseTimeout', `Task ${task.id} (${task.file_name}) marked as failed due to timeout`)
+        await logOperation(env, user, 'task_timeout', 'parse_task', task.id, { reason: 'timeout', timeoutMinutes: PARSE_TASK_TIMEOUT_MINUTES }, getClientIp(request))
+      }
+      // 超时任务已更新，重新查询最新状态
+      tasks = await env.DB.prepare(
+        `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
+         FROM talent_parse_tasks WHERE batch_id = ? AND user_id = ? ORDER BY id`
+      ).bind(batchId, user.userId).all()
     }
 
     // 尝试处理下一个全局待处理任务（串行处理，FIFO）
@@ -1400,7 +1429,7 @@ async function getParseTaskHistory(request, env, corsHeaders) {
   }
 }
 
-// 重试失败的解析任务
+// 重试/激活解析任务（支持 failed 和 parsing 状态）
 async function retryParseTask(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
@@ -1408,18 +1437,28 @@ async function retryParseTask(request, env, corsHeaders, params) {
   try {
     const { taskId } = params
     const task = await env.DB.prepare(
-      'SELECT id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE id = ? AND user_id = ?'
+      'SELECT id, user_id, file_name, file_type, file_size, oss_key, status, updated_at FROM talent_parse_tasks WHERE id = ? AND user_id = ?'
     ).bind(taskId, user.userId).first()
 
     if (!task) {
       return jsonResponse({ success: false, message: '任务不存在或无权操作' }, 404, corsHeaders)
     }
 
+    const allowedStatuses = ['failed', 'parsing', 'pending']
+    if (!allowedStatuses.includes(task.status)) {
+      return jsonResponse({ success: false, message: `任务状态为"${task.status}"，不支持重启。仅支持 failed/parsing/pending 状态的任务。` }, 400, corsHeaders)
+    }
+
+    const previousStatus = task.status
     await env.DB.prepare(
       `UPDATE talent_parse_tasks SET status = 'pending', progress = 0, error_message = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
     ).bind(taskId).run()
 
-    return jsonResponse({ success: true, message: '已重新加入解析队列' }, 200, corsHeaders)
+    await logOperation(env, user, 'task_retry', 'parse_task', taskId, { previousStatus, fileName: task.file_name }, getClientIp(request))
+    debugLog('ParseRetry', `Task ${taskId} (${task.file_name}) restarted from ${previousStatus} to pending`)
+
+    const message = previousStatus === 'parsing' ? '已激活任务，重新加入解析队列' : '已重新加入解析队列'
+    return jsonResponse({ success: true, message }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
   }
