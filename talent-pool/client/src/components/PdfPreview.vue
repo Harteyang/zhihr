@@ -4,7 +4,7 @@
       <el-icon class="is-loading" size="32"><Loading /></el-icon>
       <span>正在加载 PDF...</span>
     </div>
-    <canvas v-else ref="canvasRef" class="pdf-canvas" />
+    <canvas v-show="!loading && !error" ref="canvasRef" class="pdf-canvas" />
     <div v-if="error" class="pdf-error">
       <el-icon><Warning /></el-icon>
       <span>{{ error }}</span>
@@ -27,7 +27,7 @@ const canvasRef = ref(null)
 const loading = ref(false)
 const error = ref('')
 let pdfDoc = null
-let scale = 1
+let scale = 2
 
 async function loadPdf() {
   if (!props.src) return
@@ -44,6 +44,8 @@ async function loadPdf() {
     const arrayBuffer = await fetch(props.src).then(res => res.arrayBuffer())
     pdfDoc = await pdfjs.getDocument({ data: arrayBuffer, disableFontFace: true }).promise
     
+    loading.value = false
+    await nextTick()
     await renderAllPages()
   } catch (e) {
     error.value = 'PDF 加载失败，请尝试下载后查看'
