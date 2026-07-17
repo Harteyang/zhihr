@@ -733,7 +733,16 @@ async function previewAttachment(request, env, corsHeaders, params) {
       const html = docToHtml(arrayBuffer)
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'pdf') {
-      return jsonResponse({ success: true, data: { type: 'pdf' } }, 200, corsHeaders)
+      // 将 PDF 内容 base64 编码后返回，前端生成 blob URL 实现同源内嵌预览。
+      // 不直接使用 OSS 预签名 URL 加载是因为 embed/iframe 跨域加载 OSS 资源时，
+      // 浏览器会因 OSS 的跨域导航请求处理不兼容而触发 net::ERR_ABORTED。
+      const bytes = new Uint8Array(arrayBuffer)
+      let binary = ''
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i])
+      }
+      const base64 = btoa(binary)
+      return jsonResponse({ success: true, data: { type: 'pdf', base64 } }, 200, corsHeaders)
     } else if (fileType === 'txt') {
       // TXT 文件预览：自动检测编码并转换为 HTML
       const bytes = new Uint8Array(arrayBuffer)

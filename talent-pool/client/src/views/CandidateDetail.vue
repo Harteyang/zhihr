@@ -275,10 +275,24 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：获取 OSS 直链并通过 iframe 内嵌预览
-      const res = await getDownloadUrl(row.id)
-      previewUrl.value = res.data.data.url
-      previewType.value = 'pdf'
+      // PDF：通过预览接口获取 base64 内容，生成 blob URL 同源内嵌预览。
+      // 不直接加载 OSS 预签名 URL，避免跨域导航请求触发 net::ERR_ABORTED。
+      const res = await previewAttachment(row.id)
+      const data = res.data.data
+      if (data?.type === 'pdf' && data?.base64) {
+        // base64 → blob URL
+        const byteChars = atob(data.base64)
+        const byteNums = new Array(byteChars.length)
+        for (let i = 0; i < byteChars.length; i++) {
+          byteNums[i] = byteChars.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNums)
+        const blob = new Blob([byteArray], { type: 'application/pdf' })
+        previewUrl.value = URL.createObjectURL(blob)
+        previewType.value = 'pdf'
+      } else {
+        throw new Error('不支持的预览类型')
+      }
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
       // Word/TXT：调用预览接口拿到 HTML 后渲染
       const res = await previewAttachment(row.id)
@@ -304,7 +318,10 @@ async function handlePreview(row) {
 }
 
 function closePreview() {
-  // previewUrl 是 OSS 直链（非 blob: URL），无需调用 revokeObjectURL
+  // 释放 blob URL（PDF 预览时生成），避免内存泄漏
+  if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
   previewVisible.value = false
   previewType.value = ''
   previewHtml.value = ''
