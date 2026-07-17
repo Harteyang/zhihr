@@ -15,6 +15,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { Loading, Warning } from '@element-plus/icons-vue'
+import * as pdfjsLib from 'pdfjs-dist'
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 const props = defineProps({
   src: {
@@ -31,19 +35,14 @@ let scale = 2
 
 async function loadPdf() {
   if (!props.src) return
-  
+
   loading.value = true
   error.value = ''
-  
+
   try {
-    const pdfjs = await import('pdfjs-dist')
-    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.js')
-    
-    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
-    
     const arrayBuffer = await fetch(props.src).then(res => res.arrayBuffer())
-    pdfDoc = await pdfjs.getDocument({ data: arrayBuffer, disableFontFace: true }).promise
-    
+    pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer, disableFontFace: true }).promise
+
     loading.value = false
     await nextTick()
     await renderAllPages()
