@@ -687,6 +687,120 @@ function escapeHtml(text) {
     .replace(/'/g, '&#39;')
 }
 
+function parseRels(files) {
+  const relsPath = Object.keys(files).find(k => /^word\/_rels\/document\.xml\.rels$/i.test(k))
+  if (!relsPath) return {}
+  const relsXml = new TextDecoder().decode(files[relsPath])
+  const rels = {}
+  const regex = /<Relationship\s+Id="([^"]+)"\s+Type="[^"]+"\s+Target="([^"]+)"\/?/gi
+  let match
+  while ((match = regex.exec(relsXml)) !== null) {
+    rels[match[1]] = match[2]
+  }
+  return rels
+}
+
+function bytesToBase64(bytes) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  let result = ''
+  let i = 0
+  const len = bytes.length
+  while (i < len) {
+    const a = bytes[i++]
+    const b = i < len ? bytes[i++] : 0
+    const c = i < len ? bytes[i++] : 0
+    result += chars[a >> 2]
+    result += chars[((a & 3) << 4) | (b >> 4)]
+    result += i > len ? '=' : chars[((b & 15) << 2) | (c >> 6)]
+    result += i > len + 1 ? '=' : chars[c & 63]
+  }
+  return result
+}
+
+function extractImages(files, rels) {
+  const images = {}
+  for (const [id, target] of Object.entries(rels)) {
+    if (target.startsWith('media/')) {
+      const mediaPath = `word/${target}`
+      if (files[mediaPath]) {
+        const bytes = new Uint8Array(files[mediaPath])
+        const ext = target.split('.').pop().toLowerCase()
+        let mimeType = 'image/png'
+        if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg'
+        else if (ext === 'gif') mimeType = 'image/gif'
+        else if (ext === 'bmp') mimeType = 'image/bmp'
+        images[id] = `data:${mimeType};base64,${bytesToBase64(bytes)}`
+      }
+    }
+  }
+  return images
+}
+
+function getParagraphStyle(p) {
+  const styles = []
+  
+  const alignMatch = p.match(/<w:jc\s[^>]*w:val="([^"]+)"/i)
+  if (alignMatch) {
+    const alignMap = { 'left': 'text-align: left', 'center': 'text-align: center', 'right': 'text-align: right', 'justify': 'text-align: justify' }
+    if (alignMap[alignMatch[1]]) styles.push(alignMap[alignMatch[1]])
+  }
+
+  const indMatch = p.match(/<w:ind\s[^>]*([^>]+)/i)
+  if (indMatch) {
+    const indStr = indMatch[1]
+    const leftMatch = indStr.match(/w:left="([^"]+)"/i)
+    const rightMatch = indStr.match(/w:right="([^"]+)"/i)
+    const firstLineMatch = indStr.match(/w:firstLine="([^"]+)"/i)
+    if (leftMatch) styles.push(`padding-left: ${parseInt(leftMatch[1]) / 20}px`)
+    if (rightMatch) styles.push(`padding-right: ${parseInt(rightMatch[1]) / 20}px`)
+    if (firstLineMatch) styles.push(`text-indent: ${parseInt(firstLineMatch[1]) / 20}px`)
+  }
+
+  const spacingMatch = p.match(/<w:spacing\s[^>]*([^>]+)/i)
+  if (spacingMatch) {
+    const spacingStr = spacingMatch[1]
+    const beforeMatch = spacingStr.match(/w:before="([^"]+)"/i)
+    const afterMatch = spacingStr.match(/w:after="([^"]+)"/i)
+    const lineMatch = spacingStr.match(/w:line="([^"]+)"/i)
+    if (beforeMatch) styles.push(`margin-top: ${parseInt(beforeMatch[1]) / 20}px`)
+    if (afterMatch) styles.push(`margin-bottom: ${parseInt(afterMatch[1]) / 20}px`)
+    if (lineMatch) styles.push(`line-height: ${parseInt(lineMatch[1]) / 240}`)
+  }
+
+  return styles.length > 0 ? ` style="${styles.join('; ')}"` : ''
+}
+
+function getRunStyle(runContent) {
+  const styles = []
+
+  const szMatch = runContent.match(/<w:sz\s[^>]*w:val="([^"]+)"/i)
+  if (szMatch) styles.push(`font-size: ${parseInt(szMatch[1]) / 2}px`)
+
+  const colorMatch = runContent.match(/<w:color\s[^>]*w:val="([^"]+)"/i)
+  if (colorMatch) styles.push(`color: #${colorMatch[1]}`)
+
+  return styles.length > 0 ? ` style="${styles.join('; ')}"` : ''
+}
+
+function parseDrawing(p, images) {
+  const drawingRegex = /<w:drawing[\s\S]*?<\/w:drawing>/gi
+  const matches = []
+  let match
+  while ((match = drawingRegex.exec(p)) !== null) {
+    matches.push(match[0])
+  }
+  if (matches.length === 0) return []
+
+  const result = []
+  for (const drawing of matches) {
+    const blipMatch = drawing.match(/<a:blip\s[^>]*r:embed="([^"]+)"/i)
+    if (blipMatch && images[blipMatch[1]]) {
+      result.push(`<img src="${images[blipMatch[1]]}" style="max-width: 100%; height: auto; display: inline-block; vertical-align: middle;" />`)
+    }
+  }
+  return result
+}
+
 function docxToHtml(arrayBuffer) {
   let files
   try {
@@ -698,6 +812,9 @@ function docxToHtml(arrayBuffer) {
   const docPath = Object.keys(files).find(k => /^word\/document\d*\.xml$/i.test(k))
   if (!docPath) return '<p>无法找到文档内容</p>'
 
+  const rels = parseRels(files)
+  const images = extractImages(files, rels)
+
   const xml = new TextDecoder().decode(files[docPath])
   const paragraphs = xml.split(/<\/w:p>/i)
   const htmlParts = []
@@ -705,10 +822,11 @@ function docxToHtml(arrayBuffer) {
   for (const p of paragraphs) {
     if (!p.includes('<w:')) continue
 
-    // 检测标题样式
     const isHeading = /<w:pStyle\s[^>]*w:val="[^"]*[Hh]eading/i.test(p)
+    const pStyle = getParagraphStyle(p)
 
-    // 提取文本运行（runs）
+    const imagesInPara = parseDrawing(p, images)
+
     const runs = []
     const runRegex = /<w:r[^>]*>([\s\S]*?)<\/w:r>/gi
     let match
@@ -717,35 +835,35 @@ function docxToHtml(arrayBuffer) {
       const isBold = /<w:b\s*\/>/i.test(runContent) || /<w:b\s[^>]*w:val="(?:1|true|on)"/i.test(runContent)
       const isItalic = /<w:i\s*\/>/i.test(runContent) || /<w:i\s[^>]*w:val="(?:1|true|on)"/i.test(runContent)
       const isUnderline = /<w:u\s*\/>/i.test(runContent) || /<w:u\s[^>]*w:val="single"/i.test(runContent)
+      const runStyle = getRunStyle(runContent)
 
-      // 提取文本（w:t 标签内容是 XML 转义的，需先解码再 HTML 转义以防 XSS）
       const texts = []
       const textRegex = /<w:t[^>]*>([^<]*)<\/w:t>/gi
       let textMatch
       while ((textMatch = textRegex.exec(runContent)) !== null) {
         texts.push(textMatch[1])
       }
-      // 先解码 XML 实体，再进行 HTML 转义
       let text = texts.join('').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
       text = escapeHtml(text)
 
-      // 处理换行符
       text = text.replace(/&lt;br&gt;/gi, '<br>')
 
-      if (text) {
-        if (isBold) text = `<strong>${text}</strong>`
-        if (isItalic) text = `<em>${text}</em>`
-        if (isUnderline) text = `<u>${text}</u>`
-        runs.push(text)
+      if (text || isBold || isItalic || isUnderline || runStyle) {
+        let spanContent = text || ''
+        if (runStyle) spanContent = `<span${runStyle}>${spanContent}</span>`
+        if (isBold) spanContent = `<strong>${spanContent}</strong>`
+        if (isItalic) spanContent = `<em>${spanContent}</em>`
+        if (isUnderline) spanContent = `<u>${spanContent}</u>`
+        runs.push(spanContent)
       }
     }
 
-    if (runs.length > 0) {
-      const content = runs.join('')
+    const content = [...imagesInPara, ...runs].join('')
+    if (content.trim()) {
       if (isHeading) {
-        htmlParts.push(`<h3>${content}</h3>`)
+        htmlParts.push(`<h3${pStyle}>${content}</h3>`)
       } else {
-        htmlParts.push(`<p>${content}</p>`)
+        htmlParts.push(`<p${pStyle}>${content}</p>`)
       }
     }
   }

@@ -33,11 +33,9 @@
           <el-button text size="small" @click="closePreview">关闭预览</el-button>
         </div>
       </template>
-      <div v-loading="previewLoading" style="min-height: 300px;">
-        <!-- PDF：使用 embed 标签兼容性更好（Chrome/Firefox/Safari/Edge 均支持内嵌预览），
-             同时避免 iframe 在部分浏览器中因 Content-Type 识别问题触发下载。 -->
-        <embed v-if="previewType === 'pdf'" :src="previewUrl" type="application/pdf" style="width: 100%; height: 600px; border: none;" />
-        <div v-else-if="previewType === 'html'" class="word-preview" v-html="previewHtml" />
+      <div v-loading="previewLoading" class="resume-preview-container">
+        <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
+        <div v-else-if="previewType === 'html'" class="word-preview resume-html" v-html="previewHtml" />
       </div>
     </el-card>
 
@@ -143,6 +141,7 @@ import { ElMessage } from 'element-plus'
 import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
 import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
+import PdfPreview from '../components/PdfPreview.vue'
 import { getStatusLabel, getStatusType, formatTime } from '../utils/constants'
 
 const route = useRoute()
@@ -403,21 +402,67 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.word-preview {
+.resume-preview-container {
+  min-height: 300px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.resume-html {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   line-height: 1.8;
-  color: var(--el-text-color-primary);
+  color: #303133;
   font-size: 14px;
   word-break: break-word;
 }
-.word-preview :deep(h3) {
+
+.resume-html :deep(h1) {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.resume-html :deep(h2) {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 18px 0 8px;
+}
+
+.resume-html :deep(h3) {
   font-size: 16px;
   font-weight: 600;
-  margin: 12px 0 6px;
+  margin: 16px 0 8px;
 }
-.word-preview :deep(p) {
-  margin: 6px 0;
+
+.resume-html :deep(p) {
+  margin: 8px 0;
 }
-.word-preview :deep(strong) {
+
+.resume-html :deep(strong) {
   font-weight: 600;
+}
+
+.resume-html :deep(img) {
+  max-width: 100%;
+  height: auto;
+  margin: 8px 0;
+}
+
+.resume-html :deep(ul),
+.resume-html :deep(ol) {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.resume-html :deep(li) {
+  margin: 4px 0;
 }
 </style>
