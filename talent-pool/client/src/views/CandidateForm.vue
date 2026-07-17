@@ -300,8 +300,9 @@ async function uploadAttachmentToCandidate(candidateId, file) {
     const xhr = new XMLHttpRequest()
     await new Promise((resolve, reject) => {
       xhr.open('PUT', uploadUrl, true)
-      // ElMessage 返回的 handler 对象只有 close() 方法，不支持动态修改 content。
-      // 如需显示进度百分比，可考虑使用 ElNotification 或进度条组件，此处保持简单提示。
+      // 固定 Content-Type 为 application/octet-stream，与后端签名值保持一致。
+      // 若不设置，浏览器会根据 file.type 自动覆盖，导致与签名不一致而返回 403 SignatureDoesNotMatch。
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve()
         else {

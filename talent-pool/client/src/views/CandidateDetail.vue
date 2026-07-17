@@ -183,6 +183,9 @@ async function handleUploadRequest(options) {
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open('PUT', uploadUrl, true)
+      // 固定 Content-Type 为 application/octet-stream，与后端签名值保持一致。
+      // 若不设置，浏览器会根据 file.type 自动覆盖，导致与签名不一致而返回 403 SignatureDoesNotMatch。
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
           onProgress({ percent: Math.round((e.loaded / e.total) * 100) })

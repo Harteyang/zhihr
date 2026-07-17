@@ -135,10 +135,9 @@ export class OSSClient {
     // OSS 预签名 URL 的签名格式：VERB + "\n" + Content-MD5 + "\n" + Content-Type + "\n" + Expires + "\n" + CanonicalizedResource
     const verb = method.toUpperCase()
     const contentMd5 = ''
-    // Content-Type 留空：浏览器 xhr.send(file) 可能根据文件 MIME 自动覆盖 Content-Type，
-    // 若签名中固定 application/octet-stream 而 OSS 收到不同值会返回 403 SignatureDoesNotMatch。
-    // 留空后 OSS 不验证请求的 Content-Type，兼容所有浏览器行为。
-    const contentType = ''
+    // 预签名 URL 中固定 Content-Type 为 application/octet-stream，前端上传时同步设置相同值。
+    // 若签名值与实际请求头不一致，OSS 会返回 403 SignatureDoesNotMatch。
+    const contentType = 'application/octet-stream'
     const expiresStr = String(expires) // 签名 URL 使用 Expires 时间戳而非 Date 头
 
     // 将 extraQuery 和签名参数合并，按字典序排序
