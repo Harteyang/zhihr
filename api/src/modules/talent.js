@@ -4,6 +4,18 @@ import { OSSClient } from '../utils/oss.js'
 
 const VALID_STATUSES = ['pending', 'contacted', 'interviewing', 'offered', 'rejected']
 
+// 文件扩展名到 MIME 类型的映射（用于 OSS 上传时设置正确的 Content-Type）
+const MIME_TYPES = {
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.txt': 'text/plain; charset=utf-8'
+}
+
+function getMimeType(ext) {
+  return MIME_TYPES[ext.toLowerCase()] || 'application/octet-stream'
+}
+
 // ========= 岗位权限校验工具 =========
 
 async function checkPositionPermission(env, user, candidatePosition, createdBy = null) {
@@ -544,7 +556,8 @@ async function getUploadUrl(request, env, corsHeaders, params) {
     const timestamp = Date.now()
     const ossKey = `resumes/${candidateId}/${timestamp}_${fileName}`
     const fileType = ext.replace('.', '')
-    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300)
+    const contentType = getMimeType(ext)
+    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300, {}, contentType)
 
     return jsonResponse({
       success: true,
@@ -553,7 +566,8 @@ async function getUploadUrl(request, env, corsHeaders, params) {
         ossKey,
         fileName,
         fileType,
-        fileSize: fileSize || null
+        fileSize: fileSize || null,
+        contentType
       },
       quota
     }, 200, corsHeaders)
@@ -1021,12 +1035,13 @@ async function getBatchUploadUrl(request, env, corsHeaders) {
 
     const timestamp = Date.now()
     const ossKey = `batch-resumes/${user.userId}/${timestamp}_${file_name}`
-    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300)
     const fileType = ext.replace('.', '')
+    const contentType = getMimeType(ext)
+    const signedUrl = await oss.getSignedUrl('PUT', ossKey, 300, {}, contentType)
 
     return jsonResponse({
       success: true,
-      data: { uploadUrl: signedUrl, ossKey, fileName: file_name, fileType, fileSize: fileSize || null }
+      data: { uploadUrl: signedUrl, ossKey, fileName: file_name, fileType, fileSize: fileSize || null, contentType }
     }, 200, corsHeaders)
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)

@@ -356,7 +356,7 @@ async function handleBatchUpload() {
 
     // 2. 并行上传所有文件到 OSS
     const uploadResults = await Promise.allSettled(
-      uploadInfos.map(info => uploadToOSS(info.uploadUrl, info.rawFile))
+      uploadInfos.map(info => uploadToOSS(info.uploadUrl, info.rawFile, info.contentType))
     )
 
     // 检查上传结果
@@ -402,11 +402,12 @@ async function handleBatchUpload() {
   }
 }
 
-function uploadToOSS(uploadUrl, file) {
+function uploadToOSS(uploadUrl, file, contentType) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('PUT', uploadUrl, true)
-    xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+    // 使用后端返回的真实 MIME 类型，使 OSS 保存正确的 Content-Type 元数据
+    xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream')
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve()
       else reject(new Error(`OSS 上传失败 (${xhr.status})`))

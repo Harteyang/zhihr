@@ -289,7 +289,7 @@ async function uploadAttachmentToCandidate(candidateId, file) {
     file_name: file.name,
     file_size: file.size
   })
-  const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
+  const { uploadUrl, ossKey, fileName, fileType, fileSize, contentType } = urlRes.data.data
 
   // 注意：ElMessage.info() 只接受一个参数（字符串或对象）。
   // 若写成 ElMessage.info('text', { duration: 0 })，第二个参数会被当作 appContext
@@ -300,9 +300,10 @@ async function uploadAttachmentToCandidate(candidateId, file) {
     const xhr = new XMLHttpRequest()
     await new Promise((resolve, reject) => {
       xhr.open('PUT', uploadUrl, true)
-      // 固定 Content-Type 为 application/octet-stream，与后端签名值保持一致。
-      // 若不设置，浏览器会根据 file.type 自动覆盖，导致与签名不一致而返回 403 SignatureDoesNotMatch。
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+      // 使用后端返回的真实 MIME 类型作为 Content-Type，使 OSS 保存正确的元数据。
+      // 这样 PDF 等文件预览时浏览器才能根据 Content-Type 内嵌显示而非下载。
+      // 注意：Content-Type 必须与后端签名值完全一致，否则返回 403 SignatureDoesNotMatch。
+      xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream')
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) resolve()
         else {

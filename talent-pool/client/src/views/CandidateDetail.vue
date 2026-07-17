@@ -179,15 +179,16 @@ async function handleUploadRequest(options) {
       file_name: file.name,
       file_size: file.size
     })
-    const { uploadUrl, ossKey, fileName, fileType, fileSize } = urlRes.data.data
+    const { uploadUrl, ossKey, fileName, fileType, fileSize, contentType } = urlRes.data.data
 
     // 2. 使用 XMLHttpRequest 直传到 OSS，支持进度
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open('PUT', uploadUrl, true)
-      // 固定 Content-Type 为 application/octet-stream，与后端签名值保持一致。
-      // 若不设置，浏览器会根据 file.type 自动覆盖，导致与签名不一致而返回 403 SignatureDoesNotMatch。
-      xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+      // 使用后端返回的真实 MIME 类型作为 Content-Type，使 OSS 保存正确的元数据。
+      // 这样 PDF 等文件预览时浏览器才能根据 Content-Type 内嵌显示而非下载。
+      // 注意：Content-Type 必须与后端签名值完全一致，否则返回 403 SignatureDoesNotMatch。
+      xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
           onProgress({ percent: Math.round((e.loaded / e.total) * 100) })

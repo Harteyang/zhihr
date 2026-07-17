@@ -127,7 +127,7 @@ export class OSSClient {
    * @param {number} expiresIn 过期时间（秒），默认 300 秒
    * @param {Object} extraQuery 额外查询参数
    */
-  async getSignedUrl(method, key, expiresIn = 300, extraQuery = {}) {
+  async getSignedUrl(method, key, expiresIn = 300, extraQuery = {}, contentType = null) {
     const timestamp = Math.floor(Date.now() / 1000)
     const expires = timestamp + expiresIn
 
@@ -135,10 +135,14 @@ export class OSSClient {
     // OSS 预签名 URL 的签名格式：VERB + "\n" + Content-MD5 + "\n" + Content-Type + "\n" + Expires + "\n" + CanonicalizedResource
     const verb = method.toUpperCase()
     const contentMd5 = ''
-    // PUT 上传时固定 Content-Type 为 application/octet-stream，前端上传时同步设置相同值。
-    // GET 下载/预览时不应包含 Content-Type 头，因此签名中 contentType 必须为空。
-    // 若签名值与实际请求头不一致，OSS 会返回 403 SignatureDoesNotMatch。
-    const contentType = verb === 'PUT' ? 'application/octet-stream' : ''
+    // PUT 上传时尽量使用文件真实 MIME 类型，使 OSS 保存正确的 Content-Type 元数据，
+    // 这样 GET 预览时浏览器才能根据 Content-Type 决定内嵌显示而非下载。
+    // 调用方未指定时，PUT 默认 application/octet-stream，GET 默认空字符串。
+    // 注意：签名中的 contentType 必须与前端实际发送的请求头完全一致，否则会 403。
+    let signedContentType = contentType
+    if (signedContentType === null) {
+      signedContentType = verb === 'PUT' ? 'application/octet-stream' : ''
+    }
     const expiresStr = String(expires) // 签名 URL 使用 Expires 时间戳而非 Date 头
 
     // 将 extraQuery 和签名参数合并，按字典序排序
@@ -158,7 +162,7 @@ export class OSSClient {
     const stringToSign = [
       verb,
       contentMd5,
-      contentType,
+      signedContentType,
       expiresStr,
       canonicalizedResource
     ].join('\n')
