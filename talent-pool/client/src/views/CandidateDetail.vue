@@ -34,7 +34,9 @@
         </div>
       </template>
       <div v-loading="previewLoading" style="min-height: 300px;">
-        <iframe v-if="previewType === 'pdf'" :src="previewUrl" style="width: 100%; height: 600px; border: none;" />
+        <!-- PDF：使用 embed 标签兼容性更好（Chrome/Firefox/Safari/Edge 均支持内嵌预览），
+             同时避免 iframe 在部分浏览器中因 Content-Type 识别问题触发下载。 -->
+        <embed v-if="previewType === 'pdf'" :src="previewUrl" type="application/pdf" style="width: 100%; height: 600px; border: none;" />
         <div v-else-if="previewType === 'html'" class="word-preview" v-html="previewHtml" />
       </div>
     </el-card>
