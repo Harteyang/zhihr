@@ -106,7 +106,7 @@
                 type="primary"
                 size="small"
                 link
-                @click="handleRetry(row.id)"
+                @click="handleRetry(row.id, 'failed')"
               >
                 重新解析
               </el-button>
@@ -115,7 +115,7 @@
                 type="danger"
                 size="small"
                 link
-                @click="handleRetry(row.id)"
+                @click="handleRetry(row.id, 'stuck')"
               >
                 重启解析
               </el-button>
@@ -142,7 +142,7 @@
             <el-table-column prop="error_message" label="失败原因" min-width="300" show-overflow-tooltip />
             <el-table-column label="操作" width="100">
               <template #default="{ row }">
-                <el-button type="primary" size="small" link @click="handleRetry(row.id)">重试</el-button>
+                <el-button type="primary" size="small" link @click="handleRetry(row.id, 'failed')">重试</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -206,7 +206,7 @@
                         type="primary"
                         size="small"
                         link
-                        @click="handleRetry(row.id)"
+                        @click="handleRetry(row.id, 'failed')"
                       >
                         重新解析
                       </el-button>
@@ -215,7 +215,7 @@
                         type="danger"
                         size="small"
                         link
-                        @click="handleRetry(row.id)"
+                        @click="handleRetry(row.id, 'stuck')"
                       >
                         重启解析
                       </el-button>
@@ -240,7 +240,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { UploadFilled, Upload, Loading } from '@element-plus/icons-vue'
 import { getBatchUploadUrl, createBatchParseTasks, getBatchStatus, getParseTaskHistory, retryParseTask } from '../api'
 import { formatTime } from '../utils/constants'
@@ -322,9 +322,10 @@ function taskStatusTagType(status) {
 function isTaskStuck(task) {
   if (task.status !== 'parsing') return false
   if (!task.updated_at) return false
-  const updatedAt = new Date(task.updated_at.replace(' ', 'T'))
+  const updatedAtStr = task.updated_at.replace(' ', 'T') + 'Z'
+  const updatedAt = new Date(updatedAtStr)
   const now = new Date()
-  const elapsedMinutes = (now - updatedAt) / (1000 * 60)
+  const elapsedMinutes = (now.getTime() - updatedAt.getTime()) / (1000 * 60)
   return elapsedMinutes > STUCK_THRESHOLD_MINUTES
 }
 
@@ -498,8 +499,18 @@ function handleConfirmProgress() {
   ElMessage.info('已确认解析结果，可在"历史记录"中查看')
 }
 
-async function handleRetry(taskId) {
+async function handleRetry(taskId, reason = 'failed') {
   try {
+    const confirmMessage = reason === 'stuck'
+      ? '该任务已长时间无响应，可能处于卡住状态。重启解析将强制重新处理该文件，确定继续吗？'
+      : '确定要重新解析该文件吗？'
+    
+    await ElMessageBox.confirm(confirmMessage, '确认操作', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: reason === 'stuck' ? 'warning' : 'info'
+    })
+
     const res = await retryParseTask(taskId)
     ElMessage.success(res.data.message || '已重新加入解析队列')
     if (currentBatchId.value && activeTab.value === 'progress') {
@@ -509,7 +520,9 @@ async function handleRetry(taskId) {
       loadHistory()
     }
   } catch (e) {
-    ElMessage.error('操作失败：' + (e?.response?.data?.message || e?.message || '未知错误'))
+    if (e !== 'cancel') {
+      ElMessage.error('操作失败：' + (e?.response?.data?.message || e?.message || '未知错误'))
+    }
   }
 }
 

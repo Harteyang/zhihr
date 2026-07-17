@@ -1117,6 +1117,19 @@ async function processSingleParseTask(env, task, user) {
     `UPDATE talent_parse_tasks SET progress = 10, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
   ).bind(task.id).run()
 
+  // 检查任务是否已有候选人（重试场景下可能已创建）
+  const existingCandidate = await env.DB.prepare(
+    'SELECT id FROM talent_candidates WHERE id = ?'
+  ).bind(task.candidate_id || 0).first()
+
+  if (existingCandidate) {
+    await env.DB.prepare(
+      `UPDATE talent_parse_tasks SET status = 'completed', progress = 100, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+    ).bind(task.id).run()
+    debugLog('ParseQueue', `Task ${task.id} skipped: candidate ${task.candidate_id} already exists`)
+    return { candidateId: task.candidate_id, parsedData: null }
+  }
+
   // 1. 从 OSS 下载文件
   const ossRes = await oss.get(task.oss_key)
   if (!ossRes.ok) {
