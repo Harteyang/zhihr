@@ -799,9 +799,124 @@ async function parseResume(request, env, corsHeaders) {
   }
 }
 
-// AI 简历解析（调用 Agnes AI 模型，适用于本地解析不准确的情况）
-const AI_API_BASE = 'https://apihub.agnes-ai.com/v1'
-const AI_MODEL = 'agnes-2.0-flash'
+// AI 简历解析（多模型轮询 + 故障转移）
+// 模型配置：按优先级排列，调用时依次尝试，失败自动切换到下一个
+const AI_MODELS = [
+  {
+    name: 'sensenova-6.7-flash-lite',
+    apiBase: 'https://token.sensenova.cn/v1',
+    apiKeyEnv: 'SENSENOVA_API_KEY',
+    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9'
+  },
+  {
+    name: 'deepseek-v4-flash',
+    apiBase: 'https://token.sensenova.cn/v1',
+    apiKeyEnv: 'SENSENOVA_API_KEY',
+    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9'
+  },
+  {
+    name: 'agnes-2.0-flash',
+    apiBase: 'https://apihub.agnes-ai.com/v1',
+    apiKeyEnv: 'AI_API_KEY',
+    apiKeyFallback: null
+  }
+]
+
+// AI 调用超时时间（毫秒）：单个模型最多等待 30 秒
+const AI_CALL_TIMEOUT_MS = 30000
+
+// 带超时的 fetch 封装
+function fetchWithTimeout(url, options, timeoutMs) {
+  return Promise.race([
+    fetch(url, options),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`请求超时（${timeoutMs / 1000}秒）`)), timeoutMs)
+    )
+  ])
+}
+
+/**
+ * 调用 AI 模型解析简历（多模型轮询 + 故障转移）
+ * 依次尝试每个模型，直到成功或全部失败
+ * @param {string} resumeText - 简历文本
+ * @param {Object} env - 环境变量
+ * @returns {Promise<Object>} - AI 返回的解析结果
+ */
+async function callAIWithFallback(resumeText, env) {
+  const errors = []
+
+  for (const model of AI_MODELS) {
+    const apiKey = env[model.apiKeyEnv] || model.apiKeyFallback
+    if (!apiKey) {
+      errors.push(`${model.name}: 未配置 API Key`)
+      continue
+    }
+
+    try {
+      debugLog('AI', `尝试模型: ${model.name}`)
+
+      const response = await fetchWithTimeout(
+        `${model.apiBase}/chat/completions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: model.name,
+            messages: [
+              { role: 'system', content: AI_SYSTEM_PROMPT },
+              { role: 'user', content: buildResumeUserMessage(resumeText) }
+            ],
+            temperature: 0.1,
+            max_tokens: 4096
+          })
+        },
+        AI_CALL_TIMEOUT_MS
+      )
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '')
+        throw new Error(`HTTP ${response.status}: ${errText.slice(0, 200)}`)
+      }
+
+      const data = await response.json()
+      const content = data?.choices?.[0]?.message?.content
+      if (!content) {
+        throw new Error('AI 返回内容为空')
+      }
+
+      // 解析 AI 返回的 JSON
+      let cleanContent = content.trim()
+      const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+      if (jsonMatch) {
+        cleanContent = jsonMatch[1].trim()
+      }
+
+      let result
+      try {
+        result = JSON.parse(cleanContent)
+      } catch {
+        const objMatch = cleanContent.match(/\{[\s\S]*\}/)
+        if (objMatch) {
+          result = JSON.parse(objMatch[0])
+        } else {
+          throw new Error('AI 返回格式无法解析为 JSON')
+        }
+      }
+
+      debugLog('AI', `模型 ${model.name} 解析成功`)
+      return result
+    } catch (err) {
+      const errMsg = `${model.name}: ${err.message}`
+      errors.push(errMsg)
+      debugLog('AI', `模型 ${model.name} 失败: ${err.message}，尝试下一个模型...`)
+    }
+  }
+
+  throw new Error(`所有 AI 模型均调用失败: ${errors.join(' | ')}`)
+}
 
 const AI_SYSTEM_PROMPT = `你是一个专业的简历信息提取助手。请从以下简历文本中提取候选人信息，并以严格的JSON格式返回。
 
@@ -874,60 +989,8 @@ async function aiParseResume(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '无法从文件中提取足够文本，请确认文件内容是否正常' }, 400, corsHeaders)
     }
 
-    // 2. 调用 Agnes AI 解析
-    const aiApiKey = env.AI_API_KEY
-    if (!aiApiKey) {
-      return jsonResponse({ success: false, message: 'AI 解析服务未配置（缺少 API Key）' }, 503, corsHeaders)
-    }
-
-    const aiResponse = await fetch(`${AI_API_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${aiApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: [
-          { role: 'system', content: AI_SYSTEM_PROMPT },
-          { role: 'user', content: buildResumeUserMessage(resumeText) }
-        ],
-        temperature: 0.1,
-        max_tokens: 4096
-      })
-    })
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text().catch(() => '')
-      throw new Error(`AI 模型调用失败 (${aiResponse.status}): ${errText}`)
-    }
-
-    const aiData = await aiResponse.json()
-    const content = aiData?.choices?.[0]?.message?.content
-    if (!content) {
-      throw new Error('AI 模型返回内容为空')
-    }
-
-    // 3. 解析 AI 返回的 JSON
-    // 处理可能的 markdown 包裹
-    let cleanContent = content.trim()
-    const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-    if (jsonMatch) {
-      cleanContent = jsonMatch[1].trim()
-    }
-
-    let aiResult
-    try {
-      aiResult = JSON.parse(cleanContent)
-    } catch {
-      // 尝试从内容中提取 JSON 对象
-      const objMatch = cleanContent.match(/\{[\s\S]*\}/)
-      if (objMatch) {
-        aiResult = JSON.parse(objMatch[0])
-      } else {
-        throw new Error('AI 返回格式无法解析为 JSON')
-      }
-    }
+    // 2. 调用 AI 解析（多模型轮询 + 故障转移）
+    const aiResult = await callAIWithFallback(resumeText, env)
 
     return jsonResponse({ success: true, data: aiResult }, 200, corsHeaders)
   } catch (err) {
@@ -1153,58 +1216,8 @@ async function processSingleParseTask(env, task, user) {
     `UPDATE talent_parse_tasks SET progress = 50, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
   ).bind(task.id).run()
 
-  // 3. 调用 AI 解析
-  const aiApiKey = env.AI_API_KEY
-  if (!aiApiKey) {
-    throw new Error('AI 解析服务未配置（缺少 API Key）')
-  }
-
-  const aiResponse = await fetch(`${AI_API_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${aiApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [
-        { role: 'system', content: AI_SYSTEM_PROMPT },
-        { role: 'user', content: buildResumeUserMessage(resumeText) }
-      ],
-      temperature: 0.1,
-      max_tokens: 4096
-    })
-  })
-
-  if (!aiResponse.ok) {
-    const errText = await aiResponse.text().catch(() => '')
-    throw new Error(`AI 模型调用失败 (${aiResponse.status}): ${errText}`)
-  }
-
-  const aiData = await aiResponse.json()
-  const content = aiData?.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error('AI 模型返回内容为空')
-  }
-
-  // 4. 解析 AI 返回的 JSON
-  let cleanContent = content.trim()
-  const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
-  if (jsonMatch) {
-    cleanContent = jsonMatch[1].trim()
-  }
-
-  let aiResult
-  try {
-    aiResult = JSON.parse(cleanContent)
-  } catch {
-    const objMatch = cleanContent.match(/\{[\s\S]*\}/)
-    if (objMatch) {
-      aiResult = JSON.parse(objMatch[0])
-    } else {
-      throw new Error('AI 返回格式无法解析为 JSON')
-    }
-  }
+  // 3. 调用 AI 解析（多模型轮询 + 故障转移）
+  const aiResult = await callAIWithFallback(resumeText, env)
 
   await env.DB.prepare(
     `UPDATE talent_parse_tasks SET progress = 80, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
@@ -1264,7 +1277,7 @@ async function processSingleParseTask(env, task, user) {
   return { candidateId, parsedData: aiResult }
 }
 
-const PARSE_TASK_TIMEOUT_MINUTES = 30
+const PARSE_TASK_TIMEOUT_MINUTES = 5
 
 // 获取批次状态（同时触发下一个待处理任务的处理）
 async function getBatchStatus(request, env, corsHeaders, params, ctx) {
