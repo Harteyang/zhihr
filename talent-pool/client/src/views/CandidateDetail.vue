@@ -272,24 +272,19 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：通过预览接口获取 base64 内容，生成 blob URL 同源内嵌预览。
-      // 不直接加载 OSS 预签名 URL，避免跨域导航请求触发 net::ERR_ABORTED。
-      const res = await previewAttachment(row.id)
-      const data = res.data.data
-      if (data?.type === 'pdf' && data?.base64) {
-        // base64 → blob URL
-        const byteChars = atob(data.base64)
-        const byteNums = new Array(byteChars.length)
-        for (let i = 0; i < byteChars.length; i++) {
-          byteNums[i] = byteChars.charCodeAt(i)
-        }
-        const byteArray = new Uint8Array(byteNums)
-        const blob = new Blob([byteArray], { type: 'application/pdf' })
-        previewUrl.value = URL.createObjectURL(blob)
-        previewType.value = 'pdf'
-      } else {
-        throw new Error('不支持的预览类型')
+      // PDF：通过预览接口直接获取二进制数据，生成 blob URL 同源内嵌预览。
+      // 使用 fetch + response.blob() 避免 axios 自动解析 JSON，消除 base64 编码错误风险。
+      const token = localStorage.getItem('token') || ''
+      const res = await fetch(`https://api.zhihr.vip/api/talent/attachments/${row.id}/preview`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ message: '预览失败' }))
+        throw new Error(errData.message || '预览失败')
       }
+      const blob = await res.blob()
+      previewUrl.value = URL.createObjectURL(blob)
+      previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
       // Word/TXT：调用预览接口拿到 HTML 后渲染
       const res = await previewAttachment(row.id)

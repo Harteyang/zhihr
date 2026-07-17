@@ -739,12 +739,12 @@ async function previewAttachment(request, env, corsHeaders, params) {
       const html = docToHtml(arrayBuffer)
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'pdf') {
-      // 将 PDF 内容 base64 编码后返回，前端生成 blob URL 实现同源内嵌预览。
-      // 使用 TextDecoder('latin1') 替代字符串拼接循环，避免 O(n²) 时间复杂度和内存激增。
-      const decoder = new TextDecoder('latin1')
-      const binary = decoder.decode(new Uint8Array(arrayBuffer))
-      const base64 = btoa(binary)
-      return jsonResponse({ success: true, data: { type: 'pdf', base64 } }, 200, corsHeaders)
+      // 直接返回二进制数据，前端使用 response.blob() 获取后生成 blob URL。
+      // 避免 base64 编码往返，减少 33% 网络传输量，消除编码错误风险。
+      const pdfHeaders = new Headers(corsHeaders)
+      pdfHeaders.set('Content-Type', 'application/pdf')
+      pdfHeaders.set('Content-Disposition', 'inline')
+      return new Response(arrayBuffer, { headers: pdfHeaders })
     } else if (fileType === 'txt') {
       // TXT 文件预览：自动检测编码并转换为 HTML
       const bytes = new Uint8Array(arrayBuffer)
