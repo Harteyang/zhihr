@@ -225,6 +225,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, Upload, Loading } from '@element-plus/icons-vue'
 import { getBatchUploadUrl, createBatchParseTasks, getBatchStatus, getParseTaskHistory, retryParseTask } from '../api'
+import { formatTime } from '../utils/constants'
 
 const MAX_FILES = 10
 const MAX_FILE_MB = 10
@@ -290,11 +291,6 @@ function taskStatusText(status) {
 function taskStatusTagType(status) {
   const map = { pending: 'info', parsing: 'warning', completed: 'success', failed: 'danger' }
   return map[status] || 'info'
-}
-
-function formatTime(timeStr) {
-  if (!timeStr) return ''
-  return new Date(timeStr + 'Z').toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
 }
 
 function handleFileChange(uploadFile) {

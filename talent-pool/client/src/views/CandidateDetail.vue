@@ -53,8 +53,8 @@
               <el-tag v-for="skill in parsedSkills" :key="skill" size="small" style="margin-right: 6px; margin-bottom: 4px;">{{ skill }}</el-tag>
               <span v-if="parsedSkills.length === 0">-</span>
             </el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ candidate.created_at }}</el-descriptions-item>
-            <el-descriptions-item label="更新时间">{{ candidate.updated_at }}</el-descriptions-item>
+            <el-descriptions-item label="创建时间">{{ formatTime(candidate.created_at) }}</el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ formatTime(candidate.updated_at) }}</el-descriptions-item>
           </el-descriptions>
         </el-tab-pane>
 
@@ -113,7 +113,9 @@
             <el-table-column prop="file_size" label="大小" width="100">
               <template #default="{ row }">{{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}</template>
             </el-table-column>
-            <el-table-column prop="created_at" label="上传时间" width="170" />
+            <el-table-column label="上传时间" width="170">
+              <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+            </el-table-column>
             <el-table-column label="操作" width="140">
               <template #default="{ row }">
                 <el-button type="primary" link size="small" @click="handlePreview(row)">预览</el-button>
@@ -139,7 +141,7 @@ import { ElMessage } from 'element-plus'
 import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
 import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
-import { getStatusLabel, getStatusType } from '../utils/constants'
+import { getStatusLabel, getStatusType, formatTime } from '../utils/constants'
 
 const route = useRoute()
 const loading = ref(false)

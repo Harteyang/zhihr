@@ -66,7 +66,7 @@
         </el-table-column>
         <el-table-column prop="source" label="来源" width="100" show-overflow-tooltip />
         <el-table-column label="更新时间" width="170">
-          <template #default="{ row }">{{ row.updated_at }}</template>
+          <template #default="{ row }">{{ formatTime(row.updated_at) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
@@ -100,7 +100,7 @@ import { Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
 import { deleteCandidate } from '../api'
-import { STATUS_OPTIONS, EDUCATION_OPTIONS, EXPERIENCE_RANGES, getStatusLabel, getStatusType } from '../utils/constants'
+import { STATUS_OPTIONS, EDUCATION_OPTIONS, EXPERIENCE_RANGES, getStatusLabel, getStatusType, formatTime } from '../utils/constants'
 
 const store = useCandidateStore()
 

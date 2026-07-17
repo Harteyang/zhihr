@@ -21,7 +21,9 @@
       <div style="margin-bottom: 12px; color: var(--el-text-color-secondary);">共 {{ total }} 条记录</div>
 
       <el-table :data="logs" v-loading="loading" stripe size="default">
-        <el-table-column prop="created_at" label="时间" width="180" />
+        <el-table-column label="时间" width="180">
+          <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+        </el-table-column>
         <el-table-column prop="username" label="操作人" width="120" show-overflow-tooltip />
         <el-table-column label="操作类型" width="180">
           <template #default="{ row }">
@@ -65,6 +67,7 @@
 import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getOperationLogs } from '../api'
+import { formatTime } from '../utils/constants'
 
 const loading = ref(false)
 const logs = ref([])
