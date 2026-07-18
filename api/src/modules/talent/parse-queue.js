@@ -6,6 +6,7 @@ import { getMimeType, createCandidateFromParse } from './candidates.js'
 
 const PARSE_TASK_RETENTION_DAYS = 30
 const PARSE_TASK_TIMEOUT_MINUTES = 5
+const MAX_CONCURRENT_TASKS = 2
 
 async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
@@ -45,14 +46,17 @@ async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
     await logOperation(env, user, 'create_batch_parse', 'parse_batch', batchId, { file_count: files.length }, getClientIp(request))
 
     try {
-      const runningTask = await env.DB.prepare(
-        `SELECT id FROM talent_parse_tasks WHERE status = 'parsing' LIMIT 1`
-      ).first()
-      if (!runningTask) {
-        const nextTask = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT 1`
-        ).first()
-        if (nextTask) {
+      const runningCount = (await env.DB.prepare(
+        `SELECT COUNT(*) as count FROM talent_parse_tasks WHERE status = 'parsing'`
+      ).first()).count || 0
+
+      if (runningCount < MAX_CONCURRENT_TASKS) {
+        const slots = MAX_CONCURRENT_TASKS - runningCount
+        const pendingTasks = await env.DB.prepare(
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
+        ).bind(slots).all()
+
+        for (const nextTask of (pendingTasks.results || [])) {
           const claim = await env.DB.prepare(
             `UPDATE talent_parse_tasks SET status = 'parsing', progress = 5, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'`
           ).bind(nextTask.id).run()
@@ -175,17 +179,18 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
     }
 
     try {
-      const runningTask = await env.DB.prepare(
-        `SELECT id FROM talent_parse_tasks WHERE status = 'parsing' LIMIT 1`
-      ).first()
-      if (runningTask) {
-        debugLog('ParseQueue', `Task ${runningTask.id} is parsing, skip new task to ensure serial processing`)
-      } else {
-        const nextTask = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT 1`
-        ).first()
+      const runningCount = (await env.DB.prepare(
+        `SELECT COUNT(*) as count FROM talent_parse_tasks WHERE status = 'parsing'`
+      ).first()).count || 0
+      debugLog('ParseQueue', `Current parsing tasks: ${runningCount}/${MAX_CONCURRENT_TASKS}`)
 
-        if (nextTask) {
+      if (runningCount < MAX_CONCURRENT_TASKS) {
+        const slots = MAX_CONCURRENT_TASKS - runningCount
+        const pendingTasks = await env.DB.prepare(
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
+        ).bind(slots).all()
+
+        for (const nextTask of (pendingTasks.results || [])) {
           const claim = await env.DB.prepare(
             `UPDATE talent_parse_tasks SET status = 'parsing', progress = 5, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'`
           ).bind(nextTask.id).run()
