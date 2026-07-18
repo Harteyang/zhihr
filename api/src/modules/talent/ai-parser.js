@@ -126,9 +126,13 @@ async function callAIWithFallback(resumeText, env) {
     modelsByKey.get(key).push(model)
   }
 
+  let prevController = null
   for (const [apiKeyEnv, models] of modelsByKey) {
     const apiKey = env[apiKeyEnv]
     const controller = new AbortController()
+
+    if (prevController) prevController.abort()
+    prevController = controller
 
     const promises = models.map(model =>
       callSingleModel(model, resumeText, apiKey, controller.signal)
@@ -144,7 +148,7 @@ async function callAIWithFallback(resumeText, env) {
     )
 
     try {
-      return await Promise.race(promises)
+      return await Promise.any(promises)
     } catch {
       continue
     }
