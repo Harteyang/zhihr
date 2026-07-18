@@ -6,21 +6,18 @@ const AI_MODELS = [
     name: 'deepseek-v4-flash',
     apiBase: 'https://token.sensenova.cn/v1',
     apiKeyEnv: 'SENSENOVA_API_KEY',
-    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
     maxTokens: 4096
   },
   {
     name: 'agnes-2.0-flash',
     apiBase: 'https://apihub.agnes-ai.com/v1',
     apiKeyEnv: 'AI_API_KEY',
-    apiKeyFallback: null,
     maxTokens: 4096
   },
   {
     name: 'sensenova-6.7-flash-lite',
     apiBase: 'https://token.sensenova.cn/v1',
     apiKeyEnv: 'SENSENOVA_API_KEY',
-    apiKeyFallback: 'sk-415ZmVd2lkMjEfte5J1naFuc7XtmRJC9',
     maxTokens: 8192
   }
 ]
@@ -40,7 +37,7 @@ async function callAIWithFallback(resumeText, env) {
   const errors = []
 
   for (const model of AI_MODELS) {
-    const apiKey = env[model.apiKeyEnv] || model.apiKeyFallback
+    const apiKey = env[model.apiKeyEnv]
     if (!apiKey) {
       errors.push(`${model.name}: 未配置 API Key`)
       continue
