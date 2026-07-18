@@ -76,8 +76,12 @@ async function callSingleModel(model, resumeText, apiKey, parentSignal) {
   if (parentSignal) {
     if (parentSignal.aborted) {
       controller.abort()
+      clearTimeout(timeoutId)
     } else {
-      parentSignal.addEventListener('abort', () => controller.abort(), { once: true })
+      parentSignal.addEventListener('abort', () => {
+        controller.abort()
+        clearTimeout(timeoutId)
+      }, { once: true })
     }
   }
 
