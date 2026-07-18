@@ -710,7 +710,10 @@ const GARBAGE_PATTERNS = [
   /^[\x00-\x1f\x7f]+$/,
   /^图片 \d+$/,
   /^\d{4}-\d{2}(\.\d+)+$/,
-  /^[^_\s]{2,10}_[\u4e00-\u9fa5a-zA-Z]+工程师$/
+  /^[^_\s]{2,10}_[\u4e00-\u9fa5a-zA-Z]+工程师$/,
+  /^xuwei$/i,
+  /^\d+Table$/i,
+  /^HYPERLINK\s/
 ]
 
 function isGarbageLine(line) {
@@ -723,8 +726,8 @@ function isGarbageLine(line) {
   const styleKeywords = /Char|段落|文本|缩进|结构图|批注|主题|普通|列出|预设格式|文档|网站|正文|标题 \d+|默认|表格|字体|刀漀洀愀渀|吀椀洀攀猀|圀椀渀最搀椀渀最猀|匀愀渀猀|伀瀀攀渀|倀爀椀渀琀|愀氀椀戀爀椀|搀洀椀渀椀猀琀爀愀琀漀爀|㄀-ㄯ|ㆠ-ㆿ/
   if (styleKeywords.test(trimmed) && trimmed.length < 60) return true
 
-  // 过滤高 Unicode 生僻字/乱码：CJK 扩展 B-F 等非常用区
-  const rareRegex = /[\u{20000}-\u{2a6df}\u{2a700}-\u{2b73f}\u{2b740}-\u{2b81f}\u{2b820}-\u{2ceaf}\u{2ceb0}-\u{2ebef}\u{30000}-\u{3134f}]/gu
+  // 过滤高 Unicode 生僻字/乱码：CJK 扩展 A-F 等非常用区
+  const rareRegex = /[\u{3400}-\u{4dbf}\u{20000}-\u{2a6df}\u{2a700}-\u{2b73f}\u{2b740}-\u{2b81f}\u{2b820}-\u{2ceaf}\u{2ceb0}-\u{2ebef}\u{30000}-\u{3134f}]/gu
   const rareChars = trimmed.match(rareRegex) || []
   const rareRatio = rareChars.length / trimmed.length
   // 短行只要包含生僻字即视为乱码；长行按比例
@@ -778,6 +781,19 @@ function stripListMarker(line) {
   return line.replace(/^[•·\-\*•●○■□▶▸◆◇]\s+/, '').replace(/^\d+[\.、)）]\s+/, '')
 }
 
+function stripTrailingEmptySections(html) {
+  // 移除末尾没有实质内容的空章节标题（Word 尾部常出现连续的虚假 "个人信息/工作经历" 等章节名）
+  let result = html
+  let prev
+  do {
+    prev = result
+    result = result
+      .replace(/\s*<h[23][^>]*>[^<]*<\/h[23]>\s*$/, '')
+      .replace(/\s*<(p|ul|ol|li)(?:[^>]*)>(?:\s|&nbsp;)*<\/\1>\s*$/, '')
+  } while (result !== prev)
+  return result
+}
+
 function textLinesToSemanticHtml(lines) {
   const html = []
   let inList = false
@@ -828,7 +844,7 @@ function textLinesToSemanticHtml(lines) {
   }
 
   if (inList) html.push('</ul>')
-  return html.join('\n') || '<p>文档内容为空</p>'
+  return stripTrailingEmptySections(html.join('\n')) || '<p>文档内容为空</p>'
 }
 
 // ========= .txt 文件解析（自动检测编码）=========
