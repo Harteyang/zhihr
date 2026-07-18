@@ -707,14 +707,41 @@ const GARBAGE_PATTERNS = [
   /^批注框文本$/,
   /^批注框文本 Char$/,
   /^数字 Char Char$/,
-  /^[\x00-\x1f\x7f]+$/
+  /^[\x00-\x1f\x7f]+$/,
+  /^图片 \d+$/,
+  /^\d{4}-\d{2}(\.\d+)+$/,
+  /^[^_\s]{2,10}_[\u4e00-\u9fa5a-zA-Z]+工程师$/
 ]
 
 function isGarbageLine(line) {
   const trimmed = line.trim()
   if (!trimmed) return true
   if (trimmed.length > 200) return false
-  return GARBAGE_PATTERNS.some(p => p.test(trimmed))
+  if (GARBAGE_PATTERNS.some(p => p.test(trimmed))) return true
+
+  // 过滤 Word 样式名 / 字体名片段
+  const styleKeywords = /Char|段落|文本|缩进|结构图|批注|主题|普通|列出|预设格式|文档|网站|正文|标题 \d+|默认|表格|字体|刀漀洀愀渀|吀椀洀攀猀|圀椀渀最搀椀渀最猀|匀愀渀猀|伀瀀攀渀|倀爀椀渀琀|愀氀椀戀爀椀|搀洀椀渀椀猀琀爀愀琀漀爀|㄀-ㄯ|ㆠ-ㆿ/
+  if (styleKeywords.test(trimmed) && trimmed.length < 60) return true
+
+  // 过滤高 Unicode 生僻字/乱码：CJK 扩展 B-F 等非常用区
+  const rareRegex = /[\u{20000}-\u{2a6df}\u{2a700}-\u{2b73f}\u{2b740}-\u{2b81f}\u{2b820}-\u{2ceaf}\u{2ceb0}-\u{2ebef}\u{30000}-\u{3134f}]/gu
+  const rareChars = trimmed.match(rareRegex) || []
+  const rareRatio = rareChars.length / trimmed.length
+  // 短行只要包含生僻字即视为乱码；长行按比例
+  if ((trimmed.length <= 8 && rareChars.length > 0) || rareRatio > 0.3) return true
+
+  // 过滤中英文字体名乱码：大量拉丁字母但组合无意义
+  const latinChars = trimmed.replace(/[^a-zA-Z]/g, '').length
+  const cjkChars = trimmed.replace(/[^\u4e00-\u9fa5]/g, '').length
+  if (latinChars > 0 && cjkChars === 0 && /^[a-zA-Z]+$/.test(trimmed) && ['Times', 'Roman', 'Wingdings', 'Arial', 'Open', 'Sans', 'Segoe', 'Print', 'Unicode', 'Administrator'].some(f => trimmed.toLowerCase().includes(f.toLowerCase()))) {
+    return true
+  }
+
+  // 过滤符号/乱码混杂的短行：如 "＄*篠$"、"岁脈(俾"
+  const symbolRatio = trimmed.replace(/[\u4e00-\u9fa5a-zA-Z0-9\s]/g, '').length / trimmed.length
+  if (trimmed.length <= 10 && symbolRatio > 0.3 && rareChars.length === 0) return true
+
+  return false
 }
 
 function isSectionHeader(line) {
@@ -752,14 +779,26 @@ function stripListMarker(line) {
 }
 
 function textLinesToSemanticHtml(lines) {
-  const cleaned = lines.map(l => l.trim()).filter(l => l && !isGarbageLine(l))
   const html = []
   let inList = false
+  let consecutiveGarbage = 0
+  let hasSeenSection = false
+  const GARBAGE_STOP_THRESHOLD = 3
 
-  for (let i = 0; i < cleaned.length; i++) {
-    const line = cleaned[i]
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line) continue
+
+    if (isGarbageLine(line)) {
+      consecutiveGarbage++
+      // 进入正文章节后，连续出现 N 行垃圾内容时，判定已进入文档尾部乱码区，停止解析
+      if (hasSeenSection && consecutiveGarbage >= GARBAGE_STOP_THRESHOLD) break
+      continue
+    }
+    consecutiveGarbage = 0
 
     if (isSectionHeader(line)) {
+      hasSeenSection = true
       if (inList) { html.push('</ul>'); inList = false }
       html.push(`<h2>${escapeHtml(line.replace(/[:：]\s*$/, ''))}</h2>`)
       continue
