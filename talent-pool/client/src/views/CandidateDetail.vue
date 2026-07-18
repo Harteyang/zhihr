@@ -17,7 +17,10 @@
           </div>
         </div>
         <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-          <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
+          <div style="display: flex; gap: 8px;">
+            <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
+            <el-button size="small" @click="openShareDialog">分享评价</el-button>
+          </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 13px; color: var(--el-text-color-secondary);">快速改状态:</span>
             <StatusSelect v-model="candidate.status" size="small" @update:model-value="handleStatusChange" />
@@ -27,7 +30,7 @@
     </el-card>
 
     <el-card shadow="never">
-      <el-tabs v-model="activeTab">
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="基本信息" name="info">
           <el-descriptions :column="3" border>
             <el-descriptions-item label="手机号">{{ candidate.phone || '-' }}</el-descriptions-item>
@@ -45,26 +48,81 @@
           </el-descriptions>
         </el-tab-pane>
 
-        <el-tab-pane :label="`工作经历 (${candidate.experiences?.length || 0})`" name="experience">
-          <el-timeline v-if="candidate.experiences && candidate.experiences.length > 0">
-            <el-timeline-item
-              v-for="exp in candidate.experiences"
-              :key="exp.id"
-              :timestamp="`${exp.start_date || '?'} ~ ${exp.end_date || '至今'}`"
-              placement="top"
-            >
-              <el-card shadow="never" style="padding: 12px;">
-                <div style="font-weight: 600;">{{ exp.title }}</div>
-                <div style="color: var(--el-text-color-secondary); margin-bottom: 4px;">{{ exp.company }}</div>
-                <div v-if="exp.description" style="color: var(--el-text-color-regular);">{{ exp.description }}</div>
-              </el-card>
-            </el-timeline-item>
-          </el-timeline>
-          <el-empty v-else description="暂无工作经历" :image-size="60" />
+        <el-tab-pane label="面试评价" name="evaluations">
+          <div class="evaluation-form-wrapper">
+            <el-form label-position="top">
+              <el-form-item label="评价人">
+                <el-input v-model="newEvaluation.evaluator_name" placeholder="请输入评价人姓名" maxlength="50" show-word-limit style="max-width: 320px;" />
+              </el-form-item>
+              <el-form-item label="评价内容">
+                <el-input
+                  v-model="newEvaluation.content"
+                  type="textarea"
+                  :rows="5"
+                  placeholder="请输入面试评价内容"
+                  maxlength="5000"
+                  show-word-limit
+                />
+              </el-form-item>
+              <div style="display: flex; gap: 8px;">
+                <el-button type="primary" :loading="submittingEval" @click="submitEvaluation">
+                  {{ editingEvalId ? '保存修改' : '提交评价' }}
+                </el-button>
+                <el-button v-if="editingEvalId" @click="cancelEditEvaluation">取消</el-button>
+              </div>
+            </el-form>
+          </div>
+
+          <el-divider />
+
+          <div v-loading="evalLoading">
+            <el-empty v-if="!evalLoading && evaluations.length === 0" description="暂无评价" :image-size="60" />
+            <div v-for="ev in evaluations" :key="ev.id" class="evaluation-item">
+              <div class="evaluation-item-header">
+                <span class="evaluator-name">{{ ev.evaluator_name }}</span>
+                <el-tag size="small" :type="ev.source === 'share' ? 'success' : 'info'" effect="plain">
+                  {{ ev.source === 'share' ? '分享链接提交' : '内部填写' }}
+                </el-tag>
+                <span class="eval-time">提交：{{ formatTime(ev.created_at) }}</span>
+                <span v-if="ev.updated_at && ev.updated_at !== ev.created_at" class="eval-time">
+                  · 修改：{{ formatTime(ev.updated_at) }}
+                </span>
+              </div>
+              <div class="evaluation-content">{{ ev.content }}</div>
+              <div class="evaluation-item-actions">
+                <el-button v-if="ev.source !== 'share'" type="primary" link size="small" @click="startEditEvaluation(ev)">编辑</el-button>
+                <el-button type="danger" link size="small" @click="handleDeleteEvaluation(ev)">删除</el-button>
+              </div>
+            </div>
+          </div>
         </el-tab-pane>
 
-        <el-tab-pane label="备注" name="notes">
-          <p style="white-space: pre-wrap; color: var(--el-text-color-regular); line-height: 1.8;">{{ candidate.summary || '暂无备注' }}</p>
+        <el-tab-pane label="跟进记录" name="followRecords">
+          <div v-loading="followLoading">
+            <div v-if="followRecords?.candidate" class="follow-summary">
+              <el-tag size="default" effect="plain">当前状态：{{ followRecords.candidate.status_label || '-' }}</el-tag>
+              <el-tag size="default" type="info" effect="plain">创建：{{ formatTime(followRecords.candidate.created_at) }}</el-tag>
+              <el-tag size="default" type="info" effect="plain">最近更新：{{ formatTime(followRecords.candidate.updated_at) }}</el-tag>
+            </div>
+            <el-empty v-if="!followLoading && (!followRecords?.events || followRecords.events.length === 0)" description="暂无跟进记录" :image-size="60" />
+            <el-timeline v-else-if="followRecords?.events" style="margin-top: 16px;">
+              <el-timeline-item
+                v-for="(evt, idx) in followRecords.events"
+                :key="idx"
+                :timestamp="formatTime(evt.time)"
+                placement="top"
+                :type="getEventTimelineType(evt.type)"
+              >
+                <div style="font-weight: 600;">{{ evt.title }}</div>
+                <div v-if="evt.description" style="color: var(--el-text-color-regular); font-size: 13px; margin-top: 2px;">
+                  {{ evt.description }}
+                </div>
+                <div v-if="evt.operator" style="color: var(--el-text-color-secondary); font-size: 12px; margin-top: 2px;">
+                  操作人：{{ evt.operator }}
+                </div>
+              </el-timeline-item>
+            </el-timeline>
+          </div>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -136,15 +194,56 @@
         <HtmlPreview v-else-if="previewType === 'html'" :html="previewHtml" :loading="previewLoading" :error="''" />
       </div>
     </el-card>
+
+    <!-- 分享链接管理对话框 -->
+    <el-dialog v-model="shareDialogVisible" title="生成评价分享链接" width="560px">
+      <el-form label-position="top">
+        <el-form-item label="评价人姓名" required>
+          <el-input v-model="shareForm.evaluator_name" placeholder="分享链接中评价人姓名将被锁定，不可修改" maxlength="50" show-word-limit />
+          <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-top: 4px;">
+            评价人姓名将写死在分享页面，分享对象只能用此姓名提交评价
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="creatingShareLink" @click="handleCreateShareLink">生成分享链接</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-divider />
+
+      <div style="margin-bottom: 8px; font-weight: 600;">已生成的分享链接</div>
+      <div v-loading="shareLinksLoading">
+        <el-empty v-if="!shareLinksLoading && shareLinks.length === 0" description="暂无分享链接" :image-size="40" />
+        <div v-for="link in shareLinks" :key="link.id" class="share-link-item">
+          <div class="share-link-info">
+            <div class="share-link-evaluator">评价人：{{ link.evaluator_name }}</div>
+            <div class="share-link-meta">
+              生成时间：{{ formatTime(link.created_at) }} · 评价数：{{ link.evaluation_count || 0 }}
+            </div>
+            <div class="share-link-url">{{ buildShareUrl(link.token) }}</div>
+          </div>
+          <div class="share-link-actions">
+            <el-button type="primary" link size="small" @click="copyShareUrl(link.token)">复制链接</el-button>
+            <el-button type="danger" link size="small" @click="handleDeleteShareLink(link)">删除</el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
-import { getCandidate, updateCandidateStatus, deleteAttachment, previewAttachment, getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota } from '../api'
+import {
+  getCandidate, updateCandidateStatus, previewAttachment,
+  getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
+  getEvaluations, createEvaluation, updateEvaluation, deleteEvaluation,
+  getShareLinks, createShareLink, deleteShareLink,
+  getFollowRecords
+} from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
 import PdfPreview from '../components/PdfPreview.vue'
 import HtmlPreview from '../components/HtmlPreview.vue'
@@ -158,7 +257,7 @@ const activeTab = ref('info')
 // 预览相关状态
 const previewVisible = ref(false)
 const previewLoading = ref(false)
-const previewType = ref('') // 'pdf' | 'html'
+const previewType = ref('')
 const previewHtml = ref('')
 const previewUrl = ref('')
 const previewFileName = ref('')
@@ -169,7 +268,24 @@ const quota = ref(null)
 // 文件大小限制：10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
-// 上传前校验（Element Plus before-upload 返回 false 阻止上传）
+// 面试评价
+const evaluations = ref([])
+const evalLoading = ref(false)
+const submittingEval = ref(false)
+const editingEvalId = ref(null)
+const newEvaluation = ref({ evaluator_name: '', content: '' })
+
+// 跟进记录
+const followRecords = ref(null)
+const followLoading = ref(false)
+
+// 分享链接
+const shareDialogVisible = ref(false)
+const shareForm = ref({ evaluator_name: '' })
+const creatingShareLink = ref(false)
+const shareLinks = ref([])
+const shareLinksLoading = ref(false)
+
 function beforeUpload(file) {
   if (file.size > MAX_FILE_SIZE) {
     ElMessage.error(`文件大小不能超过 ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB（当前 ${(file.size / 1024 / 1024).toFixed(2)}MB）`)
@@ -181,20 +297,15 @@ function beforeUpload(file) {
 async function handleUploadRequest(options) {
   const { file, onProgress, onSuccess, onError } = options
   try {
-    // 1. 从 Worker 获取 OSS 预签名上传 URL
     const urlRes = await getUploadUrl(route.params.id, {
       file_name: file.name,
       file_size: file.size
     })
     const { uploadUrl, ossKey, fileName, fileType, fileSize, contentType } = urlRes.data.data
 
-    // 2. 使用 XMLHttpRequest 直传到 OSS，支持进度
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.open('PUT', uploadUrl, true)
-      // 使用后端返回的真实 MIME 类型作为 Content-Type，使 OSS 保存正确的元数据。
-      // 这样 PDF 等文件预览时浏览器才能根据 Content-Type 内嵌显示而非下载。
-      // 注意：Content-Type 必须与后端签名值完全一致，否则返回 403 SignatureDoesNotMatch。
       xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream')
       xhr.upload.onprogress = (e) => {
         if (e.total > 0) {
@@ -205,7 +316,6 @@ async function handleUploadRequest(options) {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve()
         } else {
-          // 解析 OSS XML 错误响应，提取具体错误码和消息便于定位
           let detail = `HTTP ${xhr.status}`
           try {
             const xml = xhr.responseText || ''
@@ -220,7 +330,6 @@ async function handleUploadRequest(options) {
       xhr.send(file)
     })
 
-    // 3. 通知后端写入数据库
     const confirmRes = await confirmUpload(route.params.id, {
       ossKey,
       fileName,
@@ -230,7 +339,6 @@ async function handleUploadRequest(options) {
 
     onSuccess(confirmRes.data)
   } catch (e) {
-    // 显示具体错误原因（OSS 错误码或接口错误消息），便于定位
     const errMsg = e.response?.data?.message || e.message || '上传失败'
     ElMessage.error(errMsg)
     onError(e)
@@ -260,11 +368,135 @@ async function handleStatusChange(val) {
     await updateCandidateStatus(candidate.value.id, val)
     candidate.value.status = val
     ElMessage.success('状态已更新')
+    // 状态变更会写入跟进记录，如果当前在跟进记录 tab，刷新一下
+    if (activeTab.value === 'followRecords') {
+      fetchFollowRecords()
+    }
   } catch (e) {
     ElMessage.error('状态更新失败')
   }
 }
 
+// ====== 面试评价 ======
+async function fetchEvaluations() {
+  evalLoading.value = true
+  try {
+    const res = await getEvaluations(route.params.id)
+    evaluations.value = res.data.data || []
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载评价失败')
+  } finally {
+    evalLoading.value = false
+  }
+}
+
+async function submitEvaluation() {
+  const evaluatorName = newEvaluation.value.evaluator_name.trim()
+  const content = newEvaluation.value.content.trim()
+  if (!evaluatorName) {
+    ElMessage.warning('请输入评价人姓名')
+    return
+  }
+  if (!content) {
+    ElMessage.warning('请输入评价内容')
+    return
+  }
+  submittingEval.value = true
+  try {
+    if (editingEvalId.value) {
+      const res = await updateEvaluation(route.params.id, editingEvalId.value, {
+        evaluator_name: evaluatorName,
+        content
+      })
+      const idx = evaluations.value.findIndex(e => e.id === editingEvalId.value)
+      if (idx >= 0) evaluations.value[idx] = res.data.data
+      ElMessage.success('评价已更新')
+    } else {
+      const res = await createEvaluation(route.params.id, {
+        evaluator_name: evaluatorName,
+        content
+      })
+      evaluations.value.unshift(res.data.data)
+      ElMessage.success('评价已提交')
+    }
+    cancelEditEvaluation()
+    // 评价变更会影响跟进记录，刷新跟进记录
+    if (activeTab.value === 'followRecords') {
+      fetchFollowRecords()
+    }
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '提交失败')
+  } finally {
+    submittingEval.value = false
+  }
+}
+
+function startEditEvaluation(ev) {
+  editingEvalId.value = ev.id
+  newEvaluation.value.evaluator_name = ev.evaluator_name
+  newEvaluation.value.content = ev.content
+}
+
+function cancelEditEvaluation() {
+  editingEvalId.value = null
+  newEvaluation.value.evaluator_name = ''
+  newEvaluation.value.content = ''
+}
+
+async function handleDeleteEvaluation(ev) {
+  try {
+    await ElMessageBox.confirm(`确定删除「${ev.evaluator_name}」的评价吗？`, '确认删除', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消'
+    })
+  } catch {
+    return
+  }
+  try {
+    await deleteEvaluation(route.params.id, ev.id)
+    evaluations.value = evaluations.value.filter(e => e.id !== ev.id)
+    ElMessage.success('已删除')
+    if (activeTab.value === 'followRecords') {
+      fetchFollowRecords()
+    }
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '删除失败')
+  }
+}
+
+// ====== 跟进记录 ======
+async function fetchFollowRecords() {
+  followLoading.value = true
+  try {
+    const res = await getFollowRecords(route.params.id)
+    followRecords.value = res.data.data
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载跟进记录失败')
+  } finally {
+    followLoading.value = false
+  }
+}
+
+function getEventTimelineType(type) {
+  if (type === 'candidate_created') return 'primary'
+  if (type === 'update_candidate_status') return 'warning'
+  if (type === 'create_evaluation' || type === 'submit_share_evaluation' || type === 'evaluation_submitted') return 'success'
+  if (type === 'update_evaluation' || type === 'update_share_evaluation' || type === 'evaluation_updated') return 'info'
+  if (type === 'candidate_updated') return 'info'
+  return ''
+}
+
+function handleTabChange(tab) {
+  // 切换到评价/跟进记录 tab 时始终拉取最新数据，确保状态变更后不展示陈旧内容
+  if (tab === 'evaluations') {
+    fetchEvaluations()
+  } else if (tab === 'followRecords') {
+    fetchFollowRecords()
+  }
+}
+
+// ====== 简历预览 ======
 async function handlePreview(row) {
   previewFileName.value = row.file_name
   previewVisible.value = true
@@ -276,8 +508,6 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：通过预览接口直接获取二进制数据，生成 blob URL 同源内嵌预览。
-      // 使用 fetch + response.blob() 避免 axios 自动解析 JSON，消除 base64 编码错误风险。
       const apiBase = import.meta.env.VITE_API_BASE || 'https://api.zhihr.vip/api'
       const token = localStorage.getItem('token') || ''
       const res = await fetch(`${apiBase}/talent/attachments/${row.id}/preview`, {
@@ -291,7 +521,6 @@ async function handlePreview(row) {
       previewUrl.value = URL.createObjectURL(blob)
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
-      // Word/TXT：调用预览接口拿到 HTML 后渲染
       const res = await previewAttachment(row.id)
       const data = res.data.data
       if (data?.type === 'html') {
@@ -303,7 +532,6 @@ async function handlePreview(row) {
     } else {
       throw new Error('该文件类型不支持在线预览，请下载后查看')
     }
-    // 预览卡片可能在视口外，滚动至可见
     await nextTick()
     document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (e) {
@@ -315,7 +543,6 @@ async function handlePreview(row) {
 }
 
 function closePreview() {
-  // 释放 blob URL（PDF 预览时生成），避免内存泄漏
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value)
   }
@@ -342,18 +569,8 @@ async function handleDownload(row) {
   }
 }
 
-async function handleDeleteAttachment(row) {
-  // 简历附件上传后不支持删除（后端会返回 403）
-  try {
-    await deleteAttachment(candidate.value.id, row.id)
-  } catch (e) {
-    ElMessage.warning(e.response?.data?.message || '简历附件上传后不支持删除操作')
-  }
-}
-
 function handleUploadSuccess(response) {
   ElMessage.success('上传成功')
-  // 后端返回最新配额信息，同步更新前端
   if (response?.quota) {
     quota.value = response.quota
   }
@@ -363,11 +580,9 @@ function handleUploadSuccess(response) {
 function handleUploadError(err) {
   let message = '上传失败，请稍后重试'
   try {
-    // 优先从 axios 响应中提取服务端错误消息
     if (err?.response?.data?.message) {
       message = err.response.data.message
     } else if (err?.message) {
-      // el-upload 错误对象的 message 为后端响应体文本
       const parsed = JSON.parse(err.message)
       message = parsed.message || message
     }
@@ -375,7 +590,6 @@ function handleUploadError(err) {
     // 非 JSON 响应，使用默认消息
   }
   ElMessage.error(message)
-  // 达到上限时刷新配额状态
   fetchQuota()
 }
 
@@ -388,21 +602,98 @@ async function fetchQuota() {
   }
 }
 
-async function initAutoPreview() {
-  // 支持 ?attachment=<id> 直接预览指定附件
-  const attachId = route.query.attachment
-  if (!attachId) return
-  const target = (candidate.value.attachments || []).find(a => String(a.id) === String(attachId))
-  if (target) {
-    await handlePreview(target)
-  } else {
-    ElMessage.warning('未找到指定的预览附件')
+// ====== 分享链接 ======
+function buildShareUrl(token) {
+  const base = import.meta.env.BASE_URL || '/talent-pool/'
+  const origin = window.location.origin
+  return `${origin}${base}share/${token}`
+}
+
+async function openShareDialog() {
+  shareDialogVisible.value = true
+  shareForm.value.evaluator_name = ''
+  await fetchShareLinks()
+}
+
+async function fetchShareLinks() {
+  shareLinksLoading.value = true
+  try {
+    const res = await getShareLinks(route.params.id)
+    shareLinks.value = res.data.data || []
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载分享链接失败')
+  } finally {
+    shareLinksLoading.value = false
+  }
+}
+
+async function handleCreateShareLink() {
+  const evaluatorName = shareForm.value.evaluator_name.trim()
+  if (!evaluatorName) {
+    ElMessage.warning('请输入评价人姓名')
+    return
+  }
+  creatingShareLink.value = true
+  try {
+    const res = await createShareLink(route.params.id, { evaluator_name: evaluatorName })
+    shareLinks.value.unshift(res.data.data)
+    // 给新链接补 evaluation_count 字段，便于一致渲染
+    shareLinks.value[0].evaluation_count = 0
+    shareForm.value.evaluator_name = ''
+    ElMessage.success('分享链接已生成')
+    // 自动复制到剪贴板
+    copyShareUrl(res.data.data.token)
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '生成分享链接失败')
+  } finally {
+    creatingShareLink.value = false
+  }
+}
+
+async function copyShareUrl(token) {
+  const url = buildShareUrl(token)
+  try {
+    await navigator.clipboard.writeText(url)
+    ElMessage.success('分享链接已复制到剪贴板')
+  } catch {
+    // 剪贴板 API 失败时回退到 textarea 选中复制
+    const textarea = document.createElement('textarea')
+    textarea.value = url
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      document.execCommand('copy')
+      ElMessage.success('分享链接已复制')
+    } catch {
+      ElMessage.warning('复制失败，请手动复制：' + url)
+    }
+    document.body.removeChild(textarea)
+  }
+}
+
+async function handleDeleteShareLink(link) {
+  try {
+    await ElMessageBox.confirm(`确定删除该分享链接吗？关联的评价也会被删除。`, '确认删除', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消'
+    })
+  } catch {
+    return
+  }
+  try {
+    await deleteShareLink(route.params.id, link.id)
+    shareLinks.value = shareLinks.value.filter(l => l.id !== link.id)
+    ElMessage.success('已删除')
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '删除失败')
   }
 }
 
 onMounted(async () => {
   await Promise.all([fetchCandidate(), fetchQuota()])
-  await initAutoPreview()
 })
 </script>
 
@@ -412,5 +703,100 @@ onMounted(async () => {
   padding: 16px;
   background: #fafafa;
   border-radius: 8px;
+}
+
+.evaluation-form-wrapper {
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.evaluation-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.evaluation-item:last-child {
+  border-bottom: none;
+}
+
+.evaluation-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.evaluator-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.eval-time {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+
+.evaluation-content {
+  color: var(--el-text-color-regular);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin-bottom: 6px;
+}
+
+.evaluation-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.follow-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.share-link-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.share-link-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-link-evaluator {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.share-link-meta {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-bottom: 4px;
+}
+
+.share-link-url {
+  font-size: 12px;
+  color: var(--el-color-primary);
+  word-break: break-all;
+}
+
+.share-link-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
 }
 </style>

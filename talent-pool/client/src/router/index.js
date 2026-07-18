@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/auth'
 
 const routes = [
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue'), meta: { public: true } },
+  { path: '/share/:token', name: 'ShareEvaluation', component: () => import('../views/ShareEvaluation.vue'), meta: { public: true, title: '面试评价', bare: true } },
   { path: '/', redirect: '/candidates' },
   { path: '/candidates', name: 'CandidateList', component: () => import('../views/CandidateList.vue'), meta: { title: '候选人列表' } },
   { path: '/candidates/new', name: 'CandidateForm', component: () => import('../views/CandidateForm.vue'), meta: { title: '新增候选人' } },

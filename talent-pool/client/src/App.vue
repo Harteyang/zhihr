@@ -1,6 +1,9 @@
 <template>
   <el-config-provider :locale="zhCn">
-    <el-container style="min-height: 100vh">
+    <!-- 公开分享页等 bare 路由直接渲染，不显示后台侧边栏与顶栏 -->
+    <router-view v-if="$route.meta.bare" />
+
+    <el-container v-else style="min-height: 100vh">
       <el-aside v-if="!isMobile" width="220px" style="background: #1d2129; display: flex; flex-direction: column;">
         <div style="height: 56px; display: flex; align-items: center; padding: 0 20px; color: #fff; font-size: 17px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <el-icon style="margin-right: 8px; color: var(--el-color-primary);"><UserFilled /></el-icon>
