@@ -28,6 +28,9 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+# Vite dependency cache
+.vite/
+
 # Screenshots / artifacts
 screenshot-*.png
 *.mp4
