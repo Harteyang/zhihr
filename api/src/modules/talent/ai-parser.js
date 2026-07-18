@@ -41,11 +41,8 @@ async function callAIWithFallback(resumeText, env) {
     throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 SENSENOVA_API_KEY 或 AI_API_KEY')
   }
 
-  for (const model of AI_MODELS) {
+  for (const model of configuredModels) {
     const apiKey = env[model.apiKeyEnv]
-    if (!apiKey) {
-      continue
-    }
 
     try {
       console.log(`[AI] 尝试模型: ${model.name}`)
