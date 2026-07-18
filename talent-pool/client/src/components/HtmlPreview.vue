@@ -118,6 +118,24 @@ watch(() => props.html, (newVal) => {
 /* 正文：紧凑但可读的段落间距 */
 .resume-html :deep(p) {
   margin: 6px 0;
+  line-height: 1.75;
+}
+
+/* 字段行（姓名：张三、电话：138...）：整齐的两栏布局 */
+.resume-html :deep(.resume-field) {
+  margin: 5px 0;
+  line-height: 1.7;
+}
+
+.resume-html :deep(.resume-label) {
+  display: inline-block;
+  min-width: 6em;
+  color: #606266;
+  font-weight: 600;
+}
+
+.resume-html :deep(.resume-value) {
+  color: #2c3e50;
 }
 
 /* 强调文字 */
@@ -125,6 +143,17 @@ watch(() => props.html, (newVal) => {
 .resume-html :deep(b) {
   font-weight: 650;
   color: #1a1a1a;
+}
+
+/* 兜底：当后端/旧 DOCX 把标题做成整段加粗时，将其提升为伪标题 */
+.resume-html :deep(p:has(> strong:only-child, > b:only-child)) {
+  margin: 14px 0 6px;
+  font-size: 16px;
+}
+
+.resume-html :deep(p:has(> strong:only-child, > b:only-child)) strong,
+.resume-html :deep(p:has(> strong:only-child, > b:only-child)) b {
+  color: #303133;
 }
 
 /* 图片自适应 */
@@ -241,6 +270,14 @@ watch(() => props.html, (newVal) => {
   .resume-html :deep(th),
   .resume-html :deep(td) {
     padding: 6px 8px;
+  }
+
+  .resume-html :deep(.resume-label) {
+    min-width: 5em;
+  }
+
+  .resume-html :deep(p:has(> strong:only-child, > b:only-child)) {
+    font-size: 15px;
   }
 }
 

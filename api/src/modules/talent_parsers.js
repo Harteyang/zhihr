@@ -653,6 +653,145 @@ async function parseFile(fileName, arrayBuffer) {
   }
 }
 
+// ========= 纯文本 → 语义化 HTML（用于 DOC/TXT 预览）=========
+
+const SECTION_HEADERS = new Set([
+  '基本信息', '个人信息', '联系方式', 'profile',
+  '求职意向', '应聘意向', '工作意向', 'job objective',
+  '教育背景', '教育经历', '学历', 'education',
+  '工作经历', '工作经验', '工作履历', '实习经历', 'experience', '职业经历',
+  '项目经历', '项目经验', '项目', 'projects',
+  '专业技能', '技能', '技术能力', '技术栈', 'skills',
+  '自我评价', '个人优势', '自我评估', 'summary',
+  '获奖情况', '荣誉证书', '证书', 'languages', '语言能力',
+  '社会活动', '校园经历', '附加信息'
+])
+
+const SUB_SECTION_HEADERS = new Set([
+  '项目名称', '项目时间', '开发时间', '项目周期',
+  '系统架构', '技术架构', '项目架构',
+  '项目描述', '项目职责', '责任描述', '职责描述', '个人职责',
+  '教育时间', '就读时间', '毕业院校', '所学专业', '主修课程'
+])
+
+const LABELS = new Set([
+  '姓名', '名字', 'name', '年龄', '性别', '民族', '籍贯', '户口', '现居', '居住地', '现居住地', '政治面貌', '婚姻状况',
+  '手机', '电话', '手机号', '联系方式', '邮箱', '电子邮件', 'email',
+  '应聘职位', '期望职位', '目标岗位', '意向岗位', '求职岗位', '职位', '岗位',
+  '期望地点', '期望城市', '工作地点', '到岗时间', '目前状况',
+  '期望薪资', '目前薪资', '薪资要求',
+  '工作年限', '工作经验', '从业年限',
+  '学历', '学位', '毕业院校', '专业', '学校'
+])
+
+const GARBAGE_PATTERNS = [
+  /^Root Entry$/i,
+  /^SummaryInformation$/i,
+  /^DocumentSummaryInformation$/i,
+  /^WordDocument$/i,
+  /^Normal\.dotm$/i,
+  /^Administrator$/i,
+  /^WPS Office/i,
+  /^WpsCustomData$/i,
+  /^KSOProductBuildVer$/i,
+  /^KSORubyTemplateID$/i,
+  /^icon_quote$/i,
+  /^[\d.]+-[\d.]+-[\d.]+$/,
+  /^[\d]{4}-[\d]{2}-[\d]{2}T[\d]{2}:[\d]{2}:[\d]{2}Z$/,
+  /^(Data|Table|髁|隠|钡|鞟|龧|邚|粆|桲|呞|粉|晰|剜|箇|汳|層|螏|牿|孨|辗|羇|摱|夁|尀|脈|俾)$/,
+  /^标题 \d+$/,
+  /^标题 \d+ Char$/,
+  /^默认段落字体$/,
+  /^普通表格$/,
+  /^批注主题 Char$/,
+  /^批注框文本$/,
+  /^批注框文本 Char$/,
+  /^数字 Char Char$/,
+  /^[\x00-\x1f\x7f]+$/
+]
+
+function isGarbageLine(line) {
+  const trimmed = line.trim()
+  if (!trimmed) return true
+  if (trimmed.length > 200) return false
+  return GARBAGE_PATTERNS.some(p => p.test(trimmed))
+}
+
+function isSectionHeader(line) {
+  const normalized = line.trim().replace(/[:：]\s*$/, '').toLowerCase()
+  if (SECTION_HEADERS.has(normalized) || SECTION_HEADERS.has(line.trim())) return true
+  // 兼容 "工作经历 :" 或 "工作经历 内容"
+  const startWord = normalized.split(/\s/)[0]
+  return SECTION_HEADERS.has(startWord)
+}
+
+function isSubSectionHeader(line) {
+  const normalized = line.trim().replace(/[:：]\s*$/, '').toLowerCase()
+  if (SUB_SECTION_HEADERS.has(normalized) || SUB_SECTION_HEADERS.has(line.trim())) return true
+  const startWord = normalized.split(/\s/)[0]
+  return SUB_SECTION_HEADERS.has(startWord)
+}
+
+function parseLabelValue(line) {
+  // 先把 label 与冒号之间的多余空格压缩，兼容 "姓    名 : 高翔"
+  const normalized = line.replace(/^([\u4e00-\u9fa5a-zA-Z\s]{1,15})\s*[:：]\s*/, (_, rawLabel) => `${rawLabel.replace(/\s+/g, '')}：`)
+  const match = normalized.match(/^([\u4e00-\u9fa5a-zA-Z]{1,10})[:：](.+)$/)
+  if (!match) return null
+  const label = match[1].trim()
+  const value = match[2].trim()
+  if (!LABELS.has(label) && !LABELS.has(label.toLowerCase())) return null
+  return { label, value }
+}
+
+function isListItem(line) {
+  return /^[•·\-\*•●○■□▶▸◆◇]\s+/.test(line) || /^\d+[\.、)）]\s+/.test(line)
+}
+
+function stripListMarker(line) {
+  return line.replace(/^[•·\-\*•●○■□▶▸◆◇]\s+/, '').replace(/^\d+[\.、)）]\s+/, '')
+}
+
+function textLinesToSemanticHtml(lines) {
+  const cleaned = lines.map(l => l.trim()).filter(l => l && !isGarbageLine(l))
+  const html = []
+  let inList = false
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const line = cleaned[i]
+
+    if (isSectionHeader(line)) {
+      if (inList) { html.push('</ul>'); inList = false }
+      html.push(`<h2>${escapeHtml(line.replace(/[:：]\s*$/, ''))}</h2>`)
+      continue
+    }
+
+    const labelValue = parseLabelValue(line)
+    if (labelValue) {
+      if (inList) { html.push('</ul>'); inList = false }
+      html.push(`<p class="resume-field"><strong class="resume-label">${escapeHtml(labelValue.label)}：</strong><span class="resume-value">${escapeHtml(labelValue.value)}</span></p>`)
+      continue
+    }
+
+    if (isSubSectionHeader(line)) {
+      if (inList) { html.push('</ul>'); inList = false }
+      html.push(`<h3>${escapeHtml(line.replace(/[:：]\s*$/, ''))}</h3>`)
+      continue
+    }
+
+    if (isListItem(line)) {
+      if (!inList) { html.push('<ul>'); inList = true }
+      html.push(`<li>${escapeHtml(stripListMarker(line))}</li>`)
+      continue
+    }
+
+    if (inList) { html.push('</ul>'); inList = false }
+    html.push(`<p>${escapeHtml(line)}</p>`)
+  }
+
+  if (inList) html.push('</ul>')
+  return html.join('\n') || '<p>文档内容为空</p>'
+}
+
 // ========= .txt 文件解析（自动检测编码）=========
 
 function parseTxt(arrayBuffer) {
@@ -955,7 +1094,7 @@ function docToHtml(arrayBuffer) {
     const utf16Score = countCommonChineseChars(utf16Text)
     const gbkScore = countCommonChineseChars(gbkText)
     const text = (gbkScore > utf16Score && gbkText.length >= 20) ? gbkText : utf16Text
-    return text.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
+    return textLinesToSemanticHtml(text.split('\n'))
   }
 
   // RTF
@@ -970,7 +1109,7 @@ function docToHtml(arrayBuffer) {
       .replace(/\\[a-zA-Z]+-?\d* ?/g, '')
       .replace(/[{}]/g, '')
       .trim()
-    return fullText.split('\n').filter(l => l.trim()).map(l => `<p>${escapeHtml(l)}</p>`).join('\n')
+    return textLinesToSemanticHtml(fullText.split('\n'))
   }
 
   // HTML 伪装 - 检测字符编码后再解码，避免非 UTF-8 编码的中文乱码
@@ -1011,14 +1150,8 @@ function txtToHtml(arrayBuffer) {
       if (!gbkText.includes('\uFFFD')) text = gbkText
     } catch { /* ignore */ }
   }
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .split('\n')
-    .filter(l => l.trim())
-    .map(l => `<p>${l}</p>`)
-    .join('\n')
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  return textLinesToSemanticHtml(lines)
 }
 
 export { parseFile, parseExcel, generateTemplateBuffer, docxToHtml, docToHtml, txtToHtml, extractInfo }
