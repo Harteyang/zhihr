@@ -159,11 +159,12 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
       return jsonResponse({ success: false, message: '批次不存在或无权查看' }, 404, corsHeaders)
     }
 
-    const now = new Date()
+    const now = Date.now()
 
     const timeoutTasks = tasks.results.filter(t => {
       if (t.status !== 'parsing') return false
-      const updatedAt = new Date(t.updated_at.replace(' ', 'T'))
+      const updatedAt = Date.parse(t.updated_at.replace(' ', 'T') + 'Z')
+      if (Number.isNaN(updatedAt)) return false
       const elapsedMinutes = (now - updatedAt) / (1000 * 60)
       return elapsedMinutes > PARSE_TASK_TIMEOUT_MINUTES
     })
