@@ -26,19 +26,6 @@
       </div>
     </el-card>
 
-    <el-card v-if="previewVisible" shadow="never" style="margin-bottom: 16px;" id="preview-section">
-      <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600;">预览：{{ previewFileName }}</span>
-          <el-button text size="small" @click="closePreview">关闭预览</el-button>
-        </div>
-      </template>
-      <div v-loading="previewLoading" class="resume-preview-container">
-        <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
-        <HtmlPreview v-else-if="previewType === 'html'" :html="previewHtml" :loading="previewLoading" :error="''" />
-      </div>
-    </el-card>
-
     <el-card shadow="never">
       <el-tabs v-model="activeTab">
         <el-tab-pane label="基本信息" name="info">
@@ -76,60 +63,78 @@
           <el-empty v-else description="暂无工作经历" :image-size="60" />
         </el-tab-pane>
 
-        <el-tab-pane :label="`附件 (${candidate.attachments?.length || 0})`" name="attachments">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
-            <el-upload
-              :auto-upload="true"
-              action="#"
-              accept=".pdf,.doc,.docx,.txt"
-              :show-file-list="false"
-              :http-request="handleUploadRequest"
-              :before-upload="beforeUpload"
-              @success="handleUploadSuccess"
-              @error="handleUploadError"
-              :disabled="quota && !quota.unlimited && quota.remaining <= 0"
-            >
-              <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传简历附件</el-button>
-            </el-upload>
-            <span v-if="quota && quota.unlimited" style="font-size: 12px; color: var(--el-text-color-secondary);">
-              管理员账户：上传不受限制
-            </span>
-            <span v-else-if="quota" style="font-size: 12px;" :style="{ color: quota.remaining <= 10 ? 'var(--el-color-danger)' : 'var(--el-text-color-secondary)' }">
-              今日剩余上传：{{ quota.remaining }} / {{ quota.limit }} 份
-            </span>
-          </div>
-          <el-alert
-            v-if="quota && !quota.unlimited && quota.remaining <= 0"
-            type="warning"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 12px;"
-          >
-            每日简历上传上限为 {{ quota.limit }} 份，今日已达上限，无法继续上传。管理员账户不受此限制。
-          </el-alert>
-          <el-table :data="candidate.attachments || []" v-if="candidate.attachments && candidate.attachments.length > 0" stripe>
-            <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="file_type" label="类型" width="80" />
-            <el-table-column prop="file_size" label="大小" width="100">
-              <template #default="{ row }">{{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}</template>
-            </el-table-column>
-            <el-table-column label="上传时间" width="170">
-              <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
-            </el-table-column>
-            <el-table-column label="操作" width="140">
-              <template #default="{ row }">
-                <el-button type="primary" link size="small" @click="handlePreview(row)">预览</el-button>
-                <el-button type="success" link size="small" @click="handleDownload(row)">下载</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-empty v-else description="暂无附件" :image-size="60" />
-        </el-tab-pane>
-
         <el-tab-pane label="备注" name="notes">
           <p style="white-space: pre-wrap; color: var(--el-text-color-regular); line-height: 1.8;">{{ candidate.summary || '暂无备注' }}</p>
         </el-tab-pane>
       </el-tabs>
+    </el-card>
+
+    <!-- 附件展示区域 -->
+    <el-card shadow="never" style="margin-top: 16px;" id="attachments-section">
+      <template #header>
+        <span style="font-weight: 600;">附件 ({{ candidate.attachments?.length || 0 }})</span>
+      </template>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+        <el-upload
+          :auto-upload="true"
+          action="#"
+          accept=".pdf,.doc,.docx,.txt"
+          :show-file-list="false"
+          :http-request="handleUploadRequest"
+          :before-upload="beforeUpload"
+          @success="handleUploadSuccess"
+          @error="handleUploadError"
+          :disabled="quota && !quota.unlimited && quota.remaining <= 0"
+        >
+          <el-button type="primary" size="small" :disabled="quota && !quota.unlimited && quota.remaining <= 0">上传简历附件</el-button>
+        </el-upload>
+        <span v-if="quota && quota.unlimited" style="font-size: 12px; color: var(--el-text-color-secondary);">
+          管理员账户：上传不受限制
+        </span>
+        <span v-else-if="quota" style="font-size: 12px;" :style="{ color: quota.remaining <= 10 ? 'var(--el-color-danger)' : 'var(--el-text-color-secondary)' }">
+          今日剩余上传：{{ quota.remaining }} / {{ quota.limit }} 份
+        </span>
+      </div>
+      <el-alert
+        v-if="quota && !quota.unlimited && quota.remaining <= 0"
+        type="warning"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 12px;"
+      >
+        每日简历上传上限为 {{ quota.limit }} 份，今日已达上限，无法继续上传。管理员账户不受此限制。
+      </el-alert>
+      <el-table :data="candidate.attachments || []" v-if="candidate.attachments && candidate.attachments.length > 0" stripe>
+        <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="file_type" label="类型" width="80" />
+        <el-table-column prop="file_size" label="大小" width="100">
+          <template #default="{ row }">{{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}</template>
+        </el-table-column>
+        <el-table-column label="上传时间" width="170">
+          <template #default="{ row }">{{ formatTime(row.created_at) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="140">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="handlePreview(row)">预览</el-button>
+            <el-button type="success" link size="small" @click="handleDownload(row)">下载</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-else description="暂无附件" :image-size="60" />
+    </el-card>
+
+    <!-- 简历预览区域 -->
+    <el-card v-if="previewVisible" shadow="never" style="margin-top: 16px;" id="preview-section">
+      <template #header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600;">预览：{{ previewFileName }}</span>
+          <el-button text size="small" @click="closePreview">关闭预览</el-button>
+        </div>
+      </template>
+      <div v-loading="previewLoading" class="resume-preview-container">
+        <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
+        <HtmlPreview v-else-if="previewType === 'html'" :html="previewHtml" :loading="previewLoading" :error="''" />
+      </div>
     </el-card>
   </div>
 </template>
@@ -261,7 +266,6 @@ async function handleStatusChange(val) {
 }
 
 async function handlePreview(row) {
-  activeTab.value = 'attachments'
   previewFileName.value = row.file_name
   previewVisible.value = true
   previewLoading.value = true
