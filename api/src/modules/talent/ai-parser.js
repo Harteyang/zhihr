@@ -35,11 +35,15 @@ function fetchWithTimeout(url, options, timeoutMs) {
 
 async function callAIWithFallback(resumeText, env) {
   const errors = []
+  const configuredModels = AI_MODELS.filter(m => env[m.apiKeyEnv])
+
+  if (configuredModels.length === 0) {
+    throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 SENSENOVA_API_KEY 或 AI_API_KEY')
+  }
 
   for (const model of AI_MODELS) {
     const apiKey = env[model.apiKeyEnv]
     if (!apiKey) {
-      errors.push(`${model.name}: 未配置 API Key`)
       continue
     }
 
