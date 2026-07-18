@@ -1,0 +1,207 @@
+import { jsonResponse, maskError, getClientIp, logOperation } from '../../utils/router.js'
+import { OSSClient } from '../../utils/oss.js'
+
+/**
+ * 分享链接公开访问接口（无需登录认证）
+ * - GET /api/talent/share/:token  获取候选人基本信息 + 附件列表 + 锁定的评价人姓名 + 已有评价
+ * - GET /api/talent/share/:token/attachments/:attachId/download-url  获取附件下载直链
+ * - POST /api/talent/share/:token/evaluations  提交评价（评价人姓名使用链接锁定的值）
+ * - PUT  /api/talent/share/:token/evaluations  修改评价（仅能修改当前 token 关联的评价）
+ */
+
+async function getShareInfo(request, env, corsHeaders, params) {
+  try {
+    const link = await env.DB.prepare(
+      'SELECT id, candidate_id, evaluator_name, created_at FROM talent_share_links WHERE token = ?'
+    ).bind(params.token).first()
+    if (!link) {
+      return jsonResponse({ success: false, message: '分享链接无效或已失效' }, 404, corsHeaders)
+    }
+
+    const candidate = await env.DB.prepare(
+      `SELECT id, name, position, education, experience_years, skills, source, created_at
+       FROM talent_candidates WHERE id = ?`
+    ).bind(link.candidate_id).first()
+    if (!candidate) {
+      return jsonResponse({ success: false, message: '候选人不存在' }, 404, corsHeaders)
+    }
+
+    const attachments = await env.DB.prepare(
+      `SELECT id, file_name, file_type, file_size, created_at
+       FROM talent_attachments WHERE candidate_id = ? ORDER BY created_at DESC`
+    ).bind(link.candidate_id).all()
+
+    const evaluation = await env.DB.prepare(
+      `SELECT id, evaluator_name, content, created_at, updated_at
+       FROM talent_interview_evaluations WHERE share_link_id = ? LIMIT 1`
+    ).bind(link.id).first()
+
+    // 解析 skills JSON
+    let skills = []
+    if (candidate.skills) {
+      try { skills = JSON.parse(candidate.skills) } catch { skills = [] }
+    }
+
+    return jsonResponse({
+      success: true,
+      data: {
+        share_link_id: link.id,
+        evaluator_name: link.evaluator_name,
+        share_created_at: link.created_at,
+        candidate: {
+          id: candidate.id,
+          name: candidate.name,
+          position: candidate.position,
+          education: candidate.education,
+          experience_years: candidate.experience_years,
+          skills,
+          source: candidate.source,
+          created_at: candidate.created_at
+        },
+        attachments: attachments.results,
+        evaluation: evaluation || null
+      }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+async function getShareDownloadUrl(request, env, corsHeaders, params) {
+  const oss = new OSSClient(env)
+  if (!oss.isConfigured()) {
+    return jsonResponse({ success: false, message: '文件存储服务未配置（OSS）' }, 503, corsHeaders)
+  }
+
+  try {
+    const link = await env.DB.prepare(
+      'SELECT id, candidate_id FROM talent_share_links WHERE token = ?'
+    ).bind(params.token).first()
+    if (!link) {
+      return jsonResponse({ success: false, message: '分享链接无效' }, 404, corsHeaders)
+    }
+
+    const attachment = await env.DB.prepare(
+      'SELECT id, candidate_id, file_name, r2_key FROM talent_attachments WHERE id = ?'
+    ).bind(params.attachId).first()
+    if (!attachment) {
+      return jsonResponse({ success: false, message: '附件不存在' }, 404, corsHeaders)
+    }
+    if (attachment.candidate_id !== link.candidate_id) {
+      return jsonResponse({ success: false, message: '无权下载该附件' }, 403, corsHeaders)
+    }
+
+    const signedUrl = await oss.getSignedUrl('GET', attachment.r2_key, 300)
+    return jsonResponse({
+      success: true,
+      data: { url: signedUrl, fileName: attachment.file_name }
+    }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+async function submitShareEvaluation(request, env, corsHeaders, params) {
+  try {
+    const link = await env.DB.prepare(
+      'SELECT id, candidate_id, evaluator_name FROM talent_share_links WHERE token = ?'
+    ).bind(params.token).first()
+    if (!link) {
+      return jsonResponse({ success: false, message: '分享链接无效' }, 404, corsHeaders)
+    }
+
+    // 同一分享链接只能提交一次评价，已存在则引导调用 PUT 修改
+    const existing = await env.DB.prepare(
+      'SELECT id FROM talent_interview_evaluations WHERE share_link_id = ? LIMIT 1'
+    ).bind(link.id).first()
+    if (existing) {
+      return jsonResponse({
+        success: false,
+        message: '您已提交过评价，请使用修改功能更新内容',
+        code: 'EVALUATION_EXISTS',
+        data: { evaluation_id: existing.id }
+      }, 409, corsHeaders)
+    }
+
+    const body = await request.json()
+    const content = String(body.content || '').trim()
+    if (!content) {
+      return jsonResponse({ success: false, message: '评价内容为必填' }, 400, corsHeaders)
+    }
+    if (content.length > 5000) {
+      return jsonResponse({ success: false, message: '评价内容不能超过 5000 字' }, 400, corsHeaders)
+    }
+
+    // 评价人姓名写死为分享链接创建时锁定的值
+    const result = await env.DB.prepare(
+      `INSERT INTO talent_interview_evaluations (candidate_id, evaluator_name, content, source, share_link_id)
+       VALUES (?, ?, ?, 'share', ?)`
+    ).bind(link.candidate_id, link.evaluator_name, content, link.id).run()
+
+    const evalRow = await env.DB.prepare(
+      'SELECT id, evaluator_name, content, created_at, updated_at FROM talent_interview_evaluations WHERE id = ?'
+    ).bind(result.meta.last_row_id).first()
+
+    await logOperation(env, null, 'submit_share_evaluation', 'evaluation', String(evalRow.id), {
+      candidate_id: link.candidate_id,
+      share_link_id: link.id,
+      evaluator_name: link.evaluator_name
+    }, getClientIp(request))
+
+    return jsonResponse({ success: true, data: evalRow }, 201, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+async function updateShareEvaluation(request, env, corsHeaders, params) {
+  try {
+    const link = await env.DB.prepare(
+      'SELECT id, candidate_id, evaluator_name FROM talent_share_links WHERE token = ?'
+    ).bind(params.token).first()
+    if (!link) {
+      return jsonResponse({ success: false, message: '分享链接无效' }, 404, corsHeaders)
+    }
+
+    const existing = await env.DB.prepare(
+      'SELECT id, content FROM talent_interview_evaluations WHERE share_link_id = ? LIMIT 1'
+    ).bind(link.id).first()
+    if (!existing) {
+      return jsonResponse({ success: false, message: '尚未提交评价，无法修改' }, 404, corsHeaders)
+    }
+
+    const body = await request.json()
+    const content = String(body.content || '').trim()
+    if (!content) {
+      return jsonResponse({ success: false, message: '评价内容为必填' }, 400, corsHeaders)
+    }
+    if (content.length > 5000) {
+      return jsonResponse({ success: false, message: '评价内容不能超过 5000 字' }, 400, corsHeaders)
+    }
+
+    await env.DB.prepare(
+      `UPDATE talent_interview_evaluations SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+    ).bind(content, existing.id).run()
+
+    const updated = await env.DB.prepare(
+      'SELECT id, evaluator_name, content, created_at, updated_at FROM talent_interview_evaluations WHERE id = ?'
+    ).bind(existing.id).first()
+
+    await logOperation(env, null, 'update_share_evaluation', 'evaluation', String(existing.id), {
+      candidate_id: link.candidate_id,
+      share_link_id: link.id,
+      evaluator_name: link.evaluator_name
+    }, getClientIp(request))
+
+    return jsonResponse({ success: true, data: updated }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
+  }
+}
+
+export const routes = [
+  { method: 'GET', path: '/api/talent/share/:token', handler: getShareInfo },
+  { method: 'GET', path: '/api/talent/share/:token/attachments/:attachId/download-url', handler: getShareDownloadUrl },
+  { method: 'POST', path: '/api/talent/share/:token/evaluations', handler: submitShareEvaluation },
+  { method: 'PUT', path: '/api/talent/share/:token/evaluations', handler: updateShareEvaluation }
+]

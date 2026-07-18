@@ -178,3 +178,37 @@ CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_user ON talent_parse_tasks(use
 CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_status ON talent_parse_tasks(status);
 CREATE INDEX IF NOT EXISTS idx_talent_parse_tasks_created ON talent_parse_tasks(created_at);
 
+-- ========= 面试评价与分享链接 =========
+
+-- 面试评价表（支持内部填写和分享链接填写两种来源）
+CREATE TABLE IF NOT EXISTS talent_interview_evaluations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id INTEGER NOT NULL,
+    evaluator_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    source TEXT DEFAULT 'internal', -- 'internal' 内部填写 / 'share' 分享链接填写
+    share_link_id INTEGER, -- 关联分享链接 ID（source='share' 时填充）
+    created_by TEXT, -- 内部评价记录提交人 user_id
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_evaluations_candidate ON talent_interview_evaluations(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_talent_evaluations_share_link ON talent_interview_evaluations(share_link_id);
+CREATE INDEX IF NOT EXISTS idx_talent_evaluations_created ON talent_interview_evaluations(created_at);
+
+-- 候选人分享链接表（永久有效，token 唯一）
+CREATE TABLE IF NOT EXISTS talent_share_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    evaluator_name TEXT NOT NULL, -- 写死的评价人信息
+    created_by TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_share_links_candidate ON talent_share_links(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_talent_share_links_token ON talent_share_links(token);
+

@@ -281,6 +281,13 @@ async function updateCandidate(request, env, corsHeaders, params) {
     values.push(id)
 
     await env.DB.prepare(`UPDATE talent_candidates SET ${fields.join(', ')} WHERE id = ?`).bind(...values).run()
+
+    await logOperation(env, user, 'update_candidate', 'candidate', String(id), {
+      candidate_id: Number(id),
+      candidate_name: existing.name,
+      fields: fields.filter(f => !f.startsWith('updated_at')).map(f => f.split(' = ')[0])
+    }, getClientIp(request))
+
     return getCandidate(request, env, corsHeaders, { id })
   } catch (err) {
     return jsonResponse({ success: false, message: maskError(err) }, 500, corsHeaders)
@@ -306,8 +313,21 @@ async function updateStatus(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
+    // 状态未变化时直接返回，避免在跟进记录里产生噪音
+    if (existing.status === body.status) {
+      return getCandidate(request, env, corsHeaders, { id: params.id })
+    }
+
     await env.DB.prepare('UPDATE talent_candidates SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .bind(body.status, params.id).run()
+
+    // 记录状态变更到操作日志，便于在跟进记录中展示新旧状态
+    await logOperation(env, user, 'update_candidate_status', 'candidate', String(params.id), {
+      candidate_id: Number(params.id),
+      candidate_name: existing.name,
+      from: existing.status,
+      to: body.status
+    }, getClientIp(request))
 
     return getCandidate(request, env, corsHeaders, { id: params.id })
   } catch (err) {

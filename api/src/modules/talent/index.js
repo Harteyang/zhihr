@@ -6,6 +6,10 @@ import { routes as previewRoutes } from './preview.js'
 import { routes as aiParserRoutes } from './ai-parser.js'
 import { routes as parseQueueRoutes } from './parse-queue.js'
 import { routes as excelImportRoutes } from './excel-import.js'
+import { routes as evaluationsRoutes } from './evaluations.js'
+import { routes as shareLinksRoutes } from './share-links.js'
+import { routes as sharePublicRoutes } from './share-public.js'
+import { routes as followRecordsRoutes } from './follow-records.js'
 
 export const routes = [
   ...candidatesRoutes,
@@ -16,6 +20,10 @@ export const routes = [
   ...aiParserRoutes,
   ...parseQueueRoutes,
   ...excelImportRoutes,
+  ...evaluationsRoutes,
+  ...shareLinksRoutes,
+  ...sharePublicRoutes,
+  ...followRecordsRoutes
 ]
 
 export { checkPositionPermission } from './permissions.js'
