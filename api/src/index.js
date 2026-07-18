@@ -3,7 +3,7 @@ import { register, matchRoute, jsonResponse, getCorsHeaders, debugLog } from './
 import * as auth from './modules/auth.js'
 import * as reviews from './modules/reviews.js'
 import * as miaodu from './modules/miaodu.js'
-import * as talent from './modules/talent.js'
+import * as talent from './modules/talent/index.js'
 import * as talentAuth from './modules/talent_auth.js'
 
 register(auth)

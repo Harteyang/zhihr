@@ -1,0 +1,15 @@
+import api from './index.js'
+
+export const getUsers = () => api.get('/auth/users')
+export const getUser = (id) => api.get(`/auth/users/${id}`)
+export const createUser = (data) => api.post('/auth/users', data)
+export const updateUser = (id, data) => api.put(`/auth/users/${id}`, data)
+export const deleteUser = (id) => api.delete(`/auth/users/${id}`)
+export const updateUserStatus = (id, status) => api.patch(`/auth/users/${id}/status`, { status })
+export const getUserPositions = (id) => api.get(`/auth/users/${id}/positions`)
+export const setUserPositions = (id, positions) => api.put(`/auth/users/${id}/positions`, { positions })
+export const getAvailablePositions = () => api.get('/talent/positions/available')
+export const getOperationLogs = (params) => api.get('/auth/operation-logs', { params })
+export const batchUpdateUserStatus = (userIds, status) => api.patch('/auth/users/batch/status', { userIds, status })
+export const batchDeleteUsers = (userIds) => api.post('/auth/users/batch/delete', { userIds })
+export const batchSetPositions = (userIds, positions) => api.put('/auth/users/batch/positions', { userIds, positions })

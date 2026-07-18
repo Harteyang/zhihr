@@ -1002,4 +1002,23 @@ function docToHtml(arrayBuffer) {
   return '<p>无法预览此文档格式</p>'
 }
 
-export { parseFile, parseExcel, generateTemplateBuffer, docxToHtml, docToHtml }
+function txtToHtml(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer)
+  let text = new TextDecoder('utf-8').decode(bytes)
+  if (text.includes('\uFFFD')) {
+    try {
+      const gbkText = new TextDecoder('gbk').decode(bytes)
+      if (!gbkText.includes('\uFFFD')) text = gbkText
+    } catch { /* ignore */ }
+  }
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .split('\n')
+    .filter(l => l.trim())
+    .map(l => `<p>${l}</p>`)
+    .join('\n')
+}
+
+export { parseFile, parseExcel, generateTemplateBuffer, docxToHtml, docToHtml, txtToHtml, extractInfo }

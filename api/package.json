@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node tests/talent_parsers.test.js && node tests/parse_file.test.js",
+    "test": "node tests/talent_parsers.test.js && node tests/parse_file.test.js && node tests/fix_verification.test.js",
     "db:init": "wrangler d1 execute zhihr_db --file=./schema.sql",
     "db:migrate-talent": "wrangler d1 execute zhihr_db --file=./migrations/001_talent_pool_users.sql"
   },
