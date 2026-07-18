@@ -82,6 +82,7 @@ async function callSingleModel(model, resumeText, apiKey, signal) {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     },
+    body,
     signal
   })
 
