@@ -798,8 +798,10 @@ function textLinesToSemanticHtml(lines) {
   const html = []
   let inList = false
   let consecutiveGarbage = 0
+  let consecutiveSections = 0
   let hasSeenSection = false
   const GARBAGE_STOP_THRESHOLD = 3
+  const SECTION_BREAK_THRESHOLD = 3
 
   for (const rawLine of lines) {
     const line = rawLine.trim()
@@ -815,10 +817,15 @@ function textLinesToSemanticHtml(lines) {
 
     if (isSectionHeader(line)) {
       hasSeenSection = true
+      consecutiveSections++
+      // Word 文档尾部常连续出现多个虚假章节标题（个人信息/求职意向/工作经历...），
+      // 连续 N 个无实质内容的章节即可判定为乱码区，停止解析
+      if (consecutiveSections >= SECTION_BREAK_THRESHOLD) break
       if (inList) { html.push('</ul>'); inList = false }
       html.push(`<h2>${escapeHtml(line.replace(/[:：]\s*$/, ''))}</h2>`)
       continue
     }
+    consecutiveSections = 0
 
     const labelValue = parseLabelValue(line)
     if (labelValue) {
