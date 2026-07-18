@@ -49,12 +49,6 @@ function buildResumeUserMessage(resumeText) {
   return `<resume>\n${truncated}\n</resume>`
 }
 
-function fetchWithTimeout(url, options, timeoutMs) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer))
-}
-
 function parseAIResponse(content) {
   let cleanContent = content.trim()
   const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
@@ -64,7 +58,7 @@ function parseAIResponse(content) {
   return JSON.parse(cleanContent)
 }
 
-async function callSingleModel(model, resumeText, apiKey, signal) {
+async function callSingleModel(model, resumeText, apiKey, parentSignal) {
   const url = `${model.apiBase}/chat/completions`
   const body = JSON.stringify({
     model: model.name,
@@ -76,38 +70,53 @@ async function callSingleModel(model, resumeText, apiKey, signal) {
     max_tokens: model.maxTokens || 4096
   })
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body,
-    signal
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS)
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '')
-    throw new Error(`${model.name}: HTTP ${response.status} - ${errText.slice(0, 200)}`)
-  }
-
-  const data = await response.json()
-  const message = data?.choices?.[0]?.message
-  const content = message?.content
-
-  if (!content || !content.trim()) {
-    const hasReasoning = !!(message?.reasoning && message.reasoning.trim())
-    throw new Error(
-      hasReasoning
-        ? `${model.name}: AI 返回 content 为空（reasoning 模式 max_tokens 不足）`
-        : `${model.name}: AI 返回内容为空`
-    )
+  if (parentSignal) {
+    if (parentSignal.aborted) {
+      controller.abort()
+    } else {
+      parentSignal.addEventListener('abort', () => controller.abort(), { once: true })
+    }
   }
 
   try {
-    return parseAIResponse(content)
-  } catch {
-    throw new Error(`${model.name}: AI 返回格式无法解析为 JSON`)
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body,
+      signal: controller.signal
+    })
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '')
+      throw new Error(`${model.name}: HTTP ${response.status} - ${errText.slice(0, 200)}`)
+    }
+
+    const data = await response.json()
+    const message = data?.choices?.[0]?.message
+    const content = message?.content
+
+    if (!content || !content.trim()) {
+      const hasReasoning = !!(message?.reasoning && message.reasoning.trim())
+      throw new Error(
+        hasReasoning
+          ? `${model.name}: AI 返回 content 为空（reasoning 模式 max_tokens 不足）`
+          : `${model.name}: AI 返回内容为空`
+      )
+    }
+
+    try {
+      return parseAIResponse(content)
+    } catch {
+      throw new Error(`${model.name}: AI 返回格式无法解析为 JSON`)
+    }
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
