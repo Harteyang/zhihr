@@ -164,6 +164,73 @@ watch(() => props.html, (newVal) => {
   border-radius: 4px;
 }
 
+/* ===== Word .doc VML 布局修复 ===== */
+/* 智联招聘等 .doc 简历使用 VML 绝对定位（position:absolute），现代浏览器不支持 VML，
+   但绝对定位的内联样式仍生效，导致照片、品牌水印脱离表格流并与文字重叠。
+   这里将所有 absolute 定位重置为 static，让内容回到表格流中。 */
+
+/* 1. 重置所有 absolute 定位元素（VML 回退 span、v:rect 等） */
+.resume-html :deep([style*="absolute"]) {
+  position: static !important;
+  z-index: auto !important;
+  left: auto !important;
+  top: auto !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* 2. 隐藏 VML 元素（现代浏览器不支持 VML 渲染，确保不显示残影） */
+.resume-html :deep(v\:shape),
+.resume-html :deep(v\:rect),
+.resume-html :deep(v\:imagedata),
+.resume-html :deep(v\:textbox),
+.resume-html :deep(v\:fill),
+.resume-html :deep(v\:stroke),
+.resume-html :deep(v\:roundrect) {
+  display: none !important;
+}
+
+/* 3. Word 表格响应式：覆盖固定的 pt 宽度，使用固定布局自适应容器 */
+.resume-html :deep(.MsoTableGrid) {
+  table-layout: fixed !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.resume-html :deep(.MsoTableGrid td),
+.resume-html :deep(.MsoTableGrid th) {
+  width: auto !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 4. 照片列（通常是 rowspan 的窄列）：确保图片居中且不溢出 */
+.resume-html :deep(.MsoTableGrid td[rowspan]) {
+  vertical-align: top;
+  text-align: center;
+}
+
+.resume-html :deep(.MsoTableGrid td[rowspan]) img {
+  max-width: 120px;
+  max-height: 160px;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  display: inline-block;
+}
+
+/* 5. 智联招聘品牌水印（VML 回退 span）：缩小并淡化为角标 */
+.resume-html :deep([style*="z-index:251660288"]) {
+  display: inline-block !important;
+  font-size: 12px !important;
+  color: #909399 !important;
+  width: auto !important;
+  height: auto !important;
+  text-align: center;
+  padding: 2px 6px;
+  opacity: 0.6;
+}
+
 /* 列表：缩进合理，项间距紧凑 */
 .resume-html :deep(ul),
 .resume-html :deep(ol) {
