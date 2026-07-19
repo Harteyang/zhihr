@@ -14,7 +14,7 @@
           <template #header>
             <span class="section-title">候选人信息</span>
           </template>
-          <el-descriptions :column="3" border>
+          <el-descriptions :column="descColumn" border>
             <el-descriptions-item label="姓名">{{ shareInfo.candidate.name || '-' }}</el-descriptions-item>
             <el-descriptions-item label="目标岗位">{{ shareInfo.candidate.position || '-' }}</el-descriptions-item>
             <el-descriptions-item label="学历">{{ shareInfo.candidate.education || '-' }}</el-descriptions-item>
@@ -29,11 +29,52 @@
               </el-tag>
               <span v-if="!shareInfo.candidate.skills || shareInfo.candidate.skills.length === 0">-</span>
             </el-descriptions-item>
+            <el-descriptions-item v-if="shareInfo.candidate.summary" label="个人简介" :span="3">
+              <div class="candidate-summary">{{ shareInfo.candidate.summary }}</div>
+            </el-descriptions-item>
           </el-descriptions>
         </el-card>
 
-        <!-- 简历附件下载 -->
-        <el-card shadow="never" class="section-card" v-if="shareInfo.attachments && shareInfo.attachments.length > 0">
+        <!-- 工作经历 -->
+        <el-card
+          v-if="shareInfo.experiences && shareInfo.experiences.length > 0"
+          shadow="never"
+          class="section-card"
+        >
+          <template #header>
+            <div class="card-header-with-count">
+              <span class="section-title">工作经历</span>
+              <span class="section-count">{{ shareInfo.experiences.length }} 段经历</span>
+            </div>
+          </template>
+          <el-timeline class="experience-timeline">
+            <el-timeline-item
+              v-for="(exp, idx) in shareInfo.experiences"
+              :key="idx"
+              :timestamp="formatDateRange(exp.start_date, exp.end_date)"
+              placement="top"
+              type="primary"
+              hollow
+            >
+              <div class="experience-card">
+                <div class="experience-header">
+                  <span class="experience-company">{{ exp.company || '未填写公司' }}</span>
+                  <el-tag v-if="exp.title" size="small" type="info" effect="plain" class="experience-title-tag">
+                    {{ exp.title }}
+                  </el-tag>
+                </div>
+                <div v-if="exp.description" class="experience-desc">{{ exp.description }}</div>
+              </div>
+            </el-timeline-item>
+          </el-timeline>
+        </el-card>
+
+        <!-- 简历附件 -->
+        <el-card
+          v-if="shareInfo.attachments && shareInfo.attachments.length > 0"
+          shadow="never"
+          class="section-card"
+        >
           <template #header>
             <span class="section-title">简历附件</span>
           </template>
@@ -45,14 +86,81 @@
                 {{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="120">
+            <el-table-column label="操作" width="160">
               <template #default="{ row }">
-                <el-button type="success" link size="small" :loading="downloadingId === row.id" @click="handleDownload(row)">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  :loading="previewingId === row.id"
+                  @click="handlePreview(row)"
+                >
+                  预览
+                </el-button>
+                <el-button
+                  type="success"
+                  link
+                  size="small"
+                  :loading="downloadingId === row.id"
+                  @click="handleDownload(row)"
+                >
                   下载
                 </el-button>
               </template>
             </el-table-column>
           </el-table>
+        </el-card>
+
+        <!-- 简历预览区域 -->
+        <el-card
+          v-if="previewVisible"
+          shadow="never"
+          class="section-card preview-card"
+          id="preview-section"
+        >
+          <template #header>
+            <div class="preview-header">
+              <div class="preview-header-left">
+                <span class="preview-title">预览：{{ previewFileName }}</span>
+              </div>
+              <div class="preview-header-right">
+                <el-button-group class="zoom-controls">
+                  <el-button
+                    size="small"
+                    :icon="ZoomOut"
+                    @click="zoomOutPreview"
+                    :disabled="previewZoom <= MIN_PREVIEW_ZOOM + 0.01"
+                  />
+                  <el-button size="small" class="zoom-display" disabled>
+                    {{ Math.round(previewZoom * 100) }}%
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="ZoomIn"
+                    @click="zoomInPreview"
+                    :disabled="previewZoom >= MAX_PREVIEW_ZOOM - 0.01"
+                  />
+                  <el-button size="small" @click="resetPreviewZoom">重置</el-button>
+                </el-button-group>
+                <el-button text size="small" @click="closePreview">关闭预览</el-button>
+              </div>
+            </div>
+          </template>
+          <div class="resume-preview-container">
+            <div class="preview-zoom-wrapper" :style="{ zoom: previewZoom }">
+              <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
+              <HtmlPreview
+                v-else-if="previewType === 'html'"
+                :html="previewHtml"
+                :loading="previewLoading"
+                :error="previewError"
+              />
+              <div v-else-if="previewError" class="preview-fallback-error">
+                <el-icon><Warning /></el-icon>
+                <span>{{ previewError }}</span>
+              </div>
+            </div>
+          </div>
         </el-card>
 
         <!-- 面试评价 -->
@@ -95,10 +203,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getShareInfo, getShareDownloadUrl, submitShareEvaluation, updateShareEvaluation } from '../api/share.js'
+import { ZoomIn, ZoomOut, Warning } from '@element-plus/icons-vue'
+import {
+  getShareInfo,
+  getShareDownloadUrl,
+  previewShareAttachment,
+  previewSharePdfUrl,
+  submitShareEvaluation,
+  updateShareEvaluation
+} from '../api/share.js'
+import PdfPreview from '../components/PdfPreview.vue'
+import HtmlPreview from '../components/HtmlPreview.vue'
 import { formatTime } from '../utils/constants'
 
 const route = useRoute()
@@ -109,6 +227,23 @@ const loadError = ref('')
 const shareInfo = ref(null)
 const existingEvaluation = ref(null)
 const evaluationContent = ref('')
+
+// 预览相关状态
+const previewingId = ref(null)
+const previewVisible = ref(false)
+const previewLoading = ref(false)
+const previewType = ref('') // 'pdf' | 'html' | ''
+const previewHtml = ref('')
+const previewUrl = ref('')
+const previewFileName = ref('')
+const previewError = ref('')
+const previewZoom = ref(1.0)
+const MIN_PREVIEW_ZOOM = 0.5
+const MAX_PREVIEW_ZOOM = 3.0
+const ZOOM_STEP = 0.2
+
+// 响应式描述列数
+const descColumn = ref(3)
 
 async function fetchShareInfo() {
   loading.value = true
@@ -180,7 +315,143 @@ async function handleDownload(row) {
   }
 }
 
-onMounted(fetchShareInfo)
+// ====== 简历预览 ======
+// 预览请求序号：防止快速切换附件时旧请求覆盖新请求的状态
+let previewSeq = 0
+
+async function handlePreview(row) {
+  // 切换附件时先清理上一个 blob URL
+  if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+
+  // 自增序号并捕获当前请求的序号，响应回来时比对，过期的请求结果丢弃
+  const mySeq = ++previewSeq
+
+  previewingId.value = row.id
+  previewFileName.value = row.file_name
+  previewVisible.value = true
+  previewLoading.value = true
+  previewType.value = ''
+  previewHtml.value = ''
+  previewUrl.value = ''
+  previewError.value = ''
+  previewZoom.value = 1.0
+
+  try {
+    const fileType = (row.file_type || '').toLowerCase()
+    if (fileType === 'pdf') {
+      // PDF：直接 fetch 二进制流，转 blob URL 交给 PdfPreview
+      const res = await fetch(previewSharePdfUrl(route.params.token, row.id))
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ message: '预览失败' }))
+        throw new Error(errData.message || '预览失败')
+      }
+      const blob = await res.blob()
+      // 过期请求丢弃，避免覆盖用户已切换到的新附件预览
+      if (mySeq !== previewSeq) {
+        URL.revokeObjectURL(URL.createObjectURL(blob))
+        return
+      }
+      previewUrl.value = URL.createObjectURL(blob)
+      previewType.value = 'pdf'
+    } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
+      // Word/TXT：调用预览接口拿 HTML
+      const res = await previewShareAttachment(route.params.token, row.id)
+      if (mySeq !== previewSeq) return
+      const data = res.data.data
+      if (data?.type === 'html') {
+        previewHtml.value = data.html
+        previewType.value = 'html'
+      } else {
+        throw new Error('不支持的预览类型')
+      }
+    } else {
+      throw new Error('该文件类型不支持在线预览，请下载后查看')
+    }
+    await nextTick()
+    document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  } catch (e) {
+    if (mySeq !== previewSeq) return
+    previewError.value = e.response?.data?.message || e.message || '预览失败，请尝试下载后查看'
+    ElMessage.warning(previewError.value)
+    // 不立即关闭，保留预览卡片以展示错误信息
+    previewType.value = ''
+  } finally {
+    if (mySeq === previewSeq) {
+      previewLoading.value = false
+      previewingId.value = null
+    }
+  }
+}
+
+function closePreview() {
+  if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+  previewVisible.value = false
+  previewType.value = ''
+  previewHtml.value = ''
+  previewUrl.value = ''
+  previewFileName.value = ''
+  previewError.value = ''
+  previewZoom.value = 1.0
+}
+
+function zoomInPreview() {
+  if (previewZoom.value < MAX_PREVIEW_ZOOM) {
+    previewZoom.value = Math.min(MAX_PREVIEW_ZOOM, previewZoom.value + ZOOM_STEP)
+  }
+}
+
+function zoomOutPreview() {
+  if (previewZoom.value > MIN_PREVIEW_ZOOM) {
+    previewZoom.value = Math.max(MIN_PREVIEW_ZOOM, previewZoom.value - ZOOM_STEP)
+  }
+}
+
+function resetPreviewZoom() {
+  previewZoom.value = 1.0
+}
+
+// ====== 工作经历日期格式化 ======
+function formatDateRange(start, end) {
+  const fmt = (d) => {
+    if (!d) return ''
+    // 兼容 YYYY-MM / YYYY-MM-DD / 完整时间戳
+    const str = String(d)
+    if (str.length >= 7) return str.slice(0, 7)
+    return str
+  }
+  const s = fmt(start)
+  // end 为空或 'present'（AI 解析输出的"至今"标记）均显示为"至今"
+  const e = (!end || end === 'present') ? '至今' : fmt(end)
+  if (s && e) return `${s} ~ ${e}`
+  return s || e || '-'
+}
+
+// ====== 响应式列数 ======
+function updateDescColumn() {
+  descColumn.value = window.innerWidth < 768 ? 1 : 3
+}
+
+function handleResize() {
+  updateDescColumn()
+}
+
+onMounted(() => {
+  updateDescColumn()
+  window.addEventListener('resize', handleResize)
+  fetchShareInfo()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize)
+  // 清理 blob URL 避免内存泄漏
+  if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl.value)
+  }
+})
 </script>
 
 <style scoped>
@@ -220,6 +491,63 @@ onMounted(fetchShareInfo)
   font-weight: 600;
 }
 
+.card-header-with-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-count {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  font-weight: normal;
+}
+
+/* 候选人个人简介 */
+.candidate-summary {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  color: var(--el-text-color-regular);
+}
+
+/* 工作经历 */
+.experience-timeline {
+  padding-left: 4px;
+}
+
+.experience-card {
+  padding: 4px 0;
+}
+
+.experience-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.experience-company {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.experience-title-tag {
+  flex-shrink: 0;
+}
+
+.experience-desc {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  background: #f7f9fc;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid var(--el-color-primary-light-5);
+}
+
 .field-hint {
   font-size: 12px;
   color: var(--el-text-color-secondary);
@@ -237,8 +565,90 @@ onMounted(fetchShareInfo)
   color: var(--el-text-color-secondary);
 }
 
+/* 简历预览 */
+.preview-card :deep(.el-card__header) {
+  padding: 12px 16px;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.preview-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-title {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+
+.preview-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zoom-controls {
+  display: inline-flex;
+}
+
+.zoom-display {
+  min-width: 60px;
+  pointer-events: none;
+  color: var(--el-text-color-regular) !important;
+}
+
+.resume-preview-container {
+  width: 100%;
+  min-height: 400px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.preview-zoom-wrapper {
+  width: 100%;
+}
+
+.preview-fallback-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 300px;
+  color: var(--el-color-danger);
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .share-evaluation-page { padding: 12px 8px; }
   .share-header h1 { font-size: 18px; }
+  .preview-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .preview-header-right {
+    justify-content: space-between;
+  }
+  .preview-title {
+    max-width: 100%;
+  }
+  .experience-desc {
+    font-size: 12px;
+  }
 }
 </style>
