@@ -149,30 +149,37 @@
               <el-tag size="default" type="info" effect="plain">最近更新：{{ formatTime(followRecords.candidate.updated_at) }}</el-tag>
             </div>
             <el-empty v-if="!followLoading && (!followRecords?.events || followRecords.events.length === 0)" description="暂无跟进记录" :image-size="60" />
-            <el-timeline v-else-if="followRecords?.events" style="margin-top: 16px;">
-              <el-timeline-item
-                v-for="(evt, idx) in followRecords.events"
-                :key="idx"
-                :timestamp="formatTime(evt.time)"
-                placement="top"
-                :type="getEventTimelineType(evt.type)"
-              >
-                <div style="font-weight: 600;">{{ evt.title }}</div>
-                <div v-if="evt.description" style="color: var(--el-text-color-regular); font-size: 13px; margin-top: 2px;">
-                  {{ evt.description }}
-                </div>
-                <div v-if="evt.operator" style="color: var(--el-text-color-secondary); font-size: 12px; margin-top: 2px;">
-                  操作人：{{ evt.operator }}
-                </div>
-              </el-timeline-item>
-            </el-timeline>
+            <div v-else-if="followRecords?.events && followRecords.events.length > 0" style="margin-top: 16px;">
+              <div class="follow-sort-indicator">
+                <el-icon><SortDown /></el-icon>
+                <span class="follow-sort-text">排序：时间倒序（最新记录优先）</span>
+                <span class="follow-sort-count">共 {{ followRecords.events.length }} 条记录</span>
+              </div>
+              <el-timeline style="margin-top: 12px;">
+                <el-timeline-item
+                  v-for="(evt, idx) in followRecords.events"
+                  :key="idx"
+                  :timestamp="formatTime(evt.time)"
+                  placement="top"
+                  :type="getEventTimelineType(evt.type)"
+                >
+                  <div style="font-weight: 600;">{{ evt.title }}</div>
+                  <div v-if="evt.description" style="color: var(--el-text-color-regular); font-size: 13px; margin-top: 2px;">
+                    {{ evt.description }}
+                  </div>
+                  <div v-if="evt.operator" style="color: var(--el-text-color-secondary); font-size: 12px; margin-top: 2px;">
+                    操作人：{{ evt.operator }}
+                  </div>
+                </el-timeline-item>
+              </el-timeline>
+            </div>
           </div>
         </el-tab-pane>
       </el-tabs>
     </el-card>
 
-    <!-- 附件展示区域 -->
-    <el-card shadow="never" style="margin-top: 16px;" id="attachments-section">
+    <!-- 附件展示区域：仅在"基本信息" tab 下展示，面试评价/跟进记录 tab 中不显示 -->
+    <el-card v-if="activeTab === 'info'" shadow="never" style="margin-top: 16px;" id="attachments-section">
       <template #header>
         <span style="font-weight: 600;">附件 ({{ candidate.attachments?.length || 0 }})</span>
       </template>
@@ -225,8 +232,8 @@
       <el-empty v-else description="暂无附件" :image-size="60" />
     </el-card>
 
-    <!-- 简历预览区域 -->
-    <el-card v-if="previewVisible" shadow="never" style="margin-top: 16px;" id="preview-section">
+    <!-- 简历预览区域：同样仅在"基本信息" tab 下展示 -->
+    <el-card v-if="activeTab === 'info' && previewVisible" shadow="never" style="margin-top: 16px;" id="preview-section">
       <template #header>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-weight: 600;">预览：{{ previewFileName }}</span>
@@ -280,7 +287,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Phone, Message, Briefcase, Plus } from '@element-plus/icons-vue'
+import { Phone, Message, Briefcase, Plus, SortDown } from '@element-plus/icons-vue'
 import {
   getCandidate, updateCandidateStatus, previewAttachment,
   getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
@@ -899,6 +906,35 @@ onMounted(async () => {
   padding: 12px;
   background: #fafafa;
   border-radius: 8px;
+}
+
+/* 跟进记录排序标识 */
+.follow-sort-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--el-color-primary-light-9);
+  border: 1px solid var(--el-color-primary-light-7);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--el-color-primary);
+}
+
+.follow-sort-indicator .el-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.follow-sort-text {
+  font-weight: 500;
+}
+
+.follow-sort-count {
+  margin-left: auto;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  font-weight: normal;
 }
 
 .share-link-item {

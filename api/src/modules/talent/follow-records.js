@@ -196,12 +196,12 @@ async function listFollowRecords(request, env, corsHeaders, params) {
       })
     }
 
-    // 按时间升序排列
+    // 按时间倒序排列（最新记录优先展示）
     events.sort((a, b) => {
       const ta = a.sort_key || ''
       const tb = b.sort_key || ''
-      if (ta < tb) return -1
-      if (ta > tb) return 1
+      if (ta < tb) return 1
+      if (ta > tb) return -1
       return 0
     })
 
