@@ -1,6 +1,14 @@
-import { jsonResponse, maskError, logOperation, getClientIp } from '../../utils/router.js'
+import { jsonResponse, maskError, logOperation, getClientIp, checkRateLimit } from '../../utils/router.js'
 import { OSSClient } from '../../utils/oss.js'
 import { docxToHtml, docToHtml, txtToHtml } from '../../modules/talent_parsers.js'
+
+// 简历分享操作允许的源状态白名单：仅"待推荐"和"简历筛选通过"状态可触发面试官操作
+// 一旦进入 interview_scheduled 及之后的状态（面试通过/offer沟通/拒绝offer/已录用/筛选不通过），
+// 均视为终态，不允许通过分享链接回退状态
+const ALLOWED_FROM_STATUSES = new Set(['to_recommend', 'resume_passed'])
+
+// 公开操作接口速率限制：每分钟最多 10 次，防止日志刷爆与状态频繁切换
+const RATE_LIMIT_MAX_RESUME_ACTION = 10
 
 /**
  * 对 HTML 内容做基本清洗，防止 XSS（针对 .doc 伪装成 HTML 的场景）
@@ -193,6 +201,13 @@ async function getResumeShareDownloadUrl(request, env, corsHeaders, params) {
  */
 async function submitResumeShareAction(request, env, corsHeaders, params) {
   try {
+    // Issue 6: 公开接口速率限制，基于 IP + token 维度，每分钟最多 10 次
+    const clientIp = getClientIp(request)
+    const rateLimitKey = `resume-share-action:${clientIp}:${params.token}`
+    if (!await checkRateLimit(env, rateLimitKey, RATE_LIMIT_MAX_RESUME_ACTION)) {
+      return jsonResponse({ success: false, message: '操作过于频繁，请稍后再试' }, 429, corsHeaders)
+    }
+
     const link = await env.DB.prepare(
       'SELECT id, candidate_id FROM talent_resume_shares WHERE token = ?'
     ).bind(params.token).first()
@@ -227,7 +242,29 @@ async function submitResumeShareAction(request, env, corsHeaders, params) {
     const fromStatus = candidate.status
     const toStatus = actionConfig.newStatus
 
-    // 状态未变化时直接返回成功，但仍记录一次操作日志（面试官的确认动作需要留痕）
+    // Issue 1: 状态流转合法性校验 —— 仅允许从 to_recommend/resume_passed 流转到终态
+    // 拒绝已进入面试流程及之后阶段的回退操作（如 hired → screening_failed）
+    if (!ALLOWED_FROM_STATUSES.has(fromStatus)) {
+      return jsonResponse({
+        success: false,
+        message: `候选人当前状态不允许此操作（当前状态：${fromStatus}）`
+      }, 409, corsHeaders)
+    }
+
+    // Issue 3: 状态未变化时直接返回成功，不写日志（与 candidates.js updateStatus 对齐）
+    if (fromStatus === toStatus) {
+      return jsonResponse({
+        success: true,
+        data: {
+          candidate_id: link.candidate_id,
+          previous_status: fromStatus,
+          current_status: toStatus,
+          action,
+          noop: true
+        }
+      }, 200, corsHeaders)
+    }
+
     await env.DB.prepare(
       'UPDATE talent_candidates SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     ).bind(toStatus, link.candidate_id).run()
@@ -238,7 +275,7 @@ async function submitResumeShareAction(request, env, corsHeaders, params) {
       share_link_id: link.id,
       from: fromStatus,
       to: toStatus
-    }, getClientIp(request))
+    }, clientIp)
 
     return jsonResponse({
       success: true,

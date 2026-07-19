@@ -244,6 +244,8 @@ const submittedAction = ref('')
 const submittedActionText = computed(() => {
   if (submittedAction.value === 'schedule_interview') return '已安排面试'
   if (submittedAction.value === 'screening_failed') return '已标记筛选不通过'
+  // 其他终态（已面试通过/offer沟通/拒绝offer/已录用）：候选人已进入后续流程
+  if (submittedAction.value === '') return '候选人已进入后续流程'
   return '操作已完成'
 })
 
@@ -276,7 +278,8 @@ async function fetchShareInfo() {
   try {
     const res = await getResumeShareInfo(route.params.token)
     shareInfo.value = res.data.data
-    // 如果候选人状态已经是终态（已安排面试 / 筛选不通过），则视为已提交，隐藏按钮
+    // Issue 2: 使用白名单判断 —— 仅 to_recommend/resume_passed 状态允许操作
+    // 其他 6 个状态（已安排面试/面试通过/offer沟通/拒绝offer/已录用/筛选不通过）均视为终态，隐藏按钮
     const status = res.data.data.candidate.status
     if (status === 'interview_scheduled') {
       actionSubmitted.value = true
@@ -284,6 +287,10 @@ async function fetchShareInfo() {
     } else if (status === 'screening_failed') {
       actionSubmitted.value = true
       submittedAction.value = 'screening_failed'
+    } else if (status !== 'to_recommend' && status !== 'resume_passed') {
+      // 其他终态（interview_passed/offer_discussing/offer_rejected/hired）：隐藏按钮，显示通用提示
+      actionSubmitted.value = true
+      submittedAction.value = ''
     }
   } catch (e) {
     loadError.value = e.response?.data?.message || e.message || '加载分享信息失败'
@@ -380,10 +387,8 @@ async function handlePreview(row) {
         throw new Error(errData.message || '预览失败')
       }
       const blob = await res.blob()
-      if (mySeq !== previewSeq) {
-        URL.revokeObjectURL(URL.createObjectURL(blob))
-        return
-      }
+      // Issue 5: 过期请求直接丢弃，blob 由 GC 自动回收，无需手动创建/撤销 URL
+      if (mySeq !== previewSeq) return
       previewUrl.value = URL.createObjectURL(blob)
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {

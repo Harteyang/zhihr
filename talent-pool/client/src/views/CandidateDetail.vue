@@ -855,9 +855,8 @@ async function handleCreateResumeShareLink() {
   try {
     const res = await createResumeShareLink(route.params.id)
     resumeShareLinks.value.unshift(res.data.data)
-    ElMessage.success('简历分享链接已生成')
-    // 自动复制到剪贴板
-    copyResumeShareUrl(res.data.data.token)
+    // Issue 4: 移除自动复制，避免占用用户剪贴板；提示用户点击"复制链接"按钮
+    ElMessage.success('简历分享链接已生成，请点击"复制链接"按钮复制')
   } catch (e) {
     ElMessage.error(e.response?.data?.message || '生成简历分享链接失败')
   } finally {
