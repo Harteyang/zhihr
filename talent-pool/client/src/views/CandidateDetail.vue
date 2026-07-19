@@ -49,35 +49,23 @@
         </el-tab-pane>
 
         <el-tab-pane label="面试评价" name="evaluations">
-          <div class="evaluation-form-wrapper">
-            <el-form label-position="top">
-              <el-form-item label="评价人">
-                <el-input v-model="newEvaluation.evaluator_name" placeholder="请输入评价人姓名" maxlength="50" show-word-limit style="max-width: 320px;" />
-              </el-form-item>
-              <el-form-item label="评价内容">
-                <el-input
-                  v-model="newEvaluation.content"
-                  type="textarea"
-                  :rows="5"
-                  placeholder="请输入面试评价内容"
-                  maxlength="5000"
-                  show-word-limit
-                />
-              </el-form-item>
-              <div style="display: flex; gap: 8px;">
-                <el-button type="primary" :loading="submittingEval" @click="submitEvaluation">
-                  {{ editingEvalId ? '保存修改' : '提交评价' }}
-                </el-button>
-                <el-button v-if="editingEvalId" @click="cancelEditEvaluation">取消</el-button>
-              </div>
-            </el-form>
+          <!-- 评价列表区域（始终展示） -->
+          <div class="evaluation-list-header">
+            <span class="evaluation-list-title">评价列表 ({{ evaluations.length }})</span>
+            <el-button
+              v-if="!evalFormVisible"
+              type="primary"
+              size="small"
+              :icon="Plus"
+              @click="startAddEvaluation"
+            >
+              添加评价
+            </el-button>
           </div>
 
-          <el-divider />
-
-          <div v-loading="evalLoading">
-            <el-empty v-if="!evalLoading && evaluations.length === 0" description="暂无评价" :image-size="60" />
-            <div v-for="ev in evaluations" :key="ev.id" class="evaluation-item">
+          <div v-loading="evalLoading" class="evaluation-list-wrapper">
+            <el-empty v-if="!evalLoading && evaluations.length === 0" description="暂无评价，点击右上角「添加评价」开始填写" :image-size="60" />
+            <div v-for="ev in evaluations" :key="ev.id" class="evaluation-item" :class="{ 'is-editing': editingEvalId === ev.id }">
               <div class="evaluation-item-header">
                 <span class="evaluator-name">{{ ev.evaluator_name }}</span>
                 <el-tag size="small" :type="ev.source === 'share' ? 'success' : 'info'" effect="plain">
@@ -90,11 +78,67 @@
               </div>
               <div class="evaluation-content">{{ ev.content }}</div>
               <div class="evaluation-item-actions">
-                <el-button v-if="ev.source !== 'share'" type="primary" link size="small" @click="startEditEvaluation(ev)">编辑</el-button>
-                <el-button type="danger" link size="small" @click="handleDeleteEvaluation(ev)">删除</el-button>
+                <el-button
+                  v-if="ev.source !== 'share'"
+                  type="primary"
+                  link
+                  size="small"
+                  :disabled="evalFormVisible && editingEvalId !== ev.id"
+                  @click="startEditEvaluation(ev)"
+                >
+                  修改
+                </el-button>
+                <el-button
+                  type="danger"
+                  link
+                  size="small"
+                  :disabled="editingEvalId === ev.id"
+                  @click="handleDeleteEvaluation(ev)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
           </div>
+
+          <!-- 评价输入框（折叠态默认隐藏，添加/修改时展开） -->
+          <transition name="eval-form-slide">
+            <div v-if="evalFormVisible" class="evaluation-form-wrapper">
+              <div class="evaluation-form-header">
+                <span class="evaluation-form-title">
+                  {{ editingEvalId ? '修改评价' : '新增评价' }}
+                </span>
+                <el-button text size="small" @click="cancelEditEvaluation">收起</el-button>
+              </div>
+              <el-form label-position="top">
+                <el-form-item label="评价人" required>
+                  <el-input
+                    v-model="newEvaluation.evaluator_name"
+                    placeholder="请输入评价人姓名"
+                    maxlength="50"
+                    show-word-limit
+                    style="max-width: 320px;"
+                  />
+                </el-form-item>
+                <el-form-item label="评价内容" required>
+                  <el-input
+                    v-model="newEvaluation.content"
+                    type="textarea"
+                    :rows="5"
+                    placeholder="请输入面试评价内容"
+                    maxlength="5000"
+                    show-word-limit
+                  />
+                </el-form-item>
+                <div class="evaluation-form-actions">
+                  <el-button type="primary" :loading="submittingEval" @click="submitEvaluation">
+                    {{ editingEvalId ? '保存修改' : '提交评价' }}
+                  </el-button>
+                  <el-button @click="cancelEditEvaluation">取消</el-button>
+                </div>
+              </el-form>
+            </div>
+          </transition>
         </el-tab-pane>
 
         <el-tab-pane label="跟进记录" name="followRecords">
@@ -236,7 +280,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Phone, Message, Briefcase } from '@element-plus/icons-vue'
+import { Phone, Message, Briefcase, Plus } from '@element-plus/icons-vue'
 import {
   getCandidate, updateCandidateStatus, previewAttachment,
   getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
@@ -273,6 +317,7 @@ const evaluations = ref([])
 const evalLoading = ref(false)
 const submittingEval = ref(false)
 const editingEvalId = ref(null)
+const evalFormVisible = ref(false) // 评价输入框默认折叠
 const newEvaluation = ref({ evaluator_name: '', content: '' })
 
 // 跟进记录
@@ -419,7 +464,8 @@ async function submitEvaluation() {
       evaluations.value.unshift(res.data.data)
       ElMessage.success('评价已提交')
     }
-    cancelEditEvaluation()
+    // 提交成功后自动折叠输入框并清空内容
+    collapseEvalForm()
     // 评价变更会影响跟进记录，刷新跟进记录
     if (activeTab.value === 'followRecords') {
       fetchFollowRecords()
@@ -431,13 +477,35 @@ async function submitEvaluation() {
   }
 }
 
+function startAddEvaluation() {
+  // 切换到新增模式：清空内容并展开输入框
+  editingEvalId.value = null
+  newEvaluation.value.evaluator_name = ''
+  newEvaluation.value.content = ''
+  evalFormVisible.value = true
+  // 滚动到表单位置，确保用户能看到展开的输入框
+  nextTick(() => {
+    document.querySelector('.evaluation-form-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
+}
+
 function startEditEvaluation(ev) {
+  // 切换到编辑模式：加载原评价内容并展开输入框
   editingEvalId.value = ev.id
   newEvaluation.value.evaluator_name = ev.evaluator_name
   newEvaluation.value.content = ev.content
+  evalFormVisible.value = true
+  nextTick(() => {
+    document.querySelector('.evaluation-form-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
 }
 
 function cancelEditEvaluation() {
+  collapseEvalForm()
+}
+
+function collapseEvalForm() {
+  evalFormVisible.value = false
   editingEvalId.value = null
   newEvaluation.value.evaluator_name = ''
   newEvaluation.value.content = ''
@@ -705,20 +773,42 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-.evaluation-form-wrapper {
-  background: #fafafa;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+/* 评价列表区域 */
+.evaluation-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  margin-bottom: 4px;
+}
+
+.evaluation-list-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.evaluation-list-wrapper {
+  min-height: 60px;
+  padding-top: 4px;
 }
 
 .evaluation-item {
-  padding: 12px 0;
+  padding: 12px 8px;
+  border-radius: 6px;
   border-bottom: 1px solid var(--el-border-color-lighter);
+  transition: background-color 0.2s ease;
 }
 
 .evaluation-item:last-child {
   border-bottom: none;
+}
+
+.evaluation-item.is-editing {
+  background: var(--el-color-primary-light-9);
+  border-left: 3px solid var(--el-color-primary);
+  padding-left: 12px;
 }
 
 .evaluation-item-header {
@@ -744,11 +834,62 @@ onMounted(async () => {
   line-height: 1.7;
   white-space: pre-wrap;
   margin-bottom: 6px;
+  padding: 8px 10px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid var(--el-border-color-lighter);
 }
 
 .evaluation-item-actions {
   display: flex;
   gap: 8px;
+}
+
+/* 评价表单区域 */
+.evaluation-form-wrapper {
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.evaluation-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--el-border-color);
+}
+
+.evaluation-form-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+}
+
+.evaluation-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* 表单展开/折叠过渡动画 */
+.eval-form-slide-enter-active,
+.eval-form-slide-leave-active {
+  transition: all 0.3s ease;
+  max-height: 600px;
+  opacity: 1;
+  overflow: hidden;
+}
+
+.eval-form-slide-enter-from,
+.eval-form-slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  transform: translateY(-8px);
 }
 
 .follow-summary {
