@@ -9,6 +9,8 @@ import { routes as excelImportRoutes } from './excel-import.js'
 import { routes as evaluationsRoutes } from './evaluations.js'
 import { routes as shareLinksRoutes } from './share-links.js'
 import { routes as sharePublicRoutes } from './share-public.js'
+import { routes as resumeSharesRoutes } from './resume-shares.js'
+import { routes as resumeSharePublicRoutes } from './resume-share-public.js'
 import { routes as followRecordsRoutes } from './follow-records.js'
 
 export const routes = [
@@ -23,6 +25,8 @@ export const routes = [
   ...evaluationsRoutes,
   ...shareLinksRoutes,
   ...sharePublicRoutes,
+  ...resumeSharesRoutes,
+  ...resumeSharePublicRoutes,
   ...followRecordsRoutes
 ]
 

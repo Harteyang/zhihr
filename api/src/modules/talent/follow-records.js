@@ -12,11 +12,14 @@ import { checkPositionPermission } from './permissions.js'
  */
 
 const STATUS_LABELS = {
-  pending: '待联系',
-  contacted: '已联系',
-  interviewing: '面试中',
-  offered: '已录用',
-  rejected: '已拒绝'
+  to_recommend: '待推荐',
+  resume_passed: '简历筛选通过',
+  interview_scheduled: '已安排面试',
+  interview_passed: '面试通过',
+  offer_discussing: 'offer沟通',
+  offer_rejected: '拒绝offer',
+  hired: '已录用',
+  screening_failed: '筛选不通过'
 }
 
 const ACTION_LABELS = {
@@ -31,13 +34,23 @@ const ACTION_LABELS = {
   create_share_link: '创建分享链接',
   delete_share_link: '删除分享链接',
   submit_share_evaluation: '提交分享评价',
-  update_share_evaluation: '修改分享评价'
+  update_share_evaluation: '修改分享评价',
+  create_resume_share: '创建简历分享链接',
+  delete_resume_share: '删除简历分享链接',
+  resume_share_schedule_interview: '简历分享-安排面试',
+  resume_share_screening_failed: '简历分享-筛选不通过'
 }
 
 function describeAction(action, detail) {
   const label = ACTION_LABELS[action] || action
   // 对状态变更补充新旧状态描述
   if (action === 'update_candidate_status' && detail) {
+    const from = detail.from ? (STATUS_LABELS[detail.from] || detail.from) : '?'
+    const to = detail.to ? (STATUS_LABELS[detail.to] || detail.to) : '?'
+    return `${label}：${from} → ${to}`
+  }
+  // 简历分享页触发的状态变更（安排面试/筛选不通过）
+  if ((action === 'resume_share_schedule_interview' || action === 'resume_share_screening_failed') && detail) {
     const from = detail.from ? (STATUS_LABELS[detail.from] || detail.from) : '?'
     const to = detail.to ? (STATUS_LABELS[detail.to] || detail.to) : '?'
     return `${label}：${from} → ${to}`
@@ -100,7 +113,7 @@ async function listFollowRecords(request, env, corsHeaders, params) {
     const relatedLogs = await env.DB.prepare(
       `SELECT id, user_id, username, action, resource_type, resource_id, detail, ip_address, created_at
        FROM talent_operation_logs
-       WHERE resource_type IN ('evaluation', 'share_link', 'attachment')
+       WHERE resource_type IN ('evaluation', 'share_link', 'attachment', 'resume_share')
        ORDER BY created_at DESC
        LIMIT 500`
     ).all()

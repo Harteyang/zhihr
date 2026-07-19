@@ -35,5 +35,6 @@ export * from './parse-queue.js'
 export * from './users.js'
 export * from './evaluations.js'
 export * from './share.js'
+export * from './resume-share.js'
 
 export default api

@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS talent_candidates (
     skills TEXT,
     education TEXT,
     experience_years INTEGER,
-    status TEXT DEFAULT 'pending',
+    status TEXT DEFAULT 'to_recommend',
     source TEXT,
     summary TEXT,
     created_by TEXT,
@@ -211,4 +211,18 @@ CREATE TABLE IF NOT EXISTS talent_share_links (
 
 CREATE INDEX IF NOT EXISTS idx_talent_share_links_candidate ON talent_share_links(candidate_id);
 CREATE INDEX IF NOT EXISTS idx_talent_share_links_token ON talent_share_links(token);
+
+-- 候选人简历分享链接表（永久有效，token 唯一）
+-- 用于将简历分享给面试官，面试官可在分享页查看简历并点击"安排面试"/"筛选不通过"按钮
+CREATE TABLE IF NOT EXISTS talent_resume_shares (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    candidate_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    created_by TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_talent_resume_shares_candidate ON talent_resume_shares(candidate_id);
+CREATE INDEX IF NOT EXISTS idx_talent_resume_shares_token ON talent_resume_shares(token);
 

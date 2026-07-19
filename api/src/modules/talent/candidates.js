@@ -2,7 +2,16 @@ import { debugLog, jsonResponse, maskError, parsePagination, requireAuth, requir
 import { OSSClient } from '../../utils/oss.js'
 import { checkPositionPermission } from './permissions.js'
 
-const VALID_STATUSES = ['pending', 'contacted', 'interviewing', 'offered', 'rejected']
+const VALID_STATUSES = [
+  'to_recommend',      // 待推荐
+  'resume_passed',     // 简历筛选通过
+  'interview_scheduled', // 已安排面试
+  'interview_passed',  // 面试通过
+  'offer_discussing',  // offer沟通
+  'offer_rejected',    // 拒绝offer
+  'hired',             // 已录用
+  'screening_failed'   // 筛选不通过
+]
 
 const MIME_TYPES = {
   '.pdf': 'application/pdf',
@@ -225,7 +234,7 @@ async function createCandidate(request, env, corsHeaders) {
     `).bind(
       body.name.trim(), body.phone || null, body.email || null, body.position.trim(),
       skillsJson, body.education || null, body.experience_years || null,
-      body.status || 'pending', body.source || null, body.summary || null, user.userId
+      body.status || 'to_recommend', body.source || null, body.summary || null, user.userId
     ).run()
 
     const newId = result.meta.last_row_id
@@ -386,7 +395,7 @@ async function createCandidateFromParse(env, aiResult, task, createdBy) {
   const skillsJson = Array.isArray(aiResult.skills) ? JSON.stringify(aiResult.skills) : null
   const insertResult = await env.DB.prepare(`
     INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'to_recommend', ?, ?, ?)
   `).bind(
     String(aiResult.name).trim(),
     aiResult.phone || null,

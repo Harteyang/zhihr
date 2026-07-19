@@ -37,7 +37,7 @@ async function batchImport(request, env, corsHeaders) {
 
         await env.DB.prepare(`
           INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'to_recommend', ?, ?, ?)
         `).bind(
           row.name.trim(), row.phone || null, row.email || null, row.position || null,
           Array.isArray(skills) ? JSON.stringify(skills) : null,

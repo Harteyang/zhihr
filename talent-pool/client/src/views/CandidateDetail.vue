@@ -19,7 +19,7 @@
         <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
           <div style="display: flex; gap: 8px;">
             <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
-            <el-button size="small" @click="openShareDialog">分享评价</el-button>
+            <el-button size="small" @click="openResumeShareDialog">简历分享</el-button>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 13px; color: var(--el-text-color-secondary);">快速改状态:</span>
@@ -52,15 +52,23 @@
           <!-- 评价列表区域（始终展示） -->
           <div class="evaluation-list-header">
             <span class="evaluation-list-title">评价列表 ({{ evaluations.length }})</span>
-            <el-button
-              v-if="!evalFormVisible"
-              type="primary"
-              size="small"
-              :icon="Plus"
-              @click="startAddEvaluation"
-            >
-              添加评价
-            </el-button>
+            <div class="evaluation-list-actions">
+              <el-button
+                size="small"
+                @click="openShareDialog"
+              >
+                分享评价
+              </el-button>
+              <el-button
+                v-if="!evalFormVisible"
+                type="primary"
+                size="small"
+                :icon="Plus"
+                @click="startAddEvaluation"
+              >
+                添加评价
+              </el-button>
+            </div>
           </div>
 
           <div v-loading="evalLoading" class="evaluation-list-wrapper">
@@ -280,6 +288,45 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 简历分享链接管理对话框 -->
+    <el-dialog v-model="resumeShareDialogVisible" title="简历分享链接" width="560px">
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 16px;"
+      >
+        <template #title>
+          简历分享链接用于将候选人简历发送给面试官预览。面试官可在分享页查看完整简历并点击"安排面试"或"筛选不通过"按钮，系统会自动更新候选人状态。
+        </template>
+      </el-alert>
+      <div style="margin-bottom: 12px;">
+        <el-button type="primary" :loading="creatingResumeShareLink" @click="handleCreateResumeShareLink">
+          生成新的简历分享链接
+        </el-button>
+      </div>
+
+      <el-divider />
+
+      <div style="margin-bottom: 8px; font-weight: 600;">已生成的简历分享链接</div>
+      <div v-loading="resumeShareLinksLoading">
+        <el-empty v-if="!resumeShareLinksLoading && resumeShareLinks.length === 0" description="暂无简历分享链接" :image-size="40" />
+        <div v-for="link in resumeShareLinks" :key="link.id" class="share-link-item">
+          <div class="share-link-info">
+            <div class="share-link-evaluator">简历分享链接 #{{ link.id }}</div>
+            <div class="share-link-meta">
+              生成时间：{{ formatTime(link.created_at) }}
+            </div>
+            <div class="share-link-url">{{ buildResumeShareUrl(link.token) }}</div>
+          </div>
+          <div class="share-link-actions">
+            <el-button type="primary" link size="small" @click="copyResumeShareUrl(link.token)">复制链接</el-button>
+            <el-button type="danger" link size="small" @click="handleDeleteResumeShareLink(link)">删除</el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -293,7 +340,8 @@ import {
   getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
   getEvaluations, createEvaluation, updateEvaluation, deleteEvaluation,
   getShareLinks, createShareLink, deleteShareLink,
-  getFollowRecords
+  getFollowRecords,
+  getResumeShareLinks, createResumeShareLink, deleteResumeShareLink
 } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
 import PdfPreview from '../components/PdfPreview.vue'
@@ -337,6 +385,12 @@ const shareForm = ref({ evaluator_name: '' })
 const creatingShareLink = ref(false)
 const shareLinks = ref([])
 const shareLinksLoading = ref(false)
+
+// 简历分享链接
+const resumeShareDialogVisible = ref(false)
+const creatingResumeShareLink = ref(false)
+const resumeShareLinks = ref([])
+const resumeShareLinksLoading = ref(false)
 
 function beforeUpload(file) {
   if (file.size > MAX_FILE_SIZE) {
@@ -559,6 +613,11 @@ function getEventTimelineType(type) {
   if (type === 'create_evaluation' || type === 'submit_share_evaluation' || type === 'evaluation_submitted') return 'success'
   if (type === 'update_evaluation' || type === 'update_share_evaluation' || type === 'evaluation_updated') return 'info'
   if (type === 'candidate_updated') return 'info'
+  // 简历分享相关：创建链接=primary，安排面试=success，筛选不通过=danger
+  if (type === 'create_resume_share') return 'primary'
+  if (type === 'delete_resume_share') return 'info'
+  if (type === 'resume_share_schedule_interview') return 'success'
+  if (type === 'resume_share_screening_failed') return 'danger'
   return ''
 }
 
@@ -767,6 +826,87 @@ async function handleDeleteShareLink(link) {
   }
 }
 
+// ====== 简历分享链接 ======
+function buildResumeShareUrl(token) {
+  const base = import.meta.env.BASE_URL || '/talent-pool/'
+  const origin = window.location.origin
+  return `${origin}${base}resume-share/${token}`
+}
+
+async function openResumeShareDialog() {
+  resumeShareDialogVisible.value = true
+  await fetchResumeShareLinks()
+}
+
+async function fetchResumeShareLinks() {
+  resumeShareLinksLoading.value = true
+  try {
+    const res = await getResumeShareLinks(route.params.id)
+    resumeShareLinks.value = res.data.data || []
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载简历分享链接失败')
+  } finally {
+    resumeShareLinksLoading.value = false
+  }
+}
+
+async function handleCreateResumeShareLink() {
+  creatingResumeShareLink.value = true
+  try {
+    const res = await createResumeShareLink(route.params.id)
+    resumeShareLinks.value.unshift(res.data.data)
+    ElMessage.success('简历分享链接已生成')
+    // 自动复制到剪贴板
+    copyResumeShareUrl(res.data.data.token)
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '生成简历分享链接失败')
+  } finally {
+    creatingResumeShareLink.value = false
+  }
+}
+
+async function copyResumeShareUrl(token) {
+  const url = buildResumeShareUrl(token)
+  try {
+    await navigator.clipboard.writeText(url)
+    ElMessage.success('简历分享链接已复制到剪贴板')
+  } catch {
+    // 剪贴板 API 失败时回退到 textarea 选中复制
+    const textarea = document.createElement('textarea')
+    textarea.value = url
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      document.execCommand('copy')
+      ElMessage.success('简历分享链接已复制')
+    } catch {
+      ElMessage.warning('复制失败，请手动复制：' + url)
+    }
+    document.body.removeChild(textarea)
+  }
+}
+
+async function handleDeleteResumeShareLink(link) {
+  try {
+    await ElMessageBox.confirm('确定删除该简历分享链接吗？面试官将无法再通过该链接访问简历。', '确认删除', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消'
+    })
+  } catch {
+    return
+  }
+  try {
+    await deleteResumeShareLink(route.params.id, link.id)
+    resumeShareLinks.value = resumeShareLinks.value.filter(l => l.id !== link.id)
+    ElMessage.success('已删除')
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '删除失败')
+  }
+}
+
 onMounted(async () => {
   await Promise.all([fetchCandidate(), fetchQuota()])
 })
@@ -794,6 +934,12 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 600;
   color: var(--el-text-color-primary);
+}
+
+.evaluation-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .evaluation-list-wrapper {

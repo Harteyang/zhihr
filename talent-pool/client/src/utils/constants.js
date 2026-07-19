@@ -1,9 +1,12 @@
 export const STATUS_OPTIONS = [
-  { label: '待联系', value: 'pending' },
-  { label: '已联系', value: 'contacted' },
-  { label: '面试中', value: 'interviewing' },
-  { label: '已录用', value: 'offered' },
-  { label: '已拒绝', value: 'rejected' }
+  { label: '待推荐', value: 'to_recommend' },
+  { label: '简历筛选通过', value: 'resume_passed' },
+  { label: '已安排面试', value: 'interview_scheduled' },
+  { label: '面试通过', value: 'interview_passed' },
+  { label: 'offer沟通', value: 'offer_discussing' },
+  { label: '拒绝offer', value: 'offer_rejected' },
+  { label: '已录用', value: 'hired' },
+  { label: '筛选不通过', value: 'screening_failed' }
 ]
 
 export const EDUCATION_OPTIONS = ['大专', '本科', '硕士', '博士', '其他']
@@ -22,7 +25,16 @@ export const getStatusLabel = (value) => {
 }
 
 export const getStatusType = (value) => {
-  const map = { pending: 'info', contacted: '', interviewing: 'warning', offered: 'success', rejected: 'danger' }
+  const map = {
+    to_recommend: 'info',
+    resume_passed: '',
+    interview_scheduled: 'warning',
+    interview_passed: 'success',
+    offer_discussing: 'warning',
+    offer_rejected: 'danger',
+    hired: 'success',
+    screening_failed: 'danger'
+  }
   return map[value] || 'info'
 }
 
