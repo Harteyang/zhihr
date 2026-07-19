@@ -166,9 +166,60 @@
         <!-- 面试评价 -->
         <el-card shadow="never" class="section-card">
           <template #header>
-            <span class="section-title">面试评价</span>
+            <div class="evaluation-card-header">
+              <span class="section-title">面试评价</span>
+              <el-tag
+                v-if="existingEvaluation && editMode === 'view'"
+                size="small"
+                type="success"
+                effect="plain"
+              >
+                已提交
+              </el-tag>
+              <el-tag
+                v-else-if="editMode === 'form' && existingEvaluation"
+                size="small"
+                type="warning"
+                effect="plain"
+              >
+                修改中
+              </el-tag>
+              <el-tag v-else size="small" type="info" effect="plain">待填写</el-tag>
+            </div>
           </template>
-          <el-form label-position="top">
+
+          <!-- view 模式：已提交评价展示 -->
+          <div
+            v-if="existingEvaluation && editMode === 'view'"
+            class="evaluation-display"
+          >
+            <div class="evaluation-display-meta">
+              <span class="evaluator-name">{{ existingEvaluation.evaluator_name }}</span>
+              <span class="eval-time">
+                提交时间：{{ formatTime(existingEvaluation.created_at) }}
+              </span>
+              <span
+                v-if="existingEvaluation.updated_at && existingEvaluation.updated_at !== existingEvaluation.created_at"
+                class="eval-time"
+              >
+                · 最近修改：{{ formatTime(existingEvaluation.updated_at) }}
+              </span>
+            </div>
+            <div class="evaluation-display-content">{{ existingEvaluation.content }}</div>
+            <div class="evaluation-display-actions">
+              <el-button
+                type="primary"
+                size="small"
+                :icon="Edit"
+                @click="startEditEvaluation"
+              >
+                修改评价
+              </el-button>
+            </div>
+          </div>
+
+          <!-- form 模式：评价输入表单（首次提交或修改时） -->
+          <el-form v-else label-position="top">
             <el-form-item label="评价人">
               <el-input :model-value="shareInfo.evaluator_name" disabled />
               <div class="field-hint">评价人信息已锁定，不可修改</div>
@@ -187,13 +238,7 @@
               <el-button type="primary" :loading="submitting" @click="handleSubmit">
                 {{ existingEvaluation ? '保存修改' : '提交评价' }}
               </el-button>
-              <el-button v-if="existingEvaluation" @click="handleReset">重置为已提交内容</el-button>
-            </div>
-            <div v-if="existingEvaluation" class="last-submitted-info">
-              <span>上次提交时间：{{ formatTime(existingEvaluation.created_at) }}</span>
-              <span v-if="existingEvaluation.updated_at !== existingEvaluation.created_at">
-                · 最近修改：{{ formatTime(existingEvaluation.updated_at) }}
-              </span>
+              <el-button v-if="existingEvaluation" @click="cancelEdit">取消</el-button>
             </div>
           </el-form>
         </el-card>
@@ -206,7 +251,7 @@
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ZoomIn, ZoomOut, Warning } from '@element-plus/icons-vue'
+import { ZoomIn, ZoomOut, Warning, Edit } from '@element-plus/icons-vue'
 import {
   getShareInfo,
   getShareDownloadUrl,
@@ -227,6 +272,8 @@ const loadError = ref('')
 const shareInfo = ref(null)
 const existingEvaluation = ref(null)
 const evaluationContent = ref('')
+// 评价编辑模式：'view' 已提交展示 | 'form' 输入表单（含首次提交与修改）
+const editMode = ref('form')
 
 // 预览相关状态
 const previewingId = ref(null)
@@ -254,6 +301,11 @@ async function fetchShareInfo() {
     if (res.data.data.evaluation) {
       existingEvaluation.value = res.data.data.evaluation
       evaluationContent.value = res.data.data.evaluation.content || ''
+      // 已有评价：默认进入"已提交展示"模式
+      editMode.value = 'view'
+    } else {
+      // 未提交：进入"填写表单"模式
+      editMode.value = 'form'
     }
   } catch (e) {
     loadError.value = e.response?.data?.message || e.message || '加载分享信息失败'
@@ -271,17 +323,20 @@ async function handleSubmit() {
   submitting.value = true
   try {
     if (existingEvaluation.value) {
-      // 修改
+      // 修改已有评价
       const res = await updateShareEvaluation(route.params.token, { content })
       existingEvaluation.value = res.data.data
       evaluationContent.value = res.data.data.content
       ElMessage.success('评价已更新')
     } else {
-      // 首次提交
+      // 首次提交评价
       const res = await submitShareEvaluation(route.params.token, { content })
       existingEvaluation.value = res.data.data
+      evaluationContent.value = res.data.data.content
       ElMessage.success('评价已提交')
     }
+    // 提交/保存成功后，自动切换到"已提交展示"模式，隐藏输入框
+    editMode.value = 'view'
   } catch (e) {
     ElMessage.error(e.response?.data?.message || e.message || '提交失败')
   } finally {
@@ -289,10 +344,26 @@ async function handleSubmit() {
   }
 }
 
-function handleReset() {
+// 点击"修改评价"按钮：重新展开输入框，预填已有内容
+function startEditEvaluation() {
   if (existingEvaluation.value) {
     evaluationContent.value = existingEvaluation.value.content || ''
-    ElMessage.info('已重置为已提交内容')
+  }
+  editMode.value = 'form'
+  // 滚动到评价区域，确保用户看到输入框
+  nextTick(() => {
+    document.querySelector('.evaluation-card-header')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  })
+}
+
+// 取消修改：回到"已提交展示"模式，丢弃当前编辑内容
+function cancelEdit() {
+  if (existingEvaluation.value) {
+    evaluationContent.value = existingEvaluation.value.content || ''
+    editMode.value = 'view'
   }
 }
 
@@ -559,10 +630,52 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.last-submitted-info {
-  margin-top: 12px;
+/* 面试评价卡片头部（标题 + 状态标签） */
+.evaluation-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 已提交评价展示 */
+.evaluation-display {
+  padding: 4px 0;
+}
+
+.evaluation-display-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.evaluator-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.eval-time {
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+
+.evaluation-display-content {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--el-text-color-regular);
+  white-space: pre-wrap;
+  background: #f7f9fc;
+  padding: 14px 16px;
+  border-radius: 6px;
+  border-left: 3px solid var(--el-color-primary-light-5);
+  margin-bottom: 16px;
+}
+
+.evaluation-display-actions {
+  display: flex;
+  gap: 8px;
 }
 
 /* 简历预览 */
