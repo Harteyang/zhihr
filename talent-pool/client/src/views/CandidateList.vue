@@ -62,19 +62,14 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="position" label="目标岗位" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="education" label="学历" width="80" />
-        <el-table-column prop="experience_years" label="工作年限" width="100">
-          <template #default="{ row }">{{ row.experience_years ? `${row.experience_years}年` : '-' }}</template>
-        </el-table-column>
+        <el-table-column prop="position" label="岗位" min-width="120" show-overflow-tooltip />
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small" effect="light">{{ getStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="source" label="来源" width="100" show-overflow-tooltip />
-        <el-table-column label="更新时间" width="170">
-          <template #default="{ row }">{{ formatTime(row.updated_at) }}</template>
+        <el-table-column label="来源" min-width="120" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.created_by || '-' }}</template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
@@ -108,7 +103,7 @@ import { Plus, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
 import { deleteCandidate } from '../api'
-import { STATUS_OPTIONS, getStatusLabel, getStatusType, formatTime } from '../utils/constants'
+import { STATUS_OPTIONS, getStatusLabel, getStatusType } from '../utils/constants'
 
 const store = useCandidateStore()
 
