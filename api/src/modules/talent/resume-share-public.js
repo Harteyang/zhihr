@@ -196,8 +196,8 @@ async function getResumeShareDownloadUrl(request, env, corsHeaders, params) {
 
 /**
  * 面试官在简历分享页点击操作按钮
- * action: 'schedule_interview' → 状态更新为 interview_scheduled
- * action: 'screening_failed'   → 状态更新为 screening_failed
+ * action: 'resume_passed'     → 状态更新为 resume_passed（简历筛选通过）
+ * action: 'screening_failed'  → 状态更新为 screening_failed（筛选不通过）
  */
 async function submitResumeShareAction(request, env, corsHeaders, params) {
   try {
@@ -218,9 +218,9 @@ async function submitResumeShareAction(request, env, corsHeaders, params) {
     const body = await request.json()
     const action = String(body.action || '').trim()
     const ACTION_MAP = {
-      schedule_interview: {
-        newStatus: 'interview_scheduled',
-        logAction: 'resume_share_schedule_interview'
+      resume_passed: {
+        newStatus: 'resume_passed',
+        logAction: 'resume_share_pass'
       },
       screening_failed: {
         newStatus: 'screening_failed',

@@ -12,32 +12,27 @@
         <!-- 顶部操作按钮区 -->
         <el-card shadow="never" class="section-card action-card">
           <div class="action-bar">
-            <div class="action-bar-left">
-              <span class="action-label">当前状态：</span>
-              <el-tag :type="getStatusType(shareInfo.candidate.status)" effect="dark" size="large">
-                {{ getStatusLabel(shareInfo.candidate.status) }}
-              </el-tag>
-            </div>
+            <p class="action-hint">请对简历做反馈：</p>
             <div class="action-bar-right">
               <template v-if="!actionSubmitted">
                 <el-button
                   type="primary"
                   size="large"
-                  :icon="Calendar"
-                  :loading="submitting === 'schedule_interview'"
-                  @click="handleAction('schedule_interview')"
+                  :icon="Check"
+                  :loading="submitting === 'resume_passed'"
+                  @click="handleAction('resume_passed')"
                 >
-                  安排面试
+                  通过
                 </el-button>
                 <el-button
                   type="danger"
                   size="large"
                   plain
-                  :icon="CircleClose"
+                  :icon="Close"
                   :loading="submitting === 'screening_failed'"
                   @click="handleAction('screening_failed')"
                 >
-                  筛选不通过
+                  不通过
                 </el-button>
               </template>
               <template v-else>
@@ -51,66 +46,6 @@
           <div v-if="actionSubmitted" class="action-tip">
             操作已记录，候选人状态已更新。如有疑问，请联系招聘负责人。
           </div>
-        </el-card>
-
-        <!-- 候选人基本信息 -->
-        <el-card shadow="never" class="section-card">
-          <template #header>
-            <span class="section-title">候选人信息</span>
-          </template>
-          <el-descriptions :column="descColumn" border>
-            <el-descriptions-item label="姓名">{{ shareInfo.candidate.name || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="目标岗位">{{ shareInfo.candidate.position || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="学历">{{ shareInfo.candidate.education || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="工作年限">
-              {{ shareInfo.candidate.experience_years ? `${shareInfo.candidate.experience_years}年` : '-' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="来源">{{ shareInfo.candidate.source || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ formatTime(shareInfo.candidate.created_at) }}</el-descriptions-item>
-            <el-descriptions-item label="技能" :span="3">
-              <el-tag v-for="skill in shareInfo.candidate.skills" :key="skill" size="small" style="margin-right: 6px; margin-bottom: 4px;">
-                {{ skill }}
-              </el-tag>
-              <span v-if="!shareInfo.candidate.skills || shareInfo.candidate.skills.length === 0">-</span>
-            </el-descriptions-item>
-            <el-descriptions-item v-if="shareInfo.candidate.summary" label="个人简介" :span="3">
-              <div class="candidate-summary">{{ shareInfo.candidate.summary }}</div>
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-
-        <!-- 工作经历 -->
-        <el-card
-          v-if="shareInfo.experiences && shareInfo.experiences.length > 0"
-          shadow="never"
-          class="section-card"
-        >
-          <template #header>
-            <div class="card-header-with-count">
-              <span class="section-title">工作经历</span>
-              <span class="section-count">{{ shareInfo.experiences.length }} 段经历</span>
-            </div>
-          </template>
-          <el-timeline class="experience-timeline">
-            <el-timeline-item
-              v-for="(exp, idx) in shareInfo.experiences"
-              :key="idx"
-              :timestamp="formatDateRange(exp.start_date, exp.end_date)"
-              placement="top"
-              type="primary"
-              hollow
-            >
-              <div class="experience-card">
-                <div class="experience-header">
-                  <span class="experience-company">{{ exp.company || '未填写公司' }}</span>
-                  <el-tag v-if="exp.title" size="small" type="info" effect="plain" class="experience-title-tag">
-                    {{ exp.title }}
-                  </el-tag>
-                </div>
-                <div v-if="exp.description" class="experience-desc">{{ exp.description }}</div>
-              </div>
-            </el-timeline-item>
-          </el-timeline>
         </el-card>
 
         <!-- 简历附件 -->
@@ -215,7 +150,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ZoomIn, ZoomOut, Warning, Calendar, CircleClose, CircleCheck } from '@element-plus/icons-vue'
+import { ZoomIn, ZoomOut, Warning, Check, Close, CircleCheck } from '@element-plus/icons-vue'
 import {
   getResumeShareInfo,
   getResumeShareDownloadUrl,
@@ -225,7 +160,6 @@ import {
 } from '../api/resume-share.js'
 import PdfPreview from '../components/PdfPreview.vue'
 import HtmlPreview from '../components/HtmlPreview.vue'
-import { formatTime, getStatusLabel, getStatusType } from '../utils/constants'
 
 const route = useRoute()
 const loading = ref(false)
@@ -234,23 +168,19 @@ const loadError = ref('')
 const shareInfo = ref(null)
 
 // 操作按钮状态
-// submitting: null | 'schedule_interview' | 'screening_failed'，标记当前正在提交的操作
 const submitting = ref(null)
-// 是否已成功提交过操作（提交后隐藏按钮、显示成功提示）
 const actionSubmitted = ref(false)
-// 已提交的操作类型，用于展示成功 tag
 const submittedAction = ref('')
 
 const submittedActionText = computed(() => {
-  if (submittedAction.value === 'schedule_interview') return '已安排面试'
-  if (submittedAction.value === 'screening_failed') return '已标记筛选不通过'
-  // 其他终态（已面试通过/offer沟通/拒绝offer/已录用）：候选人已进入后续流程
+  if (submittedAction.value === 'resume_passed') return '已通过'
+  if (submittedAction.value === 'screening_failed') return '已不通过'
+  // 其他终态（已安排面试/面试通过/offer沟通/拒绝offer/已录用）：候选人已进入后续流程
   if (submittedAction.value === '') return '候选人已进入后续流程'
   return '操作已完成'
 })
 
 const submittedActionType = computed(() => {
-  if (submittedAction.value === 'schedule_interview') return 'success'
   if (submittedAction.value === 'screening_failed') return 'danger'
   return 'success'
 })
@@ -259,7 +189,7 @@ const submittedActionType = computed(() => {
 const previewingId = ref(null)
 const previewVisible = ref(false)
 const previewLoading = ref(false)
-const previewType = ref('') // 'pdf' | 'html' | ''
+const previewType = ref('')
 const previewHtml = ref('')
 const previewUrl = ref('')
 const previewFileName = ref('')
@@ -269,28 +199,31 @@ const MIN_PREVIEW_ZOOM = 0.5
 const MAX_PREVIEW_ZOOM = 3.0
 const ZOOM_STEP = 0.2
 
-// 响应式描述列数
-const descColumn = ref(3)
-
 async function fetchShareInfo() {
   loading.value = true
   loadError.value = ''
   try {
     const res = await getResumeShareInfo(route.params.token)
     shareInfo.value = res.data.data
-    // Issue 2: 使用白名单判断 —— 仅 to_recommend/resume_passed 状态允许操作
-    // 其他 6 个状态（已安排面试/面试通过/offer沟通/拒绝offer/已录用/筛选不通过）均视为终态，隐藏按钮
+    // 白名单判断：仅 to_recommend/resume_passed 状态允许操作
     const status = res.data.data.candidate.status
-    if (status === 'interview_scheduled') {
+    if (status === 'resume_passed') {
       actionSubmitted.value = true
-      submittedAction.value = 'schedule_interview'
+      submittedAction.value = 'resume_passed'
     } else if (status === 'screening_failed') {
       actionSubmitted.value = true
       submittedAction.value = 'screening_failed'
-    } else if (status !== 'to_recommend' && status !== 'resume_passed') {
-      // 其他终态（interview_passed/offer_discussing/offer_rejected/hired）：隐藏按钮，显示通用提示
+    } else if (status !== 'to_recommend') {
+      // 其他终态（interview_scheduled/interview_passed/offer_discussing/offer_rejected/hired）：隐藏按钮
       actionSubmitted.value = true
       submittedAction.value = ''
+    }
+
+    // 默认展开预览第一个附件
+    const attachments = res.data.data.attachments
+    if (attachments && attachments.length > 0) {
+      await nextTick()
+      handlePreview(attachments[0])
     }
   } catch (e) {
     loadError.value = e.response?.data?.message || e.message || '加载分享信息失败'
@@ -300,7 +233,7 @@ async function fetchShareInfo() {
 }
 
 async function handleAction(action) {
-  const actionText = action === 'schedule_interview' ? '安排面试' : '筛选不通过'
+  const actionText = action === 'resume_passed' ? '通过' : '不通过'
   try {
     await ElMessageBox.confirm(
       `确认执行"${actionText}"操作？该操作将更新候选人状态，并记录到操作日志。`,
@@ -308,22 +241,19 @@ async function handleAction(action) {
       {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
-        type: action === 'schedule_interview' ? 'info' : 'warning'
+        type: action === 'resume_passed' ? 'info' : 'warning'
       }
     )
   } catch {
-    // 用户取消
     return
   }
 
   submitting.value = action
   try {
     await submitResumeShareAction(route.params.token, { action })
-    // 本地更新状态，无需重新拉取接口
+    // 本地更新状态
     if (shareInfo.value) {
-      shareInfo.value.candidate.status = action === 'schedule_interview'
-        ? 'interview_scheduled'
-        : 'screening_failed'
+      shareInfo.value.candidate.status = action
     }
     actionSubmitted.value = true
     submittedAction.value = action
@@ -355,16 +285,13 @@ async function handleDownload(row) {
 }
 
 // ====== 简历预览 ======
-// 预览请求序号：防止快速切换附件时旧请求覆盖新请求的状态
 let previewSeq = 0
 
 async function handlePreview(row) {
-  // 切换附件时先清理上一个 blob URL
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value)
   }
 
-  // 自增序号并捕获当前请求的序号，响应回来时比对，过期的请求结果丢弃
   const mySeq = ++previewSeq
 
   previewingId.value = row.id
@@ -380,19 +307,16 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：直接 fetch 二进制流，转 blob URL 交给 PdfPreview
       const res = await fetch(previewResumeSharePdfUrl(route.params.token, row.id))
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ message: '预览失败' }))
         throw new Error(errData.message || '预览失败')
       }
       const blob = await res.blob()
-      // Issue 5: 过期请求直接丢弃，blob 由 GC 自动回收，无需手动创建/撤销 URL
       if (mySeq !== previewSeq) return
       previewUrl.value = URL.createObjectURL(blob)
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
-      // Word/TXT：调用预览接口拿 HTML
       const res = await previewResumeShareAttachment(route.params.token, row.id)
       if (mySeq !== previewSeq) return
       const data = res.data.data
@@ -405,8 +329,6 @@ async function handlePreview(row) {
     } else {
       throw new Error('该文件类型不支持在线预览，请下载后查看')
     }
-    await nextTick()
-    document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (e) {
     if (mySeq !== previewSeq) return
     previewError.value = e.response?.data?.message || e.message || '预览失败，请尝试下载后查看'
@@ -449,37 +371,11 @@ function resetPreviewZoom() {
   previewZoom.value = 1.0
 }
 
-// ====== 工作经历日期格式化 ======
-function formatDateRange(start, end) {
-  const fmt = (d) => {
-    if (!d) return ''
-    const str = String(d)
-    if (str.length >= 7) return str.slice(0, 7)
-    return str
-  }
-  const s = fmt(start)
-  const e = (!end || end === 'present') ? '至今' : fmt(end)
-  if (s && e) return `${s} ~ ${e}`
-  return s || e || '-'
-}
-
-// ====== 响应式列数 ======
-function updateDescColumn() {
-  descColumn.value = window.innerWidth < 768 ? 1 : 3
-}
-
-function handleResize() {
-  updateDescColumn()
-}
-
 onMounted(() => {
-  updateDescColumn()
-  window.addEventListener('resize', handleResize)
   fetchShareInfo()
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value)
   }
@@ -523,18 +419,6 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-.card-header-with-count {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.section-count {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  font-weight: normal;
-}
-
 /* 顶部操作区 */
 .action-card :deep(.el-card__body) {
   padding: 16px 20px;
@@ -542,28 +426,26 @@ onBeforeUnmount(() => {
 
 .action-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.action-bar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.action-label {
-  font-size: 14px;
-  color: var(--el-text-color-regular);
+.action-hint {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
 .action-bar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+}
+
+.action-bar-right .el-button {
+  min-width: 120px;
 }
 
 .submitted-tag {
@@ -580,51 +462,6 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: var(--el-text-color-regular);
   line-height: 1.6;
-}
-
-/* 候选人个人简介 */
-.candidate-summary {
-  white-space: pre-wrap;
-  line-height: 1.7;
-  color: var(--el-text-color-regular);
-}
-
-/* 工作经历 */
-.experience-timeline {
-  padding-left: 4px;
-}
-
-.experience-card {
-  padding: 4px 0;
-}
-
-.experience-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.experience-company {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
-
-.experience-title-tag {
-  flex-shrink: 0;
-}
-
-.experience-desc {
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  background: #f7f9fc;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border-left: 3px solid var(--el-color-primary-light-5);
 }
 
 /* 简历预览 */
@@ -679,6 +516,7 @@ onBeforeUnmount(() => {
   background: #f5f7fa;
   border-radius: 4px;
   overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .preview-zoom-wrapper {
@@ -696,31 +534,51 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+/* 移动端适配 */
 @media (max-width: 768px) {
-  .resume-share-page { padding: 12px 8px; }
-  .share-header h1 { font-size: 18px; }
-  .action-bar {
+  .resume-share-page {
+    padding: 12px 8px;
+  }
+
+  .share-header h1 {
+    font-size: 18px;
+  }
+
+  .action-card :deep(.el-card__body) {
+    padding: 12px 16px;
+  }
+
+  .action-hint {
+    font-size: 14px;
+  }
+
+  .action-bar-right {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
-  .action-bar-right {
-    justify-content: stretch;
-  }
+
   .action-bar-right .el-button {
     width: 100%;
+    min-height: 44px;
+    font-size: 15px;
   }
+
   .preview-header {
     flex-direction: column;
     align-items: stretch;
   }
+
   .preview-header-right {
     justify-content: space-between;
   }
+
   .preview-title {
     max-width: 100%;
   }
-  .experience-desc {
-    font-size: 12px;
+
+  .resume-preview-container {
+    min-height: 300px;
   }
 }
 </style>

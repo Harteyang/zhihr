@@ -17,5 +17,5 @@ export const getResumeShareDownloadUrl = (token, attachId) => api.get(`/talent/r
 export const previewResumeShareAttachment = (token, attachId) => api.get(`/talent/resume-share/${token}/attachments/${attachId}/preview`)
 // PDF 预览直链（fetch 该 URL 拿 blob 后用 URL.createObjectURL 创建预览 src）
 export const previewResumeSharePdfUrl = (token, attachId) => `${api.defaults.baseURL}/talent/resume-share/${token}/attachments/${attachId}/preview`
-// 面试官操作：安排面试 / 筛选不通过
+// 面试官操作：通过(resume_passed) / 不通过(screening_failed)
 export const submitResumeShareAction = (token, data) => api.post(`/talent/resume-share/${token}/action`, data)
