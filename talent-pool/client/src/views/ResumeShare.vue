@@ -27,7 +27,6 @@
                 <el-button
                   type="danger"
                   size="large"
-                  plain
                   :icon="Close"
                   :loading="submitting === 'screening_failed'"
                   @click="handleAction('screening_failed')"
@@ -46,48 +45,6 @@
           <div v-if="actionSubmitted" class="action-tip">
             操作已记录，候选人状态已更新。如有疑问，请联系招聘负责人。
           </div>
-        </el-card>
-
-        <!-- 简历附件 -->
-        <el-card
-          v-if="shareInfo.attachments && shareInfo.attachments.length > 0"
-          shadow="never"
-          class="section-card"
-        >
-          <template #header>
-            <span class="section-title">简历附件</span>
-          </template>
-          <el-table :data="shareInfo.attachments" stripe>
-            <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="file_type" label="类型" width="80" />
-            <el-table-column label="大小" width="100">
-              <template #default="{ row }">
-                {{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="160">
-              <template #default="{ row }">
-                <el-button
-                  type="primary"
-                  link
-                  size="small"
-                  :loading="previewingId === row.id"
-                  @click="handlePreview(row)"
-                >
-                  预览
-                </el-button>
-                <el-button
-                  type="success"
-                  link
-                  size="small"
-                  :loading="downloadingId === row.id"
-                  @click="handleDownload(row)"
-                >
-                  下载
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
         </el-card>
 
         <!-- 简历预览区域 -->
@@ -140,6 +97,48 @@
               </div>
             </div>
           </div>
+        </el-card>
+
+        <!-- 简历附件 -->
+        <el-card
+          v-if="shareInfo.attachments && shareInfo.attachments.length > 0"
+          shadow="never"
+          class="section-card"
+        >
+          <template #header>
+            <span class="section-title">简历附件</span>
+          </template>
+          <el-table :data="shareInfo.attachments" stripe>
+            <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="file_type" label="类型" width="80" />
+            <el-table-column label="大小" width="100">
+              <template #default="{ row }">
+                {{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="160">
+              <template #default="{ row }">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  :loading="previewingId === row.id"
+                  @click="handlePreview(row)"
+                >
+                  预览
+                </el-button>
+                <el-button
+                  type="success"
+                  link
+                  size="small"
+                  :loading="downloadingId === row.id"
+                  @click="handleDownload(row)"
+                >
+                  下载
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-card>
       </template>
     </div>
@@ -234,9 +233,12 @@ async function fetchShareInfo() {
 
 async function handleAction(action) {
   const actionText = action === 'resume_passed' ? '通过' : '不通过'
+  const confirmMessage = action === 'resume_passed'
+    ? '操作确认，将提醒尽快安排面试'
+    : '操作确认，简历不通过，将不会进入面试安排'
   try {
     await ElMessageBox.confirm(
-      `确认执行"${actionText}"操作？该操作将更新候选人状态，并记录到操作日志。`,
+      confirmMessage,
       '操作确认',
       {
         confirmButtonText: '确认',
