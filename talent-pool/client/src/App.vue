@@ -67,7 +67,7 @@
       </el-container>
     </el-container>
 
-    <el-drawer v-model="drawerVisible" v-if="isMobile" direction="ltr" size="260px" :with-header="false">
+    <el-drawer v-model="drawerVisible" v-if="isMobile" direction="ltr" size="260px" :with-header="false" class="mobile-nav-drawer">
       <div style="background: #1d2129; min-height: 100%; display: flex; flex-direction: column;">
         <div style="height: 56px; display: flex; align-items: center; padding: 0 20px; color: #fff; font-size: 17px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <el-icon style="margin-right: 8px; color: var(--el-color-primary);"><UserFilled /></el-icon>
@@ -161,6 +161,9 @@ body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
 .el-menu-item.is-active { background-color: rgba(59, 130, 246, 0.15) !important; }
 .el-aside { transition: width 0.2s; }
 .mobile-header-btn { display: none; }
+
+/* 移动端侧边抽屉：移除默认 body padding，使深色导航内容贴边铺满 */
+.mobile-nav-drawer .el-drawer__body { padding: 0; }
 
 @media (max-width: 768px) {
   .mobile-header-btn { display: inline-flex !important; }
