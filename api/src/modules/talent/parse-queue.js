@@ -119,7 +119,7 @@ async function processSingleParseTask(env, task, user) {
     `UPDATE talent_parse_tasks SET progress = 50, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
   ).bind(task.id).run()
 
-  const aiResult = await callAIWithFallback(resumeText, env)
+  const aiResult = await callAIWithFallback(resumeText, env, task.file_name)
 
   await env.DB.prepare(
     `UPDATE talent_parse_tasks SET progress = 80, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
@@ -127,9 +127,6 @@ async function processSingleParseTask(env, task, user) {
 
   if (!aiResult.name || !String(aiResult.name).trim()) {
     throw new Error('AI 解析结果缺少姓名字段')
-  }
-  if (!aiResult.position || !String(aiResult.position).trim()) {
-    throw new Error('AI 解析结果缺少岗位字段')
   }
 
   const { candidateId, parsedData } = await createCandidateFromParse(env, aiResult, task, user.userId)

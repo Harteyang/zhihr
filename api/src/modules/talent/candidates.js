@@ -418,7 +418,7 @@ async function createCandidateFromParse(env, aiResult, task, createdBy) {
     String(aiResult.name).trim(),
     aiResult.phone || null,
     aiResult.email || null,
-    String(aiResult.position).trim(),
+    aiResult.position ? String(aiResult.position).trim() : null,
     skillsJson,
     aiResult.education || null,
     aiResult.experience_years || null,
