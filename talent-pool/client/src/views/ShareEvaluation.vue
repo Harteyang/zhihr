@@ -9,161 +9,7 @@
       <el-alert v-if="loadError" type="error" :title="loadError" show-icon :closable="false" />
 
       <template v-if="shareInfo">
-        <!-- 候选人基本信息 -->
-        <el-card shadow="never" class="section-card">
-          <template #header>
-            <span class="section-title">候选人信息</span>
-          </template>
-          <el-descriptions :column="descColumn" border>
-            <el-descriptions-item label="姓名">{{ shareInfo.candidate.name || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="目标岗位">{{ shareInfo.candidate.position || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="学历">{{ shareInfo.candidate.education || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="工作年限">
-              {{ shareInfo.candidate.experience_years ? `${shareInfo.candidate.experience_years}年` : '-' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="来源">{{ shareInfo.candidate.source || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ formatTime(shareInfo.candidate.created_at) }}</el-descriptions-item>
-            <el-descriptions-item label="技能" :span="3">
-              <el-tag v-for="skill in shareInfo.candidate.skills" :key="skill" size="small" style="margin-right: 6px; margin-bottom: 4px;">
-                {{ skill }}
-              </el-tag>
-              <span v-if="!shareInfo.candidate.skills || shareInfo.candidate.skills.length === 0">-</span>
-            </el-descriptions-item>
-            <el-descriptions-item v-if="shareInfo.candidate.summary" label="个人简介" :span="3">
-              <div class="candidate-summary">{{ shareInfo.candidate.summary }}</div>
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-card>
-
-        <!-- 工作经历 -->
-        <el-card
-          v-if="shareInfo.experiences && shareInfo.experiences.length > 0"
-          shadow="never"
-          class="section-card"
-        >
-          <template #header>
-            <div class="card-header-with-count">
-              <span class="section-title">工作经历</span>
-              <span class="section-count">{{ shareInfo.experiences.length }} 段经历</span>
-            </div>
-          </template>
-          <el-timeline class="experience-timeline">
-            <el-timeline-item
-              v-for="(exp, idx) in shareInfo.experiences"
-              :key="idx"
-              :timestamp="formatDateRange(exp.start_date, exp.end_date)"
-              placement="top"
-              type="primary"
-              hollow
-            >
-              <div class="experience-card">
-                <div class="experience-header">
-                  <span class="experience-company">{{ exp.company || '未填写公司' }}</span>
-                  <el-tag v-if="exp.title" size="small" type="info" effect="plain" class="experience-title-tag">
-                    {{ exp.title }}
-                  </el-tag>
-                </div>
-                <div v-if="exp.description" class="experience-desc">{{ exp.description }}</div>
-              </div>
-            </el-timeline-item>
-          </el-timeline>
-        </el-card>
-
-        <!-- 简历附件 -->
-        <el-card
-          v-if="shareInfo.attachments && shareInfo.attachments.length > 0"
-          shadow="never"
-          class="section-card"
-        >
-          <template #header>
-            <span class="section-title">简历附件</span>
-          </template>
-          <el-table :data="shareInfo.attachments" stripe>
-            <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="file_type" label="类型" width="80" />
-            <el-table-column label="大小" width="100">
-              <template #default="{ row }">
-                {{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="160">
-              <template #default="{ row }">
-                <el-button
-                  type="primary"
-                  link
-                  size="small"
-                  :loading="previewingId === row.id"
-                  @click="handlePreview(row)"
-                >
-                  预览
-                </el-button>
-                <el-button
-                  type="success"
-                  link
-                  size="small"
-                  :loading="downloadingId === row.id"
-                  @click="handleDownload(row)"
-                >
-                  下载
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-
-        <!-- 简历预览区域 -->
-        <el-card
-          v-if="previewVisible"
-          shadow="never"
-          class="section-card preview-card"
-          id="preview-section"
-        >
-          <template #header>
-            <div class="preview-header">
-              <div class="preview-header-left">
-                <span class="preview-title">预览：{{ previewFileName }}</span>
-              </div>
-              <div class="preview-header-right">
-                <el-button-group class="zoom-controls">
-                  <el-button
-                    size="small"
-                    :icon="ZoomOut"
-                    @click="zoomOutPreview"
-                    :disabled="previewZoom <= MIN_PREVIEW_ZOOM + 0.01"
-                  />
-                  <el-button size="small" class="zoom-display" disabled>
-                    {{ Math.round(previewZoom * 100) }}%
-                  </el-button>
-                  <el-button
-                    size="small"
-                    :icon="ZoomIn"
-                    @click="zoomInPreview"
-                    :disabled="previewZoom >= MAX_PREVIEW_ZOOM - 0.01"
-                  />
-                  <el-button size="small" @click="resetPreviewZoom">重置</el-button>
-                </el-button-group>
-                <el-button text size="small" @click="closePreview">关闭预览</el-button>
-              </div>
-            </div>
-          </template>
-          <div class="resume-preview-container">
-            <div class="preview-zoom-wrapper" :style="{ zoom: previewZoom }">
-              <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
-              <HtmlPreview
-                v-else-if="previewType === 'html'"
-                :html="previewHtml"
-                :loading="previewLoading"
-                :error="previewError"
-              />
-              <div v-else-if="previewError" class="preview-fallback-error">
-                <el-icon><Warning /></el-icon>
-                <span>{{ previewError }}</span>
-              </div>
-            </div>
-          </div>
-        </el-card>
-
-        <!-- 面试评价 -->
+        <!-- 顶部：面试评价 -->
         <el-card shadow="never" class="section-card">
           <template #header>
             <div class="evaluation-card-header">
@@ -242,6 +88,100 @@
             </div>
           </el-form>
         </el-card>
+
+        <!-- 中间：简历预览区域（默认展开） -->
+        <el-card
+          v-if="previewVisible"
+          shadow="never"
+          class="section-card preview-card"
+          id="preview-section"
+        >
+          <template #header>
+            <div class="preview-header">
+              <div class="preview-header-left">
+                <span class="preview-title">预览：{{ previewFileName }}</span>
+              </div>
+              <div class="preview-header-right">
+                <el-button-group class="zoom-controls">
+                  <el-button
+                    size="small"
+                    :icon="ZoomOut"
+                    @click="zoomOutPreview"
+                    :disabled="previewZoom <= MIN_PREVIEW_ZOOM + 0.01"
+                  />
+                  <el-button size="small" class="zoom-display" disabled>
+                    {{ Math.round(previewZoom * 100) }}%
+                  </el-button>
+                  <el-button
+                    size="small"
+                    :icon="ZoomIn"
+                    @click="zoomInPreview"
+                    :disabled="previewZoom >= MAX_PREVIEW_ZOOM - 0.01"
+                  />
+                  <el-button size="small" @click="resetPreviewZoom">重置</el-button>
+                </el-button-group>
+                <el-button text size="small" @click="closePreview">关闭预览</el-button>
+              </div>
+            </div>
+          </template>
+          <div class="resume-preview-container">
+            <div class="preview-zoom-wrapper" :style="{ zoom: previewZoom }">
+              <PdfPreview v-if="previewType === 'pdf'" :src="previewUrl" />
+              <HtmlPreview
+                v-else-if="previewType === 'html'"
+                :html="previewHtml"
+                :loading="previewLoading"
+                :error="previewError"
+              />
+              <div v-else-if="previewError" class="preview-fallback-error">
+                <el-icon><Warning /></el-icon>
+                <span>{{ previewError }}</span>
+              </div>
+            </div>
+          </div>
+        </el-card>
+
+        <!-- 底部：简历附件列表 -->
+        <el-card
+          v-if="shareInfo.attachments && shareInfo.attachments.length > 0"
+          shadow="never"
+          class="section-card"
+        >
+          <template #header>
+            <span class="section-title">简历附件</span>
+          </template>
+          <el-table :data="shareInfo.attachments" stripe>
+            <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="file_type" label="类型" width="80" />
+            <el-table-column label="大小" width="100">
+              <template #default="{ row }">
+                {{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="160">
+              <template #default="{ row }">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  :loading="previewingId === row.id"
+                  @click="handlePreview(row)"
+                >
+                  预览
+                </el-button>
+                <el-button
+                  type="success"
+                  link
+                  size="small"
+                  :loading="downloadingId === row.id"
+                  @click="handleDownload(row)"
+                >
+                  下载
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
       </template>
     </div>
   </div>
@@ -289,9 +229,6 @@ const MIN_PREVIEW_ZOOM = 0.5
 const MAX_PREVIEW_ZOOM = 3.0
 const ZOOM_STEP = 0.2
 
-// 响应式描述列数
-const descColumn = ref(3)
-
 async function fetchShareInfo() {
   loading.value = true
   loadError.value = ''
@@ -306,6 +243,13 @@ async function fetchShareInfo() {
     } else {
       // 未提交：进入"填写表单"模式
       editMode.value = 'form'
+    }
+
+    // 默认展开预览第一个附件
+    const attachments = res.data.data.attachments
+    if (attachments && attachments.length > 0) {
+      await nextTick()
+      handlePreview(attachments[0])
     }
   } catch (e) {
     loadError.value = e.response?.data?.message || e.message || '加载分享信息失败'
@@ -387,7 +331,6 @@ async function handleDownload(row) {
 }
 
 // ====== 简历预览 ======
-// 预览请求序号：防止快速切换附件时旧请求覆盖新请求的状态
 let previewSeq = 0
 
 async function handlePreview(row) {
@@ -396,7 +339,6 @@ async function handlePreview(row) {
     URL.revokeObjectURL(previewUrl.value)
   }
 
-  // 自增序号并捕获当前请求的序号，响应回来时比对，过期的请求结果丢弃
   const mySeq = ++previewSeq
 
   previewingId.value = row.id
@@ -412,14 +354,12 @@ async function handlePreview(row) {
   try {
     const fileType = (row.file_type || '').toLowerCase()
     if (fileType === 'pdf') {
-      // PDF：直接 fetch 二进制流，转 blob URL 交给 PdfPreview
       const res = await fetch(previewSharePdfUrl(route.params.token, row.id))
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ message: '预览失败' }))
         throw new Error(errData.message || '预览失败')
       }
       const blob = await res.blob()
-      // 过期请求丢弃，避免覆盖用户已切换到的新附件预览
       if (mySeq !== previewSeq) {
         URL.revokeObjectURL(URL.createObjectURL(blob))
         return
@@ -427,7 +367,6 @@ async function handlePreview(row) {
       previewUrl.value = URL.createObjectURL(blob)
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
-      // Word/TXT：调用预览接口拿 HTML
       const res = await previewShareAttachment(route.params.token, row.id)
       if (mySeq !== previewSeq) return
       const data = res.data.data
@@ -440,13 +379,9 @@ async function handlePreview(row) {
     } else {
       throw new Error('该文件类型不支持在线预览，请下载后查看')
     }
-    await nextTick()
-    document.getElementById('preview-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (e) {
     if (mySeq !== previewSeq) return
     previewError.value = e.response?.data?.message || e.message || '预览失败，请尝试下载后查看'
-    ElMessage.warning(previewError.value)
-    // 不立即关闭，保留预览卡片以展示错误信息
     previewType.value = ''
   } finally {
     if (mySeq === previewSeq) {
@@ -485,39 +420,11 @@ function resetPreviewZoom() {
   previewZoom.value = 1.0
 }
 
-// ====== 工作经历日期格式化 ======
-function formatDateRange(start, end) {
-  const fmt = (d) => {
-    if (!d) return ''
-    // 兼容 YYYY-MM / YYYY-MM-DD / 完整时间戳
-    const str = String(d)
-    if (str.length >= 7) return str.slice(0, 7)
-    return str
-  }
-  const s = fmt(start)
-  // end 为空或 'present'（AI 解析输出的"至今"标记）均显示为"至今"
-  const e = (!end || end === 'present') ? '至今' : fmt(end)
-  if (s && e) return `${s} ~ ${e}`
-  return s || e || '-'
-}
-
-// ====== 响应式列数 ======
-function updateDescColumn() {
-  descColumn.value = window.innerWidth < 768 ? 1 : 3
-}
-
-function handleResize() {
-  updateDescColumn()
-}
-
 onMounted(() => {
-  updateDescColumn()
-  window.addEventListener('resize', handleResize)
   fetchShareInfo()
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize)
   // 清理 blob URL 避免内存泄漏
   if (previewUrl.value && previewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(previewUrl.value)
@@ -560,63 +467,6 @@ onBeforeUnmount(() => {
 
 .section-title {
   font-weight: 600;
-}
-
-.card-header-with-count {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.section-count {
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-  font-weight: normal;
-}
-
-/* 候选人个人简介 */
-.candidate-summary {
-  white-space: pre-wrap;
-  line-height: 1.7;
-  color: var(--el-text-color-regular);
-}
-
-/* 工作经历 */
-.experience-timeline {
-  padding-left: 4px;
-}
-
-.experience-card {
-  padding: 4px 0;
-}
-
-.experience-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-
-.experience-company {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
-
-.experience-title-tag {
-  flex-shrink: 0;
-}
-
-.experience-desc {
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  background: #f7f9fc;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border-left: 3px solid var(--el-color-primary-light-5);
 }
 
 .field-hint {
@@ -730,6 +580,7 @@ onBeforeUnmount(() => {
   background: #f5f7fa;
   border-radius: 4px;
   overflow: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .preview-zoom-wrapper {
@@ -747,9 +598,17 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+/* 移动端适配 */
 @media (max-width: 768px) {
   .share-evaluation-page { padding: 12px 8px; }
   .share-header h1 { font-size: 18px; }
+  .form-actions {
+    flex-direction: column;
+  }
+  .form-actions .el-button {
+    width: 100%;
+    min-height: 44px;
+  }
   .preview-header {
     flex-direction: column;
     align-items: stretch;
@@ -760,8 +619,12 @@ onBeforeUnmount(() => {
   .preview-title {
     max-width: 100%;
   }
-  .experience-desc {
-    font-size: 12px;
+  .resume-preview-container {
+    min-height: 300px;
+  }
+  /* 附件表格移动端优化 */
+  .section-card :deep(.el-table) {
+    font-size: 13px;
   }
 }
 </style>

@@ -57,7 +57,7 @@
                 size="small"
                 @click="openShareDialog"
               >
-                分享评价
+                邀请评价
               </el-button>
               <el-button
                 v-if="!evalFormVisible"
