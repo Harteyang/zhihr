@@ -360,10 +360,7 @@ async function handlePreview(row) {
         throw new Error(errData.message || '预览失败')
       }
       const blob = await res.blob()
-      if (mySeq !== previewSeq) {
-        URL.revokeObjectURL(URL.createObjectURL(blob))
-        return
-      }
+      if (mySeq !== previewSeq) return
       previewUrl.value = URL.createObjectURL(blob)
       previewType.value = 'pdf'
     } else if (fileType === 'doc' || fileType === 'docx' || fileType === 'txt') {
