@@ -626,5 +626,10 @@ onBeforeUnmount(() => {
   .section-card :deep(.el-table) {
     font-size: 13px;
   }
+  /* 评价输入框移动端尺寸优化 */
+  .section-card :deep(.el-textarea__inner) {
+    min-height: 80px;
+    max-height: 160px;
+  }
 }
 </style>

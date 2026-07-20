@@ -86,7 +86,7 @@ async function listCandidates(request, env, corsHeaders) {
     const total = countRow.total
 
     const rows = await env.DB.prepare(
-      `SELECT * FROM talent_candidates ${where} ORDER BY updated_at DESC LIMIT ? OFFSET ?`
+      `SELECT c.*, u.username as created_by_name FROM talent_candidates c LEFT JOIN users u ON c.created_by = u.id ${where} ORDER BY updated_at DESC LIMIT ? OFFSET ?`
     ).bind(...params, pageSize, offset).all()
 
     return jsonResponse({ success: true, data: rows.results, total, page, pageSize }, 200, corsHeaders)
