@@ -5,7 +5,7 @@ import { getCandidates, getFilterOptions } from '../api'
 export const useCandidateStore = defineStore('candidate', () => {
   const candidates = ref([])
   const total = ref(0)
-  const filterOptions = ref({ positions: [], sources: [] })
+  const filterOptions = ref({ positions: [], sources: [], companies: [] })
   const loading = ref(false)
 
   async function fetchList(params) {

@@ -74,6 +74,11 @@ async function listCandidates(request, env, corsHeaders) {
     }
     const source = url.searchParams.get('source')
     if (source) { conditions.push('source = ?'); params.push(source) }
+    const company = url.searchParams.get('company')
+    if (company) {
+      conditions.push('EXISTS (SELECT 1 FROM talent_work_experiences WHERE candidate_id = talent_candidates.id AND company = ?)')
+      params.push(company)
+    }
 
     const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
 
@@ -101,7 +106,7 @@ async function getFilterOptions(request, env, corsHeaders) {
     let positionParams = []
     if (allowedPositions !== null) {
       if (allowedPositions.length === 0) {
-        return jsonResponse({ success: true, data: { positions: [], sources: [] } }, 200, corsHeaders)
+        return jsonResponse({ success: true, data: { positions: [], sources: [], companies: [] } }, 200, corsHeaders)
       }
       positionSql += ` AND position IN (${allowedPositions.map(() => '?').join(',')})`
       positionParams = [...allowedPositions]
@@ -112,11 +117,24 @@ async function getFilterOptions(request, env, corsHeaders) {
     const sources = await env.DB.prepare(
       "SELECT DISTINCT source FROM talent_candidates WHERE source IS NOT NULL ORDER BY source"
     ).all()
+
+    // 公司筛选选项：从工作经历表提取，仅包含当前用户可见候选人的公司
+    let companySql = `SELECT DISTINCT we.company FROM talent_work_experiences we
+      INNER JOIN talent_candidates c ON c.id = we.candidate_id
+      WHERE we.company IS NOT NULL AND we.company != ''`
+    const companyParams = [...positionParams]
+    if (allowedPositions !== null) {
+      companySql += ` AND c.position IN (${allowedPositions.map(() => '?').join(',')})`
+    }
+    companySql += ' ORDER BY we.company'
+    const companies = await env.DB.prepare(companySql).bind(...companyParams).all()
+
     return jsonResponse({
       success: true,
       data: {
         positions: positions.results.map(r => r.position),
-        sources: sources.results.map(r => r.source)
+        sources: sources.results.map(r => r.source),
+        companies: companies.results.map(r => r.company)
       }
     }, 200, corsHeaders)
   } catch (err) {
