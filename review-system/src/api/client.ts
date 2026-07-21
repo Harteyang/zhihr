@@ -1,3 +1,5 @@
+import { useAuthStore, getRefreshToken, setRefreshToken } from '@/stores/auth'
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.zhihr.vip'
 
 export class ApiError extends Error {
@@ -33,7 +35,7 @@ async function tryRefreshToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise
 
   refreshPromise = (async () => {
-    const refreshToken = localStorage.getItem('zhihr_refresh_token')
+    const refreshToken = getRefreshToken()
     if (!refreshToken) return false
 
     try {
@@ -45,10 +47,12 @@ async function tryRefreshToken(): Promise<boolean> {
       const data = await res.json()
       if (!data.success) return false
 
-      localStorage.setItem('zhihr_access_token', data.data.token)
-      if (data.data.refreshToken) {
-        localStorage.setItem('zhihr_refresh_token', data.data.refreshToken)
-      }
+      setRefreshToken(data.data.refreshToken || null)
+      useAuthStore.getState().setAuth({
+        userId: useAuthStore.getState().userId || '',
+        username: useAuthStore.getState().username || '',
+        token: data.data.token,
+      })
       return true
     } catch {
       return false
@@ -61,11 +65,11 @@ async function tryRefreshToken(): Promise<boolean> {
 }
 
 function getToken(): string | null {
-  // 优先从 SharedAuth 获取，其次从 localStorage
+  // 优先从 SharedAuth 获取
   if (typeof SharedAuth !== 'undefined' && SharedAuth.getToken) {
     return SharedAuth.getToken()
   }
-  return localStorage.getItem('zhihr_access_token')
+  return useAuthStore.getState().token
 }
 
 export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -77,15 +81,21 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
   let response: Response
   try {
     response = await fetch(`${API_BASE}${endpoint}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
     })
   } catch {
     throw new NetworkError()
+  } finally {
+    clearTimeout(timeoutId)
   }
 
   if (response.status === 401 && auth && !skipRefresh) {

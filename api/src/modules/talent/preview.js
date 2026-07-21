@@ -3,6 +3,24 @@ import { OSSClient } from '../../utils/oss.js'
 import { docxToHtml, docToHtml, txtToHtml } from '../../modules/talent_parsers.js'
 import { checkPositionPermission } from './permissions.js'
 
+function sanitizeHtml(html) {
+  if (typeof html !== 'string') return ''
+  // 使用 DOMPurify 风格的消毒，生产环境建议使用 DOMPurify 库
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/<object[\s\S]*?<\/object>/gi, '')
+    .replace(/<embed[\s\S]*?<\/embed>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+    .replace(/(href|src|action|background|formaction)\s*=\s*["']?\s*javascript:/gi, '$1="#"')
+    .replace(/xlink:href\s*=\s*["']?\s*javascript:/gi, 'xlink:href="#"')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/<math[\s\S]*?<\/math>/gi, '')
+}
+
 async function previewAttachment(request, env, corsHeaders, params) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
@@ -40,10 +58,10 @@ async function previewAttachment(request, env, corsHeaders, params) {
     const fileType = attachment.file_type?.toLowerCase()
 
     if (fileType === 'docx') {
-      const html = docxToHtml(arrayBuffer)
+      const html = sanitizeHtml(docxToHtml(arrayBuffer))
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'doc') {
-      const html = docToHtml(arrayBuffer)
+      const html = sanitizeHtml(docToHtml(arrayBuffer))
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else if (fileType === 'pdf') {
       const pdfHeaders = new Headers(corsHeaders)
@@ -51,7 +69,7 @@ async function previewAttachment(request, env, corsHeaders, params) {
       pdfHeaders.set('Content-Disposition', 'inline')
       return new Response(arrayBuffer, { headers: pdfHeaders })
     } else if (fileType === 'txt') {
-      const html = txtToHtml(arrayBuffer)
+      const html = sanitizeHtml(txtToHtml(arrayBuffer))
       return jsonResponse({ success: true, data: { type: 'html', html } }, 200, corsHeaders)
     } else {
       return jsonResponse({ success: false, message: '该文件类型不支持在线预览，请下载后查看' }, 400, corsHeaders)

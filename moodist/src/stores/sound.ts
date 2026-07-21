@@ -25,6 +25,7 @@ interface SoundStore {
   select: (id: string) => void;
   setVolume: (id: string, volume: number) => void;
   shuffle: () => void;
+  shuffleTimeoutId: ReturnType<typeof setTimeout> | null;
   sounds: Record<string, SoundValue>;
   toggleFavorite: (id: string) => void;
   togglePlay: () => void;
@@ -79,16 +80,25 @@ export const useSoundStore = create<SoundStore>()(
       override(newSounds) {
         get().unselectAll();
 
-        const sounds = get().sounds;
+        const currentSounds = get().sounds;
 
-        Object.keys(newSounds).forEach(sound => {
-          if (sounds[sound]) {
-            sounds[sound].isSelected = true;
-            sounds[sound].volume = newSounds[sound];
+        // Build a new object to avoid mutating the existing reference
+        const nextSounds: Record<string, SoundValue> = {};
+
+        Object.keys(currentSounds).forEach(id => {
+          const sound = currentSounds[id];
+          if (newSounds[id] !== undefined) {
+            nextSounds[id] = {
+              ...sound,
+              isSelected: true,
+              volume: newSounds[id],
+            };
+          } else {
+            nextSounds[id] = { ...sound };
           }
         });
 
-        set({ history: null, sounds: { ...sounds } });
+        set({ history: null, sounds: nextSounds });
       },
 
       pause() {
@@ -126,8 +136,15 @@ export const useSoundStore = create<SoundStore>()(
         });
       },
 
+      shuffleTimeoutId: null as ReturnType<typeof setTimeout> | null,
+
       shuffle() {
-        const { sounds } = get();
+        const { sounds, shuffleTimeoutId } = get();
+
+        // Clear any pending shuffle timeout
+        if (shuffleTimeoutId) {
+          clearTimeout(shuffleTimeoutId);
+        }
 
         // Build a new sounds object instead of mutating the existing one
         const ids = Object.keys(sounds);
@@ -155,9 +172,11 @@ export const useSoundStore = create<SoundStore>()(
         set({ locked: true, history: null, isPlaying: false, sounds: nextSounds });
 
         // Delay play to let UI settle and avoid loading all audio files at once
-        setTimeout(() => {
-          set({ isPlaying: true, locked: false });
+        const timeoutId = setTimeout(() => {
+          set({ isPlaying: true, locked: false, shuffleTimeoutId: null });
         }, 100);
+
+        set({ shuffleTimeoutId: timeoutId });
       },
 
       sounds: createInitialSounds(),
@@ -204,14 +223,13 @@ export const useSoundStore = create<SoundStore>()(
           set({ history });
         }
 
-        const ids = Object.keys(sounds);
-
-        ids.forEach(id => {
-          sounds[id].isSelected = false;
-          sounds[id].volume = 0.5;
+        // 不可变更新：构建新对象而非直接修改 state
+        const nextSounds: Record<string, SoundValue> = {};
+        Object.keys(sounds).forEach(id => {
+          nextSounds[id] = { ...sounds[id], isSelected: false, volume: 0.5 };
         });
 
-        set({ sounds });
+        set({ sounds: nextSounds });
       },
     }),
     {

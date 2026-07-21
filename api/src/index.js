@@ -46,6 +46,12 @@ async function handleRequest(request, env, ctx) {
 
 export default {
   async fetch(request, env, ctx) {
-    return await handleRequest(request, env, ctx)
+    try {
+      return await handleRequest(request, env, ctx)
+    } catch (err) {
+      console.error('Unhandled error:', err)
+      const corsHeaders = getCorsHeaders(request, env)
+      return jsonResponse({ success: false, message: '服务器内部错误，请稍后重试' }, 500, corsHeaders)
+    }
   }
 }

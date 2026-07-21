@@ -34,8 +34,18 @@ function ShareHandler() {
 
     if (shareParam) {
       try {
-        const selectedSounds = JSON.parse(decodeURIComponent(shareParam)) as Record<string, number>;
-        if (selectedSounds && Object.keys(selectedSounds).length > 0) {
+        const raw = JSON.parse(decodeURIComponent(shareParam));
+        if (typeof raw !== 'object' || raw === null) return;
+
+        // Validate that all values are numbers
+        const selectedSounds: Record<string, number> = {};
+        for (const [key, value] of Object.entries(raw)) {
+          if (typeof value === 'number' && !Number.isNaN(value)) {
+            selectedSounds[key] = value;
+          }
+        }
+
+        if (Object.keys(selectedSounds).length > 0) {
           override(selectedSounds);
           show('已加载分享的声音选择，点击播放按钮开始播放', 5000);
           // Clean up the URL by removing the share parameter
@@ -79,7 +89,10 @@ export function App() {
 
       if (ctx && !document.hidden) {
         setTimeout(() => {
-          ctx.resume();
+          if (ctx.state === 'closed') {
+            Howler.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          }
+          (Howler.ctx as AudioContext).resume();
         }, 100);
       }
     };

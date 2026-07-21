@@ -133,10 +133,10 @@ async function updateEvaluation(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '没有需要更新的字段' }, 400, corsHeaders)
     }
     fields.push('updated_at = CURRENT_TIMESTAMP')
-    values.push(params.evalId)
+    values.push(params.evalId, params.id)
 
     await env.DB.prepare(
-      `UPDATE talent_interview_evaluations SET ${fields.join(', ')} WHERE id = ?`
+      `UPDATE talent_interview_evaluations SET ${fields.join(', ')} WHERE id = ? AND candidate_id = ?`
     ).bind(...values).run()
 
     const updated = await env.DB.prepare(

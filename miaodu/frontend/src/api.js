@@ -6,7 +6,11 @@ async function request(path, options = {}) {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   })
-  return res.json()
+  try {
+    return await res.json()
+  } catch {
+    throw new Error('服务器响应异常，请稍后重试')
+  }
 }
 
 export function searchBooks(query) {

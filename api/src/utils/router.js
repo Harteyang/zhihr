@@ -157,14 +157,18 @@ function getCorsHeaders(request, env) {
   const origins = env?.ALLOWED_ORIGINS || ''
   const allowedOrigins = origins.split(',').map(o => o.trim()).filter(Boolean)
   const origin = request.headers.get('Origin') || ''
-  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0] || ''
-  return {
-    'Access-Control-Allow-Origin': allowOrigin,
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : ''
+  // 如果 origin 不在白名单中，则不返回 Access-Control-Allow-Origin 头
+  const corsHeaders = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Max-Age': '86400'
+    'Access-Control-Max-Age': '86400',
   }
+  if (allowOrigin) {
+    corsHeaders['Access-Control-Allow-Origin'] = allowOrigin
+  }
+  return corsHeaders
 }
 
 function getClientIp(request) {
@@ -185,7 +189,8 @@ async function checkRateLimit(env, key, maxRequests) {
     })
     return current <= maxRequests
   } catch {
-    return true
+    debugLog('RateLimit', 'KV unavailable, rejecting request for safety')
+    return false
   }
 }
 
@@ -216,7 +221,7 @@ function maskError(error) {
   if (message.includes('no such table')) {
     return '数据库表不存在，请联系管理员'
   }
-  return message || '服务器内部错误，请稍后重试'
+  return '服务器内部错误，请稍后重试'
 }
 
 function parsePagination(url) {

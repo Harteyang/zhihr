@@ -57,15 +57,12 @@ function getTheme() {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 }
 
-// 离屏 Canvas 用于精确测量标签宽度
-const labelCanvas = typeof document !== 'undefined' ? document.createElement('canvas') : null
-const labelCtx = labelCanvas ? labelCanvas.getContext('2d') : null
-
 function measureLabelWidth(text, fontSize, fontWeight = '400') {
   if (!text) return 0
-  if (!labelCtx) return String(text).length * fontSize * 0.65
-  labelCtx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, sans-serif`
-  return labelCtx.measureText(String(text)).width
+  if (typeof document === 'undefined') return String(text).length * fontSize * 0.65
+  const ctx = document.createElement('canvas').getContext('2d')
+  ctx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, sans-serif`
+  return ctx.measureText(String(text)).width
 }
 
 function getNodeRadius(node, showLabels, scale = 1) {

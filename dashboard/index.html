@@ -21,8 +21,10 @@
       })();
     </script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS - 生产环境：使用 `npm run build` 生成本地构建文件，替换 CDN 引用 -->
+    <script nomodule>
+      console.warn('Tailwind CSS requires a build step. Please run the build command to generate production CSS.');
+    </script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -700,7 +702,8 @@
             employeeData: [],
             charts: {},
             fieldMapping: {},
-            rawHeaders: []
+            rawHeaders: [],
+            cachedWorkbook: null // 缓存解析后的工作簿，避免重复读取文件
         };
 
         // ============================================
@@ -921,7 +924,16 @@ function getLocalDateString(d) {
                     .replace(/[点分秒]/g, ':')
                     .replace(/-/g, '/');
 
-                const parsed = new Date(cleaned);
+                // 显式解析 YYYY-MM-DD 格式日期，避免浏览器差异
+                const parts = cleaned.split('/');
+                let parsed;
+                if (parts.length === 3 && parts[0].length === 4) {
+                    // YYYY/MM/DD 格式
+                    parsed = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                } else {
+                    parsed = new Date(cleaned);
+                }
+
                 if (!isNaN(parsed.getTime())) {
                     return getLocalDateString(parsed);
                 }

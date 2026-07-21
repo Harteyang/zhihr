@@ -21,6 +21,7 @@
       })();
     </script>
 
+    <!-- TODO: 生产环境请使用本地构建的 Tailwind CSS -->
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -625,6 +626,7 @@
             const start = formatDate(startDate);
             const end = formatDate(endDate);
 
+            const parsedStart = new Date(start + 'T00:00:00');
             return {
                 project: "PMO工具研发",
                 projectEmoji: "🔥",
@@ -643,13 +645,13 @@
                 weeksColBg: "#FAFBFC",
                 fontFamily: '"LXGW WenKai Mono", monospace',
                 tasks: [
-                    { name: "项目规划", phaseOrder: 1, phaseName: "前期准备", status: "进行中", start: start, end: new Date(new Date(start).setDate(new Date(start).getDate() + 14)).toISOString().slice(0,10) },
-                    { name: "需求分析", phaseOrder: 1, phaseName: "前期准备", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 7)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 21)).toISOString().slice(0,10) },
-                    { name: "系统设计", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 14)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 35)).toISOString().slice(0,10) },
-                    { name: "功能开发", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 28)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 70)).toISOString().slice(0,10) },
-                    { name: "系统测试", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 56)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 84)).toISOString().slice(0,10) },
-                    { name: "上线部署", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 77)).toISOString().slice(0,10), end: new Date(new Date(start).setDate(new Date(start).getDate() + 91)).toISOString().slice(0,10) },
-                    { name: "项目验收", phaseOrder: 4, phaseName: "收尾阶段", status: "未开始", start: new Date(new Date(start).setDate(new Date(start).getDate() + 84)).toISOString().slice(0,10), end: end }
+                    { name: "项目规划", phaseOrder: 1, phaseName: "前期准备", status: "进行中", start: start, end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 14)).toISOString().slice(0,10) },
+                    { name: "需求分析", phaseOrder: 1, phaseName: "前期准备", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 7)).toISOString().slice(0,10), end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 21)).toISOString().slice(0,10) },
+                    { name: "系统设计", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 14)).toISOString().slice(0,10), end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 35)).toISOString().slice(0,10) },
+                    { name: "功能开发", phaseOrder: 2, phaseName: "开发阶段", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 28)).toISOString().slice(0,10), end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 70)).toISOString().slice(0,10) },
+                    { name: "系统测试", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 56)).toISOString().slice(0,10), end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 84)).toISOString().slice(0,10) },
+                    { name: "上线部署", phaseOrder: 3, phaseName: "测试阶段", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 77)).toISOString().slice(0,10), end: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 91)).toISOString().slice(0,10) },
+                    { name: "项目验收", phaseOrder: 4, phaseName: "收尾阶段", status: "未开始", start: new Date(new Date(parsedStart).setDate(parsedStart.getDate() + 84)).toISOString().slice(0,10), end: end }
                 ]
             };
         }
@@ -767,7 +769,7 @@
         }
 
         // 工具函数
-        function parseDate(str) { return new Date(str); }
+        function parseDate(str) { return new Date(str + 'T00:00:00'); }
         function getDays(start, end) { return Math.ceil((parseDate(end) - parseDate(start)) / 86400000) + 1; }
         function getWeekDates() {
             // 项目周期由 data.start 和 data.end 决定

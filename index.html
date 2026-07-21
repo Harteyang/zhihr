@@ -21,8 +21,10 @@
     })();
   </script>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS - 生产环境：使用 `npm run build` 生成本地构建文件，替换 CDN 引用 -->
+  <script nomodule>
+    console.warn('Tailwind CSS requires a build step. Please run the build command to generate production CSS.');
+  </script>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -883,19 +885,37 @@
         const time = new Date(fb.created_at || fb.time);
         const timeStr = `${time.getFullYear()}年${time.getMonth() + 1}月${time.getDate()}日`;
 
-        item.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden">
-            <div class="flex items-center gap-3 sm:gap-4 shrink-0">
-              <span class="text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap">${fb.name}</span>
-              <span class="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">${timeStr}</span>
-              <span class="px-2 py-1 text-xs rounded-full ${statusColors[fb.status] || statusColors['pending']} whitespace-nowrap">${statusTexts[fb.status] || statusTexts['pending']}</span>
-            </div>
-            <div class="text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden">
-              <span class="block truncate">${fb.content}</span>
-            </div>
-          </div>
-        `;
+        const inner = document.createElement('div');
+        inner.className = 'flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden';
 
+        const leftGroup = document.createElement('div');
+        leftGroup.className = 'flex items-center gap-3 sm:gap-4 shrink-0';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap';
+        nameSpan.textContent = fb.name;
+        leftGroup.appendChild(nameSpan);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap';
+        timeSpan.textContent = timeStr;
+        leftGroup.appendChild(timeSpan);
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = `px-2 py-1 text-xs rounded-full ${statusColors[fb.status] || statusColors['pending']} whitespace-nowrap`;
+        statusSpan.textContent = statusTexts[fb.status] || statusTexts['pending'];
+        leftGroup.appendChild(statusSpan);
+
+        const rightGroup = document.createElement('div');
+        rightGroup.className = 'text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden';
+        const contentSpan = document.createElement('span');
+        contentSpan.className = 'block truncate';
+        contentSpan.textContent = fb.content;
+        rightGroup.appendChild(contentSpan);
+
+        inner.appendChild(leftGroup);
+        inner.appendChild(rightGroup);
+        item.appendChild(inner);
         board.appendChild(item);
       });
     }
@@ -946,19 +966,37 @@
         const item = document.createElement('div');
         item.className = 'bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3';
 
-        item.innerHTML = `
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden">
-            <div class="flex items-center gap-3 sm:gap-4 shrink-0">
-              <span class="text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap">${fb.name}</span>
-              <span class="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">${fb.time}</span>
-              <span class="px-2 py-1 text-xs rounded-full ${statusColors[fb.status]} whitespace-nowrap">${statusTexts[fb.status]}</span>
-            </div>
-            <div class="text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden">
-              <span class="block truncate">${fb.content}</span>
-            </div>
-          </div>
-        `;
+        const inner = document.createElement('div');
+        inner.className = 'flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 overflow-hidden';
 
+        const leftGroup = document.createElement('div');
+        leftGroup.className = 'flex items-center gap-3 sm:gap-4 shrink-0';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'text-sm font-medium text-slate-800 dark:text-slate-100 whitespace-nowrap';
+        nameSpan.textContent = fb.name;
+        leftGroup.appendChild(nameSpan);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap';
+        timeSpan.textContent = fb.time;
+        leftGroup.appendChild(timeSpan);
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = `px-2 py-1 text-xs rounded-full ${statusColors[fb.status]} whitespace-nowrap`;
+        statusSpan.textContent = statusTexts[fb.status];
+        leftGroup.appendChild(statusSpan);
+
+        const rightGroup = document.createElement('div');
+        rightGroup.className = 'text-sm text-slate-600 dark:text-slate-300 flex-1 min-w-0 overflow-hidden';
+        const contentSpan = document.createElement('span');
+        contentSpan.className = 'block truncate';
+        contentSpan.textContent = fb.content;
+        rightGroup.appendChild(contentSpan);
+
+        inner.appendChild(leftGroup);
+        inner.appendChild(rightGroup);
+        item.appendChild(inner);
         board.appendChild(item);
       });
     }
@@ -967,6 +1005,8 @@
     let captchaAnswer = 0;
 
     // 生成验证码
+    // 注意：这是一个基础实现的简单算术验证码，仅用于防止基本自动化提交。
+    // 生产环境应考虑使用更安全的验证码方案（如 reCAPTCHA）。
     function generateCaptcha() {
       const num1 = Math.floor(Math.random() * 10) + 1;
       const num2 = Math.floor(Math.random() * 10) + 1;
@@ -1032,8 +1072,8 @@
 
       // 验证验证码
       const captchaInput = document.getElementById('captchaInput');
-      const userAnswer = parseInt(captchaInput.value);
-      if (userAnswer !== captchaAnswer) {
+      const userAnswer = parseInt(captchaInput.value, 10);
+      if (isNaN(userAnswer) || userAnswer !== captchaAnswer) {
         document.getElementById('captchaError').classList.remove('hidden');
         generateCaptcha();
         return;

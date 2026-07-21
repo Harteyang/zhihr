@@ -68,7 +68,7 @@ async function downloadTemplate(request, env, corsHeaders) {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename=talent-pool-template.xlsx',
-        'Access-Control-Allow-Origin': corsHeaders['Access-Control-Allow-Origin'] || '*'
+        ...corsHeaders
       }
     })
   } catch (err) {

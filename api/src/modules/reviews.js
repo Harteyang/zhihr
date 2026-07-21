@@ -1,4 +1,4 @@
-import { debugLog, generateId, sanitizeInput, jsonResponse, maskError, parsePagination, getAuthenticatedUser } from '../utils/router.js'
+import { debugLog, generateId, sanitizeInput, jsonResponse, maskError, parsePagination, getAuthUser } from '../utils/router.js'
 
 export const routes = [
   { method: 'GET', path: '/api/reviews', handler: handleGetReviews },
@@ -10,9 +10,13 @@ export const routes = [
   { method: 'DELETE', path: '/api/reviews/:id', handler: handleDeleteReview },
 ]
 
+function safeParse(jsonStr) {
+  try { return JSON.parse(jsonStr) } catch { return null }
+}
+
 async function handleGetReviews(request, env, corsHeaders) {
   debugLog('Reviews', 'handleGetReviews called')
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     debugLog('Reviews', 'Auth failed')
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
@@ -60,7 +64,7 @@ async function handleGetReviews(request, env, corsHeaders) {
         id: r.id,
         date: r.review_date,
         title: r.title,
-        content: r.content ? JSON.parse(r.content) : null,
+        content: r.content ? safeParse(r.content) : null,
         createdAt: r.created_at,
         updatedAt: r.updated_at
       })),
@@ -74,7 +78,7 @@ async function handleGetReviews(request, env, corsHeaders) {
 
 async function handleGetReviewById(request, env, corsHeaders, id) {
   debugLog('Reviews', 'handleGetReviewById called:', id)
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
   }
@@ -93,7 +97,7 @@ async function handleGetReviewById(request, env, corsHeaders, id) {
         id: review.id,
         date: review.review_date,
         title: review.title,
-        content: review.content ? JSON.parse(review.content) : null,
+        content: review.content ? safeParse(review.content) : null,
         createdAt: review.created_at,
         updatedAt: review.updated_at
       }
@@ -105,7 +109,7 @@ async function handleGetReviewById(request, env, corsHeaders, id) {
 
 async function handleCreateReview(request, env, corsHeaders) {
   debugLog('Reviews', 'handleCreateReview called')
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     debugLog('Reviews', 'Auth failed')
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
@@ -122,31 +126,9 @@ async function handleCreateReview(request, env, corsHeaders) {
     }
 
     const db = env.DB
-    const reviewId = body.id || generateId()
+    // 忽略客户端传递的 id，始终使用服务端生成的 ID
+    const reviewId = generateId()
     debugLog('Reviews', 'reviewId:', reviewId, 'date:', review_date)
-
-    if (body.id) {
-      const existing = await db.prepare('SELECT id FROM reviews WHERE id = ? AND user_id = ?').bind(body.id, user.userId).first()
-      if (existing) {
-        debugLog('Reviews', 'Found existing by id, updating')
-        await db.prepare('UPDATE reviews SET title = ?, content = ?, review_date = ?, updated_at = ? WHERE id = ? AND user_id = ?')
-          .bind(title, contentStr, review_date, new Date().toISOString(), body.id, user.userId).run()
-        const review = await db.prepare('SELECT * FROM reviews WHERE id = ?').bind(body.id).first()
-        debugLog('Reviews', 'Update complete')
-        return jsonResponse({
-          success: true,
-          message: '更新成功',
-          data: {
-            id: review.id,
-            date: review.review_date,
-            title: review.title,
-            content: review.content ? JSON.parse(review.content) : null,
-            createdAt: review.created_at,
-            updatedAt: review.updated_at
-          }
-        }, 200, corsHeaders)
-      }
-    }
 
     const existingByDate = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND review_date = ? ORDER BY updated_at DESC LIMIT 1').bind(user.userId, review_date).first()
     if (existingByDate) {
@@ -162,7 +144,7 @@ async function handleCreateReview(request, env, corsHeaders) {
           id: review.id,
           date: review.review_date,
           title: review.title,
-          content: review.content ? JSON.parse(review.content) : null,
+          content: review.content ? safeParse(review.content) : null,
           createdAt: review.created_at,
           updatedAt: review.updated_at
         }
@@ -183,7 +165,7 @@ async function handleCreateReview(request, env, corsHeaders) {
         id: review.id,
         date: review.review_date,
         title: review.title,
-        content: review.content ? JSON.parse(review.content) : null,
+        content: review.content ? safeParse(review.content) : null,
         createdAt: review.created_at,
         updatedAt: review.updated_at
       }
@@ -196,7 +178,7 @@ async function handleCreateReview(request, env, corsHeaders) {
 
 async function handleUpdateReviewByDate(request, env, corsHeaders) {
   debugLog('Reviews', 'handleUpdateReviewByDate called')
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
   }
@@ -251,7 +233,7 @@ async function handleUpdateReviewByDate(request, env, corsHeaders) {
         id: review.id,
         date: review.review_date,
         title: review.title,
-        content: review.content ? JSON.parse(review.content) : null,
+        content: review.content ? safeParse(review.content) : null,
         createdAt: review.created_at,
         updatedAt: review.updated_at
       }
@@ -263,7 +245,7 @@ async function handleUpdateReviewByDate(request, env, corsHeaders) {
 
 async function handleUpdateReview(request, env, corsHeaders, id) {
   debugLog('Reviews', 'handleUpdateReview called:', id)
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
   }
@@ -293,9 +275,18 @@ async function handleUpdateReview(request, env, corsHeaders, id) {
       params.push(typeof updates.content === 'string' ? updates.content : JSON.stringify(updates.content))
     }
     if (updates.review_date !== undefined) {
+      // 检查新日期是否与其他已有复盘记录冲突
+      const existingByDate = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND review_date = ? AND id != ?').bind(user.userId, updates.review_date, id).first()
+      if (existingByDate) {
+        return jsonResponse({ success: false, message: '该日期已存在复盘记录' }, 409, corsHeaders)
+      }
       fields.push('review_date = ?')
       params.push(updates.review_date)
     } else if (updates.date !== undefined) {
+      const existingByDate = await db.prepare('SELECT id FROM reviews WHERE user_id = ? AND review_date = ? AND id != ?').bind(user.userId, updates.date, id).first()
+      if (existingByDate) {
+        return jsonResponse({ success: false, message: '该日期已存在复盘记录' }, 409, corsHeaders)
+      }
       fields.push('review_date = ?')
       params.push(updates.date)
     }
@@ -320,7 +311,7 @@ async function handleUpdateReview(request, env, corsHeaders, id) {
         id: review.id,
         date: review.review_date,
         title: review.title,
-        content: review.content ? JSON.parse(review.content) : null,
+        content: review.content ? safeParse(review.content) : null,
         createdAt: review.created_at,
         updatedAt: review.updated_at
       }
@@ -332,7 +323,7 @@ async function handleUpdateReview(request, env, corsHeaders, id) {
 
 async function handleDeleteReview(request, env, corsHeaders, id) {
   debugLog('Reviews', 'handleDeleteReview called:', id)
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
   }
@@ -356,7 +347,7 @@ async function handleDeleteReview(request, env, corsHeaders, id) {
 
 async function handleSyncReviews(request, env, corsHeaders) {
   debugLog('Sync', 'handleSyncReviews called')
-  const user = await getAuthenticatedUser(request, env)
+  const user = await getAuthUser(request, env)
   if (!user) {
     debugLog('Sync', 'Auth failed')
     return jsonResponse({ success: false, message: '未授权' }, 401, corsHeaders)
@@ -371,6 +362,11 @@ async function handleSyncReviews(request, env, corsHeaders) {
     if (!Array.isArray(clientReviews)) {
       debugLog('Sync', 'Invalid data format')
       return jsonResponse({ success: false, message: '无效的数据格式' }, 400, corsHeaders)
+    }
+
+    // 限制最大同步数量
+    if (clientReviews.length > 100) {
+      return jsonResponse({ success: false, message: '同步数据不能超过 100 条' }, 400, corsHeaders)
     }
 
     const db = env.DB
@@ -395,7 +391,7 @@ async function handleSyncReviews(request, env, corsHeaders) {
         )
         synced++
       } else {
-        const clientUpdated = new Date(review.updatedAt || 0).getTime()
+        const clientUpdated = review.updatedAt ? new Date(review.updatedAt).getTime() : 0
         const serverUpdated = new Date(serverReview.updated_at).getTime()
 
         if (clientUpdated > serverUpdated) {
@@ -422,7 +418,7 @@ async function handleSyncReviews(request, env, corsHeaders) {
         id: r.id,
         date: r.review_date,
         title: r.title,
-        content: r.content ? JSON.parse(r.content) : null,
+        content: r.content ? safeParse(r.content) : null,
         createdAt: r.created_at,
         updatedAt: r.updated_at
       })),

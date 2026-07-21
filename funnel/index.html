@@ -22,6 +22,7 @@
       })();
     </script>
 
+    <!-- TODO: 生产环境请使用本地构建的 Tailwind CSS -->
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -952,7 +953,7 @@
                 data: data.data.map((d, idx) => ({
                   value: (d.value / maxValue) * 100,
                   name: d.name,
-                  itemStyle: { color: d.color }
+                  itemStyle: { color: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(d.color) ? d.color : '#5470c6' }
                 }))
               }]
             };
@@ -1308,7 +1309,7 @@
                 data: funnelData.data.map(d => ({
                   value: (d.value / maxValue) * 100,
                   name: d.name,
-                  itemStyle: { color: d.color }
+                  itemStyle: { color: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(d.color) ? d.color : '#5470c6' }
                 }))
               }]
             };

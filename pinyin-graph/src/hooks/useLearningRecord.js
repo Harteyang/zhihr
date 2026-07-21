@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 const STORAGE_KEY = 'pinyin-graph-learning-record'
 
@@ -16,12 +16,16 @@ export default function useLearningRecord() {
       return []
     }
   })
+  const cancelledRef = useRef(false)
 
   // 持久化
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
     } catch { /* ignore */ }
+    return () => {
+      cancelledRef.current = true
+    }
   }, [records])
 
   // 添加一条记录

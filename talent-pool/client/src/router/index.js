@@ -23,6 +23,17 @@ const router = createRouter({
   routes
 })
 
+function isTokenExpired(token) {
+  try {
+    // JWT 使用 URL-safe base64，需要先转换为标准 base64
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
 router.beforeEach((to, _from, next) => {
   if (to.meta.public) {
     return next()
@@ -30,7 +41,10 @@ router.beforeEach((to, _from, next) => {
 
   const authStore = useAuthStore()
 
-  if (!authStore.isLoggedIn) {
+  if (!authStore.isLoggedIn || isTokenExpired(authStore.token)) {
+    if (isTokenExpired(authStore.token)) {
+      authStore.logout()
+    }
     return next('/login')
   }
 

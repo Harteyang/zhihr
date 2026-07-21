@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AuthState } from '@/types/auth'
+import type { AuthState, AuthUser } from '@/types/auth'
 import {
   initSharedAuth,
   onAuthEvent,
@@ -13,7 +13,25 @@ import {
 } from '@/lib/shared-auth-bridge'
 import { useReviewsStore } from './reviews'
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+// 内存中的 refreshToken（不在 Zustand store 中持久化）
+// 同时使用 sessionStorage 备份，以支持页面刷新
+const REFRESH_TOKEN_KEY = 'zhihr_refresh_token'
+let _refreshToken: string | null = null
+
+export function getRefreshToken() {
+  return _refreshToken
+}
+
+export function setRefreshToken(token: string | null) {
+  _refreshToken = token
+  if (token) {
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, token)
+  } else {
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+  }
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
   userId: null,
   username: null,
   token: null,
@@ -21,7 +39,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isModalOpen: false,
   modalTab: 'login',
 
-  setAuth: (user) => {
+  setAuth: (user: AuthUser) => {
+    if (user.refreshToken) {
+      setRefreshToken(user.refreshToken)
+    }
     set({
       userId: user.userId,
       username: user.username,
@@ -31,6 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   clearAuth: () => {
+    setRefreshToken(null)
     set({
       userId: null,
       username: null,
@@ -59,10 +81,13 @@ export function initAuthFromSharedAuth() {
     const token = getSharedAuthToken()
     const user = getSharedAuthUser()
     if (token && user) {
+      // 从 sessionStorage 恢复 refreshToken
+      const savedRefreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY)
       useAuthStore.getState().setAuth({
         userId: user.userId,
         username: user.username,
         token,
+        refreshToken: savedRefreshToken || undefined,
       })
     }
   }
@@ -74,6 +99,7 @@ export function initAuthFromSharedAuth() {
         userId: data.userId,
         username: data.username,
         token: data.token || getSharedAuthToken() || '',
+        refreshToken: data.refreshToken || undefined,
       })
     }
   })
@@ -88,10 +114,12 @@ export function initAuthFromSharedAuth() {
       const token = getSharedAuthToken()
       const user = getSharedAuthUser()
       if (token && user) {
+        const savedRefreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY)
         useAuthStore.getState().setAuth({
           userId: user.userId,
           username: user.username,
           token,
+          refreshToken: savedRefreshToken || undefined,
         })
       }
     } else {

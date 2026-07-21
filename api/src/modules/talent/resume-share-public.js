@@ -22,10 +22,13 @@ function sanitizeHtml(html) {
     .replace(/<object[\s\S]*?<\/object>/gi, '')
     .replace(/<embed[\s\S]*?<\/embed>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+    .replace(/<math[\s\S]*?<\/math>/gi, '')
     .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
     .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
     .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
-    .replace(/(href|src)\s*=\s*["']?\s*javascript:/gi, '$1="#"')
+    .replace(/(href|src|action|background|formaction)\s*=\s*["']?\s*javascript:/gi, '$1="#"')
+    .replace(/xlink:href\s*=\s*["']?\s*javascript:/gi, 'xlink:href="#"')
 }
 
 /**

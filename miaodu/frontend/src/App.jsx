@@ -39,6 +39,7 @@ export default function App() {
 
     try {
       const searchFn = type === 'knowledge' ? api.searchKnowledge : api.searchBooks
+      if (currentId !== searchIdRef.current) return
       const data = await searchFn(q)
 
       if (currentId !== searchIdRef.current) return

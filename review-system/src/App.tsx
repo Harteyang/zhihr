@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
 import { useReviewsStore } from '@/stores/reviews'
@@ -20,11 +20,22 @@ export default function App() {
   const removeToast = useToastStore(s => s.remove)
 
   // 登录后自动同步：先同步本地数据到云端，再拉取云端数据合并
+  const syncingRef = useRef(false)
+  const mountedRef = useRef(true)
+
   useEffect(() => {
-    if (isAuthenticated) {
-      syncLocalToCloud().then(() => {
-        loadFromCloud()
-      })
+    return () => { mountedRef.current = false }
+  }, [])
+
+  useEffect(() => {
+    if (isAuthenticated && !syncingRef.current) {
+      syncingRef.current = true
+      syncLocalToCloud()
+        .then(() => {
+          if (mountedRef.current) loadFromCloud()
+        })
+        .catch(console.error)
+        .finally(() => { if (mountedRef.current) syncingRef.current = false })
     }
   }, [isAuthenticated])
 

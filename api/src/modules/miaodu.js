@@ -3,43 +3,46 @@ import { debugLog, jsonResponse } from '../utils/router.js'
 // ========= 数据库函数 =========
 
 async function searchBookByTitle(db, query) {
-  const q = query.replace(/'/g, "''")
-  const sql = `SELECT * FROM miaodu_books WHERE title LIKE '%${q}%' ORDER BY created_at DESC LIMIT 20`
-  const books = await db.prepare(sql).all()
+  const books = await db.prepare(
+    'SELECT * FROM miaodu_books WHERE title LIKE ? ORDER BY created_at DESC LIMIT 20'
+  ).bind(`%${query}%`).all()
   if (!books.results.length) return []
 
   const result = []
   for (const book of books.results) {
-    const kpSql = `SELECT * FROM miaodu_knowledge_points WHERE book_id = ${book.id} ORDER BY sort_order`
-    const kps = await db.prepare(kpSql).all()
+    const kps = await db.prepare(
+      'SELECT * FROM miaodu_knowledge_points WHERE book_id = ? ORDER BY sort_order'
+    ).bind(book.id).all()
     result.push({ ...book, knowledge_points: kps.results })
   }
   return result
 }
 
 async function searchKnowledgeByKeyword(db, keyword) {
-  const kw = keyword.replace(/'/g, "''")
-  const sql = `
+  const kw = `%${keyword}%`
+  const kps = await db.prepare(`
     SELECT kp.*, b.title AS book_title, b.author AS book_author,
            b.baidu_pan_url, b.baidu_pan_code, b.mlook_link
     FROM miaodu_knowledge_points kp
     JOIN miaodu_books b ON kp.book_id = b.id
-    WHERE kp.title LIKE '%${kw}%' OR kp.content LIKE '%${kw}%'
+    WHERE kp.title LIKE ? OR kp.content LIKE ?
     ORDER BY b.title, kp.sort_order
     LIMIT 30
-  `
-  const kps = await db.prepare(sql).all()
+  `).bind(kw, kw).all()
   return kps.results
 }
 
 async function createSubmission(db, data) {
-  const title = data.title.replace(/'/g, "''")
-  const type = data.type.replace(/'/g, "''")
-  const searchQuery = (data.searchQuery || '').replace(/'/g, "''")
-  const mlookLink = data.mlookLink ? data.mlookLink.replace(/'/g, "''") : null
-  const doubanLink = data.doubanLink ? data.doubanLink.replace(/'/g, "''") : null
-  const sql = `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link, douban_link) VALUES ('${title}', '${type}', '${searchQuery}', 'queued', ${mlookLink ? "'" + mlookLink + "'" : 'NULL'}, ${doubanLink ? "'" + doubanLink + "'" : 'NULL'}) RETURNING id`
-  const result = await db.prepare(sql).first()
+  const result = await db.prepare(
+    `INSERT INTO miaodu_submissions (title, type, search_query, status, mlook_link, douban_link)
+     VALUES (?, ?, ?, 'queued', ?, ?) RETURNING id`
+  ).bind(
+    data.title,
+    data.type,
+    data.searchQuery || '',
+    data.mlookLink || null,
+    data.doubanLink || null
+  ).first()
   return result
 }
 
@@ -147,7 +150,7 @@ async function handleGetSubmissionStatus(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无效的 ID' }, 200, corsHeaders)
     }
 
-    const submission = await env.DB.prepare(`SELECT * FROM miaodu_submissions WHERE id = ?`).bind(id).first()
+    const submission = await env.DB.prepare('SELECT * FROM miaodu_submissions WHERE id = ?').bind(id).first()
     if (!submission) {
       return jsonResponse({ success: false, message: '未找到该提交记录' }, 200, corsHeaders)
     }
@@ -163,11 +166,13 @@ async function handleGetAllSubmissions(request, env, corsHeaders) {
   try {
     const url = new URL(request.url)
     const status = url.searchParams.get('status') || ''
-    let sql = `SELECT * FROM miaodu_submissions ORDER BY created_at DESC`
+    let sql = 'SELECT * FROM miaodu_submissions ORDER BY created_at DESC'
+    let params = []
     if (status) {
-      sql = `SELECT * FROM miaodu_submissions WHERE status = '${status.replace(/'/g, "''")}' ORDER BY created_at DESC`
+      sql = 'SELECT * FROM miaodu_submissions WHERE status = ? ORDER BY created_at DESC'
+      params = [status]
     }
-    const result = await env.DB.prepare(sql).all()
+    const result = await env.DB.prepare(sql).bind(...params).all()
     return jsonResponse({ submissions: result.results }, 200, corsHeaders)
   } catch (err) {
     console.error('handleGetAllSubmissions error:', err)
@@ -194,9 +199,9 @@ async function handleUpdateSubmission(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无效的状态值' }, 200, corsHeaders)
     }
 
-    const errMsg = error_message ? error_message.replace(/'/g, "''") : null
-    const sql = `UPDATE miaodu_submissions SET status = '${status}', error_message = ${errMsg ? "'" + errMsg + "'" : 'NULL'}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
-    await env.DB.prepare(sql).run()
+    await env.DB.prepare(
+      'UPDATE miaodu_submissions SET status = ?, error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    ).bind(status, error_message || null, id).run()
 
     return jsonResponse({ success: true, message: '状态已更新' }, 200, corsHeaders)
   } catch (err) {
@@ -212,20 +217,16 @@ async function handleAddBook(request, env, corsHeaders) {
       return jsonResponse({ success: false, message: '书名不能为空' }, 200, corsHeaders)
     }
 
-    const title = body.title.replace(/'/g, "''")
-    const author = body.author ? `'${body.author.replace(/'/g, "''")}'` : 'NULL'
-    const sql = `INSERT INTO miaodu_books (title, author, status) VALUES ('${title}', ${author}, 'completed') RETURNING id`
-    const bookResult = await env.DB.prepare(sql).first()
+    const bookResult = await env.DB.prepare(
+      'INSERT INTO miaodu_books (title, author, status) VALUES (?, ?, ?) RETURNING id'
+    ).bind(body.title, body.author || null, 'completed').first()
 
     if (body.knowledge_points?.length) {
       for (let i = 0; i < body.knowledge_points.length; i++) {
         const kp = body.knowledge_points[i]
-        const chapter = (kp.chapter || '').replace(/'/g, "''")
-        const kpTitle = (kp.title || '').replace(/'/g, "''")
-        const content = (kp.content || '').replace(/'/g, "''")
         await env.DB.prepare(
-          `INSERT INTO miaodu_knowledge_points (book_id, chapter, level, title, content, sort_order) VALUES (${bookResult.id}, '${chapter}', ${kp.level || 3}, '${kpTitle}', '${content}', ${i})`
-        ).run()
+          'INSERT INTO miaodu_knowledge_points (book_id, chapter, level, title, content, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(bookResult.id, kp.chapter || '', kp.level || 3, kp.title || '', kp.content || '', i).run()
       }
     }
 
@@ -255,16 +256,18 @@ async function handleBatchSubmit(request, env, corsHeaders) {
     const insertedIds = []
 
     for (const book of books) {
-      const title = book.title.replace(/'/g, "''")
-      const author = book.author ? `'${book.author.replace(/'/g, "''")}'` : 'NULL'
-      const isbn = book.isbn ? `'${book.isbn.replace(/'/g, "''")}'` : 'NULL'
-      const doubanRate = book.douban_rate || null
-      const panUrl = book.baidu_pan_url ? `'${book.baidu_pan_url.replace(/'/g, "''")}'` : 'NULL'
-      const panCode = book.baidu_pan_code ? `'${book.baidu_pan_code.replace(/'/g, "''")}'` : 'NULL'
-      const mlookLink = book.mlook_link ? `'${book.mlook_link.replace(/'/g, "''")}'` : 'NULL'
-
-      const sql = `INSERT INTO miaodu_books (title, author, isbn, douban_rate, baidu_pan_url, baidu_pan_code, mlook_link, status) VALUES ('${title}', ${author}, ${isbn}, ${doubanRate}, ${panUrl}, ${panCode}, ${mlookLink}, 'completed') RETURNING id`
-      const result = await env.DB.prepare(sql).first()
+      const result = await env.DB.prepare(
+        'INSERT INTO miaodu_books (title, author, isbn, douban_rate, baidu_pan_url, baidu_pan_code, mlook_link, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id'
+      ).bind(
+        book.title,
+        book.author || null,
+        book.isbn || null,
+        book.douban_rate || null,
+        book.baidu_pan_url || null,
+        book.baidu_pan_code || null,
+        book.mlook_link || null,
+        'completed'
+      ).first()
       insertedIds.push((result && result.id) || 0)
     }
 
@@ -280,20 +283,17 @@ async function handleBatchSubmit(request, env, corsHeaders) {
       const bookId = bookTitleMap[bookTitle]
       if (!bookId) continue
 
-      const chapter = (kp.chapter || '').replace(/'/g, "''")
-      const kpTitle = (kp.title || '').replace(/'/g, "''")
-      const content = (kp.content || '').replace(/'/g, "''")
       await env.DB.prepare(
-        `INSERT INTO miaodu_knowledge_points (book_id, chapter, level, title, content, sort_order) VALUES (${bookId}, '${chapter}', ${kp.level || 3}, '${kpTitle}', '${content}', ${kp.sort_order || 0})`
-      ).run()
+        'INSERT INTO miaodu_knowledge_points (book_id, chapter, level, title, content, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(bookId, kp.chapter || '', kp.level || 3, kp.title || '', kp.content || '', kp.sort_order || 0).run()
     }
 
     // 标记提交为完成
     if (submissionIds.length) {
       for (const id of submissionIds) {
         await env.DB.prepare(
-          `UPDATE miaodu_submissions SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
-        ).run()
+          'UPDATE miaodu_submissions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+        ).bind('completed', id).run()
       }
     }
 

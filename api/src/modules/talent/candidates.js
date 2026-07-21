@@ -213,7 +213,7 @@ async function checkDuplicate(request, env, corsHeaders) {
        WHERE name = ?
        ORDER BY created_at DESC
        LIMIT 50`
-    ).bind(rawName.trim()).all()
+    ).bind(normalizedName).all()
 
     const matches = (rows.results || []).filter(c => normalizePhone(c.phone) === normalizedPhone)
     const found = matches.length > 0
@@ -250,7 +250,7 @@ async function createCandidate(request, env, corsHeaders) {
       INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      body.name.trim(), body.phone || null, body.email || null, body.position.trim(),
+      normalizeName(body.name), body.phone || null, body.email || null, body.position.trim(),
       skillsJson, body.education || null, body.experience_years || null,
       body.status || 'to_recommend', body.source || null, body.summary || null, user.userId
     ).run()
@@ -415,7 +415,7 @@ async function createCandidateFromParse(env, aiResult, task, createdBy) {
     INSERT INTO talent_candidates (name, phone, email, position, skills, education, experience_years, status, source, summary, created_by)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'to_recommend', ?, ?, ?)
   `).bind(
-    String(aiResult.name).trim(),
+    normalizeName(String(aiResult.name)),
     aiResult.phone || null,
     aiResult.email || null,
     aiResult.position ? String(aiResult.position).trim() : null,

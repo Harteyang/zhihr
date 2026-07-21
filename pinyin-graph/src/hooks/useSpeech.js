@@ -78,6 +78,8 @@ export default function useSpeech() {
   const currentVoiceRef = useRef(null)
   const retryCountRef = useRef(0)
   const timeoutRef = useRef(null)
+  const retryTimeoutRef = useRef(null)
+  const speakDelayTimeoutRef = useRef(null)
   const [voices, setVoices] = useState([])
   const [currentVoice, setCurrentVoice] = useState(null)
   const [speaking, setSpeaking] = useState(false)
@@ -110,6 +112,14 @@ export default function useSpeech() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+        retryTimeoutRef.current = null
+      }
+      if (speakDelayTimeoutRef.current) {
+        clearTimeout(speakDelayTimeoutRef.current)
+        speakDelayTimeoutRef.current = null
+      }
     }
   }, [supported, loadVoices])
 
@@ -125,6 +135,14 @@ export default function useSpeech() {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
+    if (speakDelayTimeoutRef.current) {
+      clearTimeout(speakDelayTimeoutRef.current)
+      speakDelayTimeoutRef.current = null
     }
   }, [])
 
@@ -165,7 +183,7 @@ export default function useSpeech() {
         if (fallbackVoice && fallbackVoice.voiceURI !== (currentVoiceRef.current?.voiceURI)) {
           currentVoiceRef.current = fallbackVoice
           setCurrentVoice(fallbackVoice)
-          setTimeout(() => speak(text), 100)
+          retryTimeoutRef.current = setTimeout(() => speak(text), 100)
         }
       }
     }
@@ -184,7 +202,7 @@ export default function useSpeech() {
         window.speechSynthesis.cancel()
       }
 
-      setTimeout(() => {
+      speakDelayTimeoutRef.current = setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(text)
         utterance.lang = 'zh-CN'
         utterance.rate = Math.max(0.1, Math.min(2, DEFAULT_RATE))

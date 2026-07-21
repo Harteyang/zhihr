@@ -15,7 +15,6 @@ function getCoverUrl(doubanLink) {
 
 export default function BookList({ onSearchBook }) {
   const [allBooks, setAllBooks] = useState([])
-  const [displayedBooks, setDisplayedBooks] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -57,10 +56,6 @@ export default function BookList({ onSearchBook }) {
     loadBooks(1)
   }, [loadBooks])
 
-  useEffect(() => {
-    setDisplayedBooks(allBooks)
-  }, [allBooks])
-
   const handleNextPage = () => {
     const nextPage = page + 1
     setPage(nextPage)
@@ -90,7 +85,7 @@ export default function BookList({ onSearchBook }) {
     )
   }
 
-  if (!displayedBooks.length) {
+  if (!allBooks.length) {
     return null
   }
 
@@ -108,7 +103,7 @@ export default function BookList({ onSearchBook }) {
 
       {/* 书籍网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedBooks.map((book) => {
+        {allBooks.map((book) => {
           const coverUrl = getCoverUrl(book.douban_link)
           return (
           <div
@@ -209,7 +204,7 @@ export default function BookList({ onSearchBook }) {
       )}
 
       {/* 已加载全部 */}
-      {!pagination?.hasMore && displayedBooks.length > 0 && (
+      {!pagination?.hasMore && allBooks.length > 0 && (
         <p className="text-center text-sm text-gray-400 mt-8">
           — 已加载全部 {pagination?.total || ''} 本电子书 —
         </p>
