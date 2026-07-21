@@ -42,7 +42,7 @@ function sanitizeHtml(html) {
 async function getResumeShareInfo(request, env, corsHeaders, params) {
   try {
     const link = await env.DB.prepare(
-      'SELECT id, candidate_id, created_at FROM talent_resume_shares WHERE token = ?'
+      'SELECT id, candidate_id, screener_name, created_at FROM talent_resume_shares WHERE token = ?'
     ).bind(params.token).first()
     if (!link) {
       return jsonResponse({ success: false, message: '分享链接无效或已失效' }, 404, corsHeaders)
@@ -77,6 +77,7 @@ async function getResumeShareInfo(request, env, corsHeaders, params) {
       data: {
         share_link_id: link.id,
         share_created_at: link.created_at,
+        screener_name: link.screener_name || '',
         candidate: {
           id: candidate.id,
           name: candidate.name,

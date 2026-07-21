@@ -33,7 +33,7 @@ async function listResumeShares(request, env, corsHeaders, params) {
     }
 
     const rows = await env.DB.prepare(
-      `SELECT id, candidate_id, token, created_by, created_at
+      `SELECT id, candidate_id, token, created_by, created_at, screener_name
        FROM talent_resume_shares
        WHERE candidate_id = ?
        ORDER BY created_at DESC`
@@ -60,14 +60,17 @@ async function createResumeShare(request, env, corsHeaders, params) {
       return jsonResponse({ success: false, message: '无权操作该候选人' }, 403, corsHeaders)
     }
 
+    const body = await request.json().catch(() => ({}))
+    const screenerName = String(body.screener_name || '').trim().slice(0, 50) || null
+
     const token = generateToken()
     const result = await env.DB.prepare(
-      `INSERT INTO talent_resume_shares (candidate_id, token, created_by)
-       VALUES (?, ?, ?)`
-    ).bind(params.id, token, user.userId).run()
+      `INSERT INTO talent_resume_shares (candidate_id, token, created_by, screener_name)
+       VALUES (?, ?, ?, ?)`
+    ).bind(params.id, token, user.userId, screenerName).run()
 
     const link = await env.DB.prepare(
-      `SELECT id, candidate_id, token, created_by, created_at FROM talent_resume_shares WHERE id = ?`
+      `SELECT id, candidate_id, token, created_by, created_at, screener_name FROM talent_resume_shares WHERE id = ?`
     ).bind(result.meta.last_row_id).first()
 
     await logOperation(env, user, 'create_resume_share', 'resume_share', String(link.id), {

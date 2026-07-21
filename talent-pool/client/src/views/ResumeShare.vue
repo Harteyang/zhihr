@@ -9,6 +9,14 @@
       <el-alert v-if="loadError" type="error" :title="loadError" show-icon :closable="false" />
 
       <template v-if="shareInfo">
+        <!-- 筛选人信息 -->
+        <el-card v-if="shareInfo.screener_name" shadow="never" class="section-card screener-card">
+          <div class="screener-info">
+            <span class="screener-label">筛选人：</span>
+            <span class="screener-name">{{ shareInfo.screener_name }}</span>
+          </div>
+        </el-card>
+
         <!-- 顶部操作按钮区 -->
         <el-card shadow="never" class="section-card action-card">
           <div class="action-bar">
@@ -419,6 +427,28 @@ onBeforeUnmount(() => {
 
 .section-title {
   font-weight: 600;
+}
+
+/* 筛选人信息卡片 */
+.screener-card :deep(.el-card__body) {
+  padding: 12px 20px;
+}
+
+.screener-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.screener-label {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+}
+
+.screener-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-color-primary);
 }
 
 /* 顶部操作区 */

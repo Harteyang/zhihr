@@ -4,7 +4,7 @@ import api from './index.js'
 // 列出某候选人的所有简历分享链接
 export const getResumeShareLinks = (candidateId) => api.get(`/talent/candidates/${candidateId}/resume-shares`)
 // 创建简历分享链接（永久有效）
-export const createResumeShareLink = (candidateId) => api.post(`/talent/candidates/${candidateId}/resume-shares`)
+export const createResumeShareLink = (candidateId, data = {}) => api.post(`/talent/candidates/${candidateId}/resume-shares`, data)
 // 删除简历分享链接
 export const deleteResumeShareLink = (candidateId, linkId) => api.delete(`/talent/candidates/${candidateId}/resume-shares/${linkId}`)
 

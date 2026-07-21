@@ -19,7 +19,7 @@
         <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
           <div style="display: flex; gap: 8px;">
             <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
-            <el-button size="small" @click="openResumeShareDialog">简历分享</el-button>
+            <el-button size="small" @click="openRecommendDialog">推荐简历</el-button>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 13px; color: var(--el-text-color-secondary);">快速改状态:</span>
@@ -327,6 +327,56 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 推荐简历对话框 -->
+    <el-dialog v-model="recommendDialogVisible" title="推荐简历" width="520px" :close-on-click-modal="false">
+      <el-form label-position="top" @submit.prevent="handleCreateRecommendLink">
+        <el-form-item
+          label="筛选人"
+          required
+          :error="recommendFormError"
+        >
+          <el-input
+            v-model="recommendForm.screener_name"
+            placeholder="请输入筛选人姓名"
+            maxlength="50"
+            show-word-limit
+            clearable
+            @input="recommendFormError = ''"
+          />
+          <div style="font-size: 12px; color: var(--el-text-color-secondary); margin-top: 4px;">
+            筛选人信息将写死在推荐页面，面试官无法修改
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="creatingRecommendLink" @click="handleCreateRecommendLink">
+            生成推荐链接
+          </el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-divider />
+
+      <div style="margin-bottom: 8px; font-weight: 600;">已生成的推荐链接</div>
+      <div v-loading="recommendLinksLoading">
+        <el-empty v-if="!recommendLinksLoading && recommendLinks.length === 0" description="暂无推荐链接" :image-size="40" />
+        <transition-group name="recommend-link-fade" tag="div">
+          <div v-for="link in recommendLinks" :key="link.id" class="share-link-item">
+            <div class="share-link-info">
+              <div class="share-link-evaluator" v-if="link.screener_name">筛选人：{{ link.screener_name }}</div>
+              <div class="share-link-meta">
+                生成时间：{{ formatTime(link.created_at) }}
+              </div>
+              <div class="share-link-url">{{ buildResumeShareUrl(link.token) }}</div>
+            </div>
+            <div class="share-link-actions">
+              <el-button type="primary" link size="small" @click="copyResumeShareUrl(link.token)">复制链接</el-button>
+              <el-button type="danger" link size="small" @click="handleDeleteResumeShareLink(link)">删除</el-button>
+            </div>
+          </div>
+        </transition-group>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -391,6 +441,14 @@ const resumeShareDialogVisible = ref(false)
 const creatingResumeShareLink = ref(false)
 const resumeShareLinks = ref([])
 const resumeShareLinksLoading = ref(false)
+
+// 推荐简历
+const recommendDialogVisible = ref(false)
+const recommendForm = ref({ screener_name: '' })
+const recommendFormError = ref('')
+const creatingRecommendLink = ref(false)
+const recommendLinks = ref([])
+const recommendLinksLoading = ref(false)
 
 function beforeUpload(file) {
   if (file.size > MAX_FILE_SIZE) {
@@ -906,6 +964,49 @@ async function handleDeleteResumeShareLink(link) {
   }
 }
 
+// ====== 推荐简历 ======
+async function openRecommendDialog() {
+  recommendDialogVisible.value = true
+  recommendForm.value.screener_name = ''
+  recommendFormError.value = ''
+  await fetchRecommendLinks()
+}
+
+async function fetchRecommendLinks() {
+  recommendLinksLoading.value = true
+  try {
+    const res = await getResumeShareLinks(route.params.id)
+    // 只显示有筛选人信息的链接（即推荐链接）
+    recommendLinks.value = (res.data.data || []).filter(l => l.screener_name)
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载推荐链接失败')
+  } finally {
+    recommendLinksLoading.value = false
+  }
+}
+
+async function handleCreateRecommendLink() {
+  const screenerName = recommendForm.value.screener_name.trim()
+  if (!screenerName) {
+    recommendFormError.value = '请输入筛选人姓名'
+    return
+  }
+  creatingRecommendLink.value = true
+  try {
+    const res = await createResumeShareLink(route.params.id, { screener_name: screenerName })
+    recommendLinks.value.unshift(res.data.data)
+    recommendForm.value.screener_name = ''
+    recommendFormError.value = ''
+    ElMessage.success('推荐链接已生成')
+    // 自动复制到剪贴板
+    copyResumeShareUrl(res.data.data.token)
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '生成推荐链接失败')
+  } finally {
+    creatingRecommendLink.value = false
+  }
+}
+
 onMounted(async () => {
   await Promise.all([fetchCandidate(), fetchQuota()])
 })
@@ -1120,5 +1221,28 @@ onMounted(async () => {
   flex-direction: column;
   gap: 4px;
   flex-shrink: 0;
+}
+
+/* 推荐链接列表淡入动画 */
+.recommend-link-fade-enter-active {
+  transition: all 0.3s ease;
+}
+
+.recommend-link-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.recommend-link-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.recommend-link-fade-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.recommend-link-fade-move {
+  transition: transform 0.3s ease;
 }
 </style>

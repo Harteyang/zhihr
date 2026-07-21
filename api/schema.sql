@@ -219,6 +219,7 @@ CREATE TABLE IF NOT EXISTS talent_resume_shares (
     candidate_id INTEGER NOT NULL,
     token TEXT NOT NULL UNIQUE,
     created_by TEXT,
+    screener_name TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (candidate_id) REFERENCES talent_candidates(id) ON DELETE CASCADE
 );

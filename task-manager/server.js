@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
 
   // 默认路由指向 task-manager/index.html
   let urlPath = req.url === '/' ? '/task-manager/index.html' : req.url;
-  let filePath = path.join(publicDir, urlPath);
+  let filePath = path.normalize(path.join(publicDir, urlPath));
 
   // 防止路径穿越攻击
   if (!filePath.startsWith(publicDir)) {
