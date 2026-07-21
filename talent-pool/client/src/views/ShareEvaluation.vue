@@ -2,7 +2,7 @@
   <div class="share-evaluation-page" v-loading="loading">
     <div class="share-container">
       <header class="share-header">
-        <h1>候选人面试评价</h1>
+        <h1>{{ shareInfo?.candidate?.name ? `${shareInfo.candidate.name}的面试评价` : '候选人面试评价' }}</h1>
         <p class="share-subtitle">请填写对该候选人的面试评价，提交后仍可修改</p>
       </header>
 
