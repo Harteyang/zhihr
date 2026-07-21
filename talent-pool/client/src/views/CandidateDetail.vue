@@ -1,33 +1,70 @@
 <template>
-  <div style="max-width: 1000px;" v-loading="loading">
-    <el-page-header @back="$router.push('/candidates')" title="返回列表" style="margin-bottom: 16px;" />
-
-    <el-card shadow="never" style="margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 20px;">
-        <el-avatar :size="56" style="background: var(--el-color-primary); font-size: 22px; flex-shrink: 0;">{{ candidate.name?.charAt(0) }}</el-avatar>
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-            <span style="font-size: 20px; font-weight: 600;">{{ candidate.name }}</span>
-            <el-tag :type="getStatusType(candidate.status)" size="default" effect="light">{{ getStatusLabel(candidate.status) }}</el-tag>
-          </div>
-          <div style="display: flex; gap: 20px; color: var(--el-text-color-secondary); font-size: 14px;">
-            <span v-if="candidate.phone"><el-icon><Phone /></el-icon> {{ candidate.phone }}</span>
-            <span v-if="candidate.email"><el-icon><Message /></el-icon> {{ candidate.email }}</span>
-            <span v-if="candidate.position"><el-icon><Briefcase /></el-icon> {{ candidate.position }}</span>
-          </div>
-        </div>
-        <div class="detail-actions" style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-          <div style="display: flex; gap: 8px;">
-            <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
-            <el-button size="small" @click="openRecommendDialog">推荐简历</el-button>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 13px; color: var(--el-text-color-secondary);">快速改状态:</span>
-            <StatusSelect v-model="candidate.status" size="small" @update:model-value="handleStatusChange" />
-          </div>
-        </div>
+  <div
+    class="detail-page"
+    @touchstart.passive="handleTouchStart"
+    @touchmove.passive="handleTouchMove"
+    @touchend.passive="handleTouchEnd"
+    @keydown.left.prevent="navigatePrev"
+    @keydown.right.prevent="navigateNext"
+    tabindex="0"
+  >
+    <!-- 顶部导航栏：返回 + 上/下一位切换 -->
+    <div class="detail-nav-header">
+      <el-button text @click="goBack">
+        <el-icon><ArrowLeft /></el-icon>
+        <span class="nav-back-text">返回</span>
+      </el-button>
+      <span class="nav-title" v-if="candidate.name">{{ candidate.name }} 详情</span>
+      <div class="nav-buttons">
+        <el-button
+          text
+          size="small"
+          :disabled="!hasPrev"
+          @click="navigatePrev"
+        >
+          <el-icon><ArrowLeft /></el-icon> 上一个
+        </el-button>
+        <el-button
+          text
+          size="small"
+          :disabled="!hasNext"
+          @click="navigateNext"
+        >
+          下一个 <el-icon><ArrowRight /></el-icon>
+        </el-button>
       </div>
-    </el-card>
+    </div>
+
+    <div v-if="loading && !candidate.id" class="detail-loading" v-loading="true" />
+
+    <Transition name="detail-fade" mode="out-in">
+      <div :key="route.params.id" v-if="!loading || candidate.id" class="detail-content">
+        <el-card shadow="never" class="detail-header-card">
+          <div class="detail-header-inner">
+            <el-avatar :size="56" class="detail-avatar">{{ candidate.name?.charAt(0) }}</el-avatar>
+            <div class="detail-header-info">
+              <div class="detail-header-name-row">
+                <span class="detail-name">{{ candidate.name }}</span>
+                <el-tag :type="getStatusType(candidate.status)" size="default" effect="light">{{ getStatusLabel(candidate.status) }}</el-tag>
+              </div>
+              <div class="detail-header-contact">
+                <span v-if="candidate.phone"><el-icon><Phone /></el-icon> {{ candidate.phone }}</span>
+                <span v-if="candidate.email"><el-icon><Message /></el-icon> {{ candidate.email }}</span>
+                <span v-if="candidate.position"><el-icon><Briefcase /></el-icon> {{ candidate.position }}</span>
+              </div>
+            </div>
+            <div class="detail-header-actions">
+              <div class="detail-actions-row">
+                <el-button type="primary" size="small" @click="$router.push(`/candidates/${route.params.id}/edit`)">编辑</el-button>
+                <el-button size="small" @click="openRecommendDialog">推荐简历</el-button>
+              </div>
+              <div class="detail-status-row">
+                <span class="status-label">快速改状态:</span>
+                <StatusSelect v-model="candidate.status" size="small" @update:model-value="handleStatusChange" />
+              </div>
+            </div>
+          </div>
+        </el-card>
 
     <el-card shadow="never">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
@@ -377,14 +414,16 @@
         </transition-group>
       </div>
     </el-dialog>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Phone, Message, Briefcase, Plus, SortDown } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Phone, Message, Briefcase, Plus, SortDown } from '@element-plus/icons-vue'
 import {
   getCandidate, updateCandidateStatus, previewAttachment,
   getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
@@ -393,12 +432,16 @@ import {
   getFollowRecords,
   getResumeShareLinks, createResumeShareLink, deleteResumeShareLink
 } from '../api'
+import { useCandidateStore } from '../stores/candidate'
 import StatusSelect from '../components/StatusSelect.vue'
 import PdfPreview from '../components/PdfPreview.vue'
 import HtmlPreview from '../components/HtmlPreview.vue'
 import { getStatusLabel, getStatusType, formatTime } from '../utils/constants'
 
 const route = useRoute()
+const router = useRouter()
+const candidateStore = useCandidateStore()
+
 const loading = ref(false)
 const candidate = ref({})
 const activeTab = ref('info')
@@ -449,6 +492,55 @@ const recommendFormError = ref('')
 const creatingRecommendLink = ref(false)
 const recommendLinks = ref([])
 const recommendLinksLoading = ref(false)
+
+// ====== 滑动切换与导航 ======
+const SWIPE_THRESHOLD = 80
+let touchStartX = 0
+let touchStartY = 0
+
+const currentIndex = computed(() => {
+  return candidateStore.candidates.findIndex(c => c.id === Number(route.params.id))
+})
+
+const hasPrev = computed(() => currentIndex.value > 0)
+const hasNext = computed(() => currentIndex.value >= 0 && currentIndex.value < candidateStore.candidates.length - 1)
+
+function handleTouchStart(e) {
+  touchStartX = e.touches[0].clientX
+  touchStartY = e.touches[0].clientY
+}
+
+function handleTouchMove() {
+  // 仅用于跟踪，不做UI更新，使用 passive 优化性能
+}
+
+function handleTouchEnd(e) {
+  const deltaX = e.changedTouches[0].clientX - touchStartX
+  const deltaY = e.changedTouches[0].clientY - touchStartY
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+    if (deltaX > 0 && hasPrev.value) {
+      navigatePrev()
+    } else if (deltaX < 0 && hasNext.value) {
+      navigateNext()
+    }
+  }
+}
+
+function navigatePrev() {
+  if (!hasPrev.value) return
+  const prevId = candidateStore.candidates[currentIndex.value - 1].id
+  router.push(`/candidates/${prevId}`)
+}
+
+function navigateNext() {
+  if (!hasNext.value) return
+  const nextId = candidateStore.candidates[currentIndex.value + 1].id
+  router.push(`/candidates/${nextId}`)
+}
+
+function goBack() {
+  router.push('/candidates')
+}
 
 function beforeUpload(file) {
   if (file.size > MAX_FILE_SIZE) {
@@ -518,6 +610,8 @@ const parsedSkills = computed(() => {
 })
 
 async function fetchCandidate() {
+  // 清除旧数据，避免切换时显示错乱
+  candidate.value = {}
   loading.value = true
   try {
     const res = await getCandidate(route.params.id)
@@ -526,6 +620,15 @@ async function fetchCandidate() {
     loading.value = false
   }
 }
+
+// 监听路由参数变化，切换候选人时重新加载数据
+watch(() => route.params.id, () => {
+  activeTab.value = 'info'
+  closePreview()
+  collapseEvalForm()
+  fetchCandidate()
+  fetchQuota()
+})
 
 async function handleStatusChange(val) {
   try {
@@ -1013,6 +1116,147 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ====== 页面整体布局 ====== */
+.detail-page {
+  max-width: 1000px;
+  outline: none;
+  min-height: calc(100vh - 120px);
+}
+
+.detail-loading {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-content {
+  animation: detailContentIn 0.3s ease;
+}
+
+@keyframes detailContentIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ====== 顶部导航栏 ====== */
+.detail-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+  gap: 8px;
+}
+
+.nav-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ====== 候选人头部信息卡 ====== */
+.detail-header-card {
+  margin-bottom: 16px;
+}
+
+.detail-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.detail-avatar {
+  background: var(--el-color-primary) !important;
+  font-size: 22px !important;
+  flex-shrink: 0;
+}
+
+.detail-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-header-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.detail-name {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.detail-header-contact {
+  display: flex;
+  gap: 16px;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.detail-header-contact span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.detail-header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.detail-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.detail-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-label {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+/* ====== 过渡动画 ====== */
+.detail-fade-enter-active,
+.detail-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.detail-fade-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.detail-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+/* ====== 简历预览 ====== */
 .resume-preview-container {
   min-height: 300px;
   padding: 16px;
@@ -1020,7 +1264,7 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-/* 评价列表区域 */
+/* ====== 评价列表区域 ====== */
 .evaluation-list-header {
   display: flex;
   justify-content: space-between;
@@ -1098,7 +1342,7 @@ onMounted(async () => {
   gap: 8px;
 }
 
-/* 评价表单区域 */
+/* ====== 评价表单区域 ====== */
 .evaluation-form-wrapper {
   background: #fafafa;
   padding: 16px;
@@ -1244,5 +1488,92 @@ onMounted(async () => {
 
 .recommend-link-fade-move {
   transition: transform 0.3s ease;
+}
+
+/* ====== 移动端适配 ====== */
+@media (max-width: 768px) {
+  .detail-page {
+    min-height: calc(100vh - 100px);
+  }
+
+  .detail-nav-header {
+    padding: 4px 0 12px;
+    flex-wrap: wrap;
+  }
+
+  .nav-title {
+    font-size: 14px;
+    order: 3;
+    width: 100%;
+    text-align: left;
+    padding-left: 4px;
+  }
+
+  .nav-back-text {
+    display: none;
+  }
+
+  .nav-buttons .el-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .nav-buttons .el-button .el-icon {
+    font-size: 14px;
+  }
+
+  .detail-header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .detail-header-info {
+    width: calc(100% - 68px);
+  }
+
+  .detail-name {
+    font-size: 17px;
+  }
+
+  .detail-header-contact {
+    gap: 8px;
+    font-size: 13px;
+  }
+  .detail-header-contact span {
+    white-space: normal;
+  }
+
+  .detail-header-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--el-border-color-lighter);
+  }
+
+  .detail-actions-row {
+    flex-shrink: 0;
+  }
+
+  .detail-status-row .status-label {
+    display: none;
+  }
+
+  .detail-header-card {
+    margin-bottom: 12px;
+  }
+
+  :deep(.el-descriptions__body .el-descriptions__table) {
+    display: block;
+  }
+  :deep(.el-descriptions__body .el-descriptions__table tbody),
+  :deep(.el-descriptions__body .el-descriptions__table tr),
+  :deep(.el-descriptions__body .el-descriptions__table td) {
+    display: block;
+    width: 100% !important;
+  }
+  :deep(.el-descriptions__body .el-descriptions__table td.el-descriptions__cell) {
+    padding: 8px 12px;
+  }
 }
 </style>

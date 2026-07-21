@@ -2,7 +2,7 @@
   <div>
     <el-card shadow="never" style="margin-bottom: 16px;">
       <div class="search-area">
-        <!-- 第一行：搜索输入框 + 搜索按钮 + 重置按钮 + 移动端折叠箭头 -->
+        <!-- 第一行：搜索输入框 + 搜索按钮 + 重置按钮 -->
         <div class="search-row search-row-primary">
           <el-input
             v-model="filters.keyword"
@@ -12,8 +12,14 @@
             @keyup.enter="handleSearch"
             class="search-input"
           />
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="resetFilters">重置</el-button>
+          <!-- 移动端折叠状态下仅保留搜索输入框，展开后显示搜索/重置按钮 -->
+          <template v-if="!isMobile || showFilters">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="resetFilters">重置</el-button>
+          </template>
+        </div>
+        <!-- 折叠箭头 - 移至搜索框下方，仅移动端显示 -->
+        <div v-if="isMobile" class="filters-toggle-row">
           <el-button
             class="filters-toggle"
             :type="showFilters ? 'primary' : ''"
@@ -114,10 +120,15 @@ const filters = reactive({
 
 // 移动端筛选器折叠状态：桌面端默认展开，移动端默认折叠
 const showFilters = ref(true)
+const isMobile = ref(false)
 
 function checkScreenWidth() {
-  if (window.innerWidth < 768) {
+  const mobile = window.innerWidth < 768
+  isMobile.value = mobile
+  if (mobile) {
     showFilters.value = false
+  } else {
+    showFilters.value = true
   }
 }
 
@@ -201,15 +212,22 @@ onUnmounted(() => {
   width: 200px;
 }
 
-/* 折叠/展开箭头：桌面端隐藏，移动端显示 */
-.filters-toggle {
+/* 折叠/展开箭头行：桌面端隐藏，移动端显示 */
+.filters-toggle-row {
   display: none;
+  justify-content: center;
+  margin-top: -4px;
+}
+
+.filters-toggle {
   padding: 4px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
 }
 
 .toggle-icon {
   transition: transform 0.3s ease;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .toggle-icon.is-expanded {
@@ -238,12 +256,31 @@ onUnmounted(() => {
 
 /* 移动端适配 */
 @media (max-width: 768px) {
+  .filters-toggle-row {
+    display: flex;
+  }
+
   .filters-toggle {
-    display: inline-flex;
+    min-height: 36px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .search-input {
     max-width: none;
+  }
+
+  .search-row-primary {
+    gap: 6px;
+  }
+
+  .search-row-primary .el-button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .filter-select {

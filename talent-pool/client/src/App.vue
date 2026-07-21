@@ -49,8 +49,8 @@
           <el-dropdown>
             <span style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--el-text-color-regular);">
               <el-avatar :size="28" style="background: var(--el-color-primary); font-size: 12px;">{{ authStore.user?.displayName?.charAt(0) || 'U' }}</el-avatar>
-              {{ authStore.user?.displayName || authStore.user?.username }}
-              <el-tag v-if="authStore.isAdmin" size="small" type="danger" effect="plain">管理员</el-tag>
+              <span class="user-info-text">{{ authStore.user?.displayName || authStore.user?.username }}</span>
+              <el-tag v-if="authStore.isAdmin" class="user-info-text" size="small" type="danger" effect="plain">管理员</el-tag>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -167,6 +167,7 @@ body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
 
 @media (max-width: 768px) {
   .mobile-header-btn { display: inline-flex !important; }
+  .user-info-text { display: none !important; }
 
   .el-main { padding: 12px !important; }
   .el-main > div { max-width: 100% !important; }
