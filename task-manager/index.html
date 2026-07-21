@@ -585,8 +585,7 @@
         // 初始化共享认证
         function initSharedAuth() {
             if (typeof SharedAuth !== 'undefined' && SharedAuth) {
-                SharedAuth.init();
-                
+                // 先注册事件监听器，再初始化（避免错过 init 时发出的 auth:change 事件）
                 SharedAuth.on('auth:change', (state) => {
                     console.log('[TaskManager] Auth state changed:', state);
                     updateUserDisplay();
@@ -602,6 +601,8 @@
                     renderTasks();
                     updateCategoryFilter();
                 });
+                
+                SharedAuth.init();
                 
                 const user = SharedAuth.getUser();
                 if (user.isAuthenticated) {
@@ -1394,7 +1395,7 @@
             event.preventDefault();
 
             const newTask = {
-                id: Date.now(),
+                id: String(Date.now()),
                 title: document.getElementById('newTaskTitle').value.trim(),
                 description: document.getElementById('newTaskDescription').value.trim(),
                 category: document.getElementById('newTaskCategory').value,

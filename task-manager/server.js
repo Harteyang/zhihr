@@ -6,6 +6,9 @@ const path = require('path');
 const hostname = '127.0.0.1';
 const port = 8080;
 
+// 服务根目录设为 zhihr 根目录，使共享文件可访问
+const publicDir = path.join(__dirname, '..');
+
 const mimeTypes = {
   '.html': 'text/html',
   '.js': 'text/javascript',
@@ -21,9 +24,15 @@ const mimeTypes = {
 const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
 
-  let filePath = '.' + req.url;
-  if (filePath === './') {
-    filePath = './index.html';
+  // 默认路由指向 task-manager/index.html
+  let urlPath = req.url === '/' ? '/task-manager/index.html' : req.url;
+  let filePath = path.join(publicDir, urlPath);
+
+  // 防止路径穿越攻击
+  if (!filePath.startsWith(publicDir)) {
+    res.writeHead(403);
+    res.end('Forbidden', 'utf-8');
+    return;
   }
 
   const extname = String(path.extname(filePath)).toLowerCase();
