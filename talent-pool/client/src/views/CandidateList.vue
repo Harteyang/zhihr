@@ -12,11 +12,9 @@
             @keyup.enter="handleSearch"
             class="search-input"
           />
-          <!-- 移动端折叠状态下仅保留搜索输入框，展开后显示搜索/重置按钮 -->
-          <template v-if="!isMobile || showFilters">
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="resetFilters">重置</el-button>
-          </template>
+          <!-- 移动端折叠状态下仅隐藏重置按钮，搜索按钮始终保持可见 -->
+          <el-button type="primary" @click="handleSearch">搜索</el-button>
+          <el-button v-if="!isMobile || showFilters" @click="resetFilters">重置</el-button>
         </div>
         <!-- 折叠箭头 - 移至搜索框下方，仅移动端显示 -->
         <div v-if="isMobile" class="filters-toggle-row">
@@ -44,7 +42,7 @@
               <el-option v-for="s in STATUS_OPTIONS" :key="s.value" :label="s.label" :value="s.value" />
             </el-select>
             <el-select v-model="filters.source" placeholder="来源" clearable @change="handleSearch" class="filter-select">
-              <el-option v-for="s in store.filterOptions.sources" :key="s" :label="s" :value="s" />
+              <el-option v-for="s in sourceOptions" :key="s" :label="s" :value="s" />
             </el-select>
           </div>
         </transition>
@@ -68,7 +66,28 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="position" label="岗位" min-width="120" show-overflow-tooltip />
+        <el-table-column label="岗位" min-width="120" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="editable-cell" :class="{ 'is-editing': editingPositionId === row.id }">
+              <template v-if="editingPositionId === row.id">
+                <el-input
+                  v-model="editPositionValue"
+                  size="small"
+                  maxlength="100"
+                  @blur="savePosition(row)"
+                  @keyup.enter="savePosition(row)"
+                  @keyup.escape="cancelEditPosition"
+                  ref="positionInputRef"
+                  class="position-input"
+                />
+              </template>
+              <template v-else>
+                <span class="editable-cell-text" @click="startEditPosition(row)">{{ row.position || '-' }}</span>
+                <el-icon class="edit-icon" @click="startEditPosition(row)"><Edit /></el-icon>
+              </template>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small" effect="light">{{ getStatusLabel(row.status) }}</el-tag>
@@ -104,11 +123,11 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, onUnmounted } from 'vue'
-import { Plus, ArrowDown } from '@element-plus/icons-vue'
+import { reactive, ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { Plus, ArrowDown, Edit } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
-import { deleteCandidate } from '../api'
+import { deleteCandidate, updateCandidate } from '../api'
 import { STATUS_OPTIONS, getStatusLabel, getStatusType } from '../utils/constants'
 
 const store = useCandidateStore()
@@ -121,6 +140,57 @@ const filters = reactive({
 // 移动端筛选器折叠状态：桌面端默认展开，移动端默认折叠
 const showFilters = ref(true)
 const isMobile = ref(false)
+
+// 来源筛选选项：从候选人列表实际数据中提取，确保与表格显示一致
+const sourceOptions = computed(() => {
+  const names = new Set()
+  store.candidates.forEach(c => {
+    const name = c.created_by_name || c.created_by
+    if (name) names.add(name)
+  })
+  return [...names].sort()
+})
+
+// 岗位内联编辑状态
+const editingPositionId = ref(null)
+const editPositionValue = ref('')
+const positionInputRef = ref(null)
+
+function startEditPosition(row) {
+  editingPositionId.value = row.id
+  editPositionValue.value = row.position || ''
+  nextTick(() => {
+    const el = positionInputRef.value
+    if (el) el.focus?.() || el.input?.focus?.()
+  })
+}
+
+async function savePosition(row) {
+  const newValue = editPositionValue.value.trim()
+  if (newValue === (row.position || '')) {
+    editingPositionId.value = null
+    return
+  }
+  // 非法字符校验
+  if (/[<>"']/.test(newValue)) {
+    ElMessage.warning('岗位名称包含非法字符')
+    return
+  }
+  try {
+    await updateCandidate(row.id, { position: newValue })
+    row.position = newValue
+    ElMessage.success('岗位已更新')
+  } catch {
+    ElMessage.error('保存失败')
+  } finally {
+    editingPositionId.value = null
+  }
+}
+
+function cancelEditPosition() {
+  editingPositionId.value = null
+  editPositionValue.value = ''
+}
 
 function checkScreenWidth() {
   const mobile = window.innerWidth < 768
@@ -290,6 +360,56 @@ onUnmounted(() => {
 
   .filter-select-status {
     width: calc(50% - 4px);
+  }
+}
+
+/* ====== 岗位内联编辑 ====== */
+.editable-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.editable-cell-text {
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background 0.2s;
+  line-height: 1.6;
+}
+
+.editable-cell-text:hover {
+  border-color: var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+}
+
+.edit-icon {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.editable-cell:hover .edit-icon {
+  opacity: 1;
+  color: var(--el-color-primary);
+}
+
+.editable-cell.is-editing .edit-icon {
+  opacity: 0;
+}
+
+.position-input {
+  width: 140px;
+}
+
+@media (max-width: 768px) {
+  .position-input {
+    width: 120px;
   }
 }
 </style>
