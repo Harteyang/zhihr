@@ -42,7 +42,7 @@
               <el-option v-for="s in STATUS_OPTIONS" :key="s.value" :label="s.label" :value="s.value" />
             </el-select>
             <el-select v-model="filters.source" placeholder="来源" clearable @change="handleSearch" class="filter-select">
-              <el-option v-for="s in sourceOptions" :key="s" :label="s" :value="s" />
+              <el-option v-for="s in store.filterOptions.sources" :key="s" :label="s" :value="s" />
             </el-select>
           </div>
         </transition>
@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { reactive, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Plus, ArrowDown, Edit } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
@@ -140,16 +140,6 @@ const filters = reactive({
 // 移动端筛选器折叠状态：桌面端默认展开，移动端默认折叠
 const showFilters = ref(true)
 const isMobile = ref(false)
-
-// 来源筛选选项：从候选人列表实际数据中提取，确保与表格显示一致
-const sourceOptions = computed(() => {
-  const names = new Set()
-  store.candidates.forEach(c => {
-    const name = c.created_by_name || c.created_by
-    if (name) names.add(name)
-  })
-  return [...names].sort()
-})
 
 // 岗位内联编辑状态
 const editingPositionId = ref(null)
