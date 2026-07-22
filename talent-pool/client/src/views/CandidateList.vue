@@ -94,7 +94,7 @@
           </template>
         </el-table-column>
         <el-table-column label="来源" min-width="120" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.created_by_name || row.created_by || '-' }}</template>
+          <template #default="{ row }">{{ row.source || '-' }}</template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
