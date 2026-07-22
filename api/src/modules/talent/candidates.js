@@ -39,41 +39,41 @@ async function listCandidates(request, env, corsHeaders) {
 
     if (allowedPositions !== null) {
       if (allowedPositions.length === 0) {
-        conditions.push('created_by = ?')
+        conditions.push('talent_candidates.created_by = ?')
         params.push(user.userId)
       } else {
-        conditions.push(`(created_by = ? OR position IN (${allowedPositions.map(() => '?').join(',')}))`)
+        conditions.push(`(talent_candidates.created_by = ? OR talent_candidates.position IN (${allowedPositions.map(() => '?').join(',')}))`)
         params.push(user.userId, ...allowedPositions)
       }
     }
 
     const keyword = url.searchParams.get('keyword')
     if (keyword) {
-      conditions.push('(name LIKE ? OR phone LIKE ? OR email LIKE ?)')
+      conditions.push('(talent_candidates.name LIKE ? OR talent_candidates.phone LIKE ? OR talent_candidates.email LIKE ?)')
       params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`)
     }
     const position = url.searchParams.get('position')
-    if (position) { conditions.push('position = ?'); params.push(position) }
+    if (position) { conditions.push('talent_candidates.position = ?'); params.push(position) }
     const education = url.searchParams.get('education')
-    if (education) { conditions.push('education = ?'); params.push(education) }
+    if (education) { conditions.push('talent_candidates.education = ?'); params.push(education) }
     const expMin = url.searchParams.get('experience_min')
     if (expMin !== null && expMin !== undefined && expMin !== '') {
-      conditions.push('experience_years >= ?'); params.push(Number(expMin))
+      conditions.push('talent_candidates.experience_years >= ?'); params.push(Number(expMin))
     }
     const expMax = url.searchParams.get('experience_max')
     if (expMax !== null && expMax !== undefined && expMax !== '') {
-      conditions.push('experience_years <= ?'); params.push(Number(expMax))
+      conditions.push('talent_candidates.experience_years <= ?'); params.push(Number(expMax))
     }
     const status = url.searchParams.get('status')
     if (status) {
       const statuses = status.split(',').filter(s => VALID_STATUSES.includes(s))
       if (statuses.length > 0) {
-        conditions.push(`status IN (${statuses.map(() => '?').join(',')})`)
+        conditions.push(`talent_candidates.status IN (${statuses.map(() => '?').join(',')})`)
         params.push(...statuses)
       }
     }
     const source = url.searchParams.get('source')
-    if (source) { conditions.push('source = ?'); params.push(source) }
+    if (source) { conditions.push('talent_candidates.source = ?'); params.push(source) }
     const company = url.searchParams.get('company')
     if (company) {
       conditions.push('EXISTS (SELECT 1 FROM talent_work_experiences WHERE candidate_id = talent_candidates.id AND company = ?)')
@@ -85,8 +85,9 @@ async function listCandidates(request, env, corsHeaders) {
     const countRow = await env.DB.prepare(`SELECT COUNT(*) as total FROM talent_candidates ${where}`).bind(...params).first()
     const total = countRow.total
 
+    // SELECT 查询不使用表别名，直接用 talent_candidates. 前缀避免与 users 表列名歧义
     const rows = await env.DB.prepare(
-      `SELECT c.*, u.username as created_by_name FROM talent_candidates c LEFT JOIN users u ON c.created_by = u.id ${where} ORDER BY updated_at DESC LIMIT ? OFFSET ?`
+      `SELECT talent_candidates.*, users.username as created_by_name FROM talent_candidates LEFT JOIN users ON talent_candidates.created_by = users.id ${where} ORDER BY talent_candidates.updated_at DESC LIMIT ? OFFSET ?`
     ).bind(...params, pageSize, offset).all()
 
     return jsonResponse({ success: true, data: rows.results, total, page, pageSize }, 200, corsHeaders)
