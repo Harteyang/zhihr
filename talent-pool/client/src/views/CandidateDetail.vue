@@ -8,10 +8,9 @@
       </el-button>
     </div>
 
-    <div v-if="loading && !candidate.id" class="detail-loading" v-loading="true" />
+    <div v-if="loading && !candidate.id" class="detail-loading" v-loading="true" element-loading-text="加载中..." />
 
-    <Transition name="detail-fade" mode="out-in">
-      <div :key="route.params.id" v-if="!loading || candidate.id" class="detail-content">
+    <div v-if="candidate.id" class="detail-content">
         <el-card shadow="never" class="detail-header-card">
           <div class="detail-header-inner">
             <el-avatar :size="56" class="detail-avatar">{{ candidate.name?.charAt(0) }}</el-avatar>
@@ -387,8 +386,7 @@
         </transition-group>
       </div>
     </el-dialog>
-      </div>
-    </Transition>
+  </div>
   </div>
 </template>
 
@@ -1145,22 +1143,6 @@ onMounted(async () => {
   font-size: 13px;
   color: var(--el-text-color-secondary);
   white-space: nowrap;
-}
-
-/* ====== 过渡动画 ====== */
-.detail-fade-enter-active,
-.detail-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.detail-fade-enter-from {
-  opacity: 0;
-  transform: translateX(24px);
-}
-
-.detail-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-24px);
 }
 
 /* ====== 简历预览 ====== */
