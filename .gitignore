@@ -35,3 +35,4 @@ miaodu/scripts/downloads/
 !.dev.vars.example
 .env*
 !.env.example
+dogfood-output/
