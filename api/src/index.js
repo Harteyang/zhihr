@@ -5,12 +5,14 @@ import * as reviews from './modules/reviews.js'
 import * as miaodu from './modules/miaodu.js'
 import * as talent from './modules/talent/index.js'
 import * as talentAuth from './modules/talent_auth.js'
+import * as tasks from './modules/tasks.js'
 
 register(auth)
 register(reviews)
 register(miaodu)
 register(talent)
 register(talentAuth)
+register(tasks)
 
 async function handleRequest(request, env, ctx) {
   debugLog('Request', `${request.method} ${request.url}`)
