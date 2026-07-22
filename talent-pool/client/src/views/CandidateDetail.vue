@@ -1,38 +1,11 @@
 <template>
-  <div
-    class="detail-page"
-    @touchstart.passive="handleTouchStart"
-    @touchmove.passive="handleTouchMove"
-    @touchend.passive="handleTouchEnd"
-    @keydown.left.prevent="navigatePrev"
-    @keydown.right.prevent="navigateNext"
-    tabindex="0"
-  >
-    <!-- 顶部导航栏：返回 + 上/下一位切换 -->
+  <div class="detail-page">
+    <!-- 顶部导航栏：返回按钮 -->
     <div class="detail-nav-header">
       <el-button text @click="goBack">
         <el-icon><ArrowLeft /></el-icon>
         <span class="nav-back-text">返回</span>
       </el-button>
-      <span class="nav-title" v-if="candidate.name">{{ candidate.name }} 详情</span>
-      <div class="nav-buttons">
-        <el-button
-          text
-          size="small"
-          :disabled="!hasPrev"
-          @click="navigatePrev"
-        >
-          <el-icon><ArrowLeft /></el-icon> 上一个
-        </el-button>
-        <el-button
-          text
-          size="small"
-          :disabled="!hasNext"
-          @click="navigateNext"
-        >
-          下一个 <el-icon><ArrowRight /></el-icon>
-        </el-button>
-      </div>
     </div>
 
     <div v-if="loading && !candidate.id" class="detail-loading" v-loading="true" />
@@ -420,10 +393,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, ArrowRight, Phone, Message, Briefcase, Plus, SortDown } from '@element-plus/icons-vue'
+import { ArrowLeft, Phone, Message, Briefcase, Plus, SortDown } from '@element-plus/icons-vue'
 import {
   getCandidate, updateCandidateStatus, previewAttachment,
   getUploadUrl, confirmUpload, getDownloadUrl, getUploadQuota,
@@ -432,7 +405,6 @@ import {
   getFollowRecords,
   getResumeShareLinks, createResumeShareLink, deleteResumeShareLink
 } from '../api'
-import { useCandidateStore } from '../stores/candidate'
 import StatusSelect from '../components/StatusSelect.vue'
 import PdfPreview from '../components/PdfPreview.vue'
 import HtmlPreview from '../components/HtmlPreview.vue'
@@ -440,7 +412,6 @@ import { getStatusLabel, getStatusType, formatTime } from '../utils/constants'
 
 const route = useRoute()
 const router = useRouter()
-const candidateStore = useCandidateStore()
 
 const loading = ref(false)
 const candidate = ref({})
@@ -492,51 +463,6 @@ const recommendFormError = ref('')
 const creatingRecommendLink = ref(false)
 const recommendLinks = ref([])
 const recommendLinksLoading = ref(false)
-
-// ====== 滑动切换与导航 ======
-const SWIPE_THRESHOLD = 80
-let touchStartX = 0
-let touchStartY = 0
-
-const currentIndex = computed(() => {
-  return candidateStore.candidates.findIndex(c => c.id === Number(route.params.id))
-})
-
-const hasPrev = computed(() => currentIndex.value > 0)
-const hasNext = computed(() => currentIndex.value >= 0 && currentIndex.value < candidateStore.candidates.length - 1)
-
-function handleTouchStart(e) {
-  touchStartX = e.touches[0].clientX
-  touchStartY = e.touches[0].clientY
-}
-
-function handleTouchMove() {
-  // 仅用于跟踪，不做UI更新，使用 passive 优化性能
-}
-
-function handleTouchEnd(e) {
-  const deltaX = e.changedTouches[0].clientX - touchStartX
-  const deltaY = e.changedTouches[0].clientY - touchStartY
-  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
-    if (deltaX > 0 && hasPrev.value) {
-      navigatePrev()
-    } else if (deltaX < 0 && hasNext.value) {
-      navigateNext()
-    }
-  }
-}
-
-function navigatePrev() {
-  if (!hasPrev.value) return
-  const prevId = candidateStore.candidates[currentIndex.value - 1].id
-  router.push(`/candidates/${prevId}`)
-}
-
-function navigateNext() {
-  if (!hasNext.value) return
-  const nextId = candidateStore.candidates[currentIndex.value + 1].id
-  router.push(`/candidates/${nextId}`)
-}
 
 function goBack() {
   router.push('/candidates')
@@ -1143,26 +1069,7 @@ onMounted(async () => {
 .detail-nav-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 8px 0 16px;
-  gap: 8px;
-}
-
-.nav-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  flex: 1;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.nav-buttons {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
 }
 
 /* ====== 候选人头部信息卡 ====== */
@@ -1498,27 +1405,10 @@ onMounted(async () => {
 
   .detail-nav-header {
     padding: 4px 0 12px;
-    flex-wrap: wrap;
-  }
-
-  .nav-title {
-    font-size: 14px;
-    order: 3;
-    width: 100%;
-    text-align: left;
-    padding-left: 4px;
   }
 
   .nav-back-text {
     display: none;
-  }
-
-  .nav-buttons .el-button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-  .nav-buttons .el-button .el-icon {
-    font-size: 14px;
   }
 
   .detail-header-inner {
