@@ -29,7 +29,7 @@
             </el-icon>
           </el-button>
         </div>
-        <!-- 第二行：岗位、公司、状态、来源 筛选器 -->
+        <!-- 第二行：岗位、公司、状态、操作人 筛选器 -->
         <transition name="filters-slide">
           <div v-show="showFilters" class="search-row search-row-filters">
             <el-select v-model="filters.position" placeholder="岗位" clearable @change="handleSearch" class="filter-select">
@@ -41,9 +41,14 @@
             <el-select v-model="filters.status" placeholder="状态" clearable multiple collapse-tags @change="handleSearch" class="filter-select filter-select-status">
               <el-option v-for="s in STATUS_OPTIONS" :key="s.value" :label="s.label" :value="s.value" />
             </el-select>
-            <el-select v-model="filters.source" placeholder="来源" clearable @change="handleSearch" class="filter-select">
-              <el-option v-for="s in store.filterOptions.sources" :key="s" :label="s" :value="s" />
-            </el-select>
+            <el-input
+              v-model="filters.created_by_name"
+              placeholder="操作人"
+              clearable
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+              class="filter-input"
+            />
           </div>
         </transition>
       </div>
@@ -58,7 +63,7 @@
       </div>
 
       <el-table :data="store.candidates" v-loading="store.loading" stripe size="default">
-        <el-table-column label="姓名" min-width="160">
+        <el-table-column label="姓名" min-width="150">
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 10px;">
               <el-avatar :size="32" style="background: var(--el-color-primary); flex-shrink: 0; font-size: 14px;">{{ row.name?.charAt(0) }}</el-avatar>
@@ -66,7 +71,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="岗位" min-width="120" show-overflow-tooltip>
+        <el-table-column label="岗位" min-width="130" show-overflow-tooltip>
           <template #default="{ row }">
             <div class="editable-cell" :class="{ 'is-editing': editingPositionId === row.id }">
               <template v-if="editingPositionId === row.id">
@@ -88,15 +93,15 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column label="状态" min-width="110">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small" effect="light">{{ getStatusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="来源" min-width="120" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.source || '-' }}</template>
+        <el-table-column label="操作人" min-width="130" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.created_by_name || '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" min-width="120">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="$router.push(`/candidates/${row.id}/edit`)">编辑</el-button>
             <el-popconfirm title="确定删除该候选人吗？" @confirm="handleDelete(row)">
@@ -134,7 +139,7 @@ const store = useCandidateStore()
 
 const filters = reactive({
   keyword: '', position: '', company: '',
-  status: [], source: '', page: 1, pageSize: 20
+  status: [], created_by_name: '', page: 1, pageSize: 20
 })
 
 // 移动端筛选器折叠状态：桌面端默认展开，移动端默认折叠
@@ -198,7 +203,7 @@ function buildParams() {
   if (filters.position) params.position = filters.position
   if (filters.company) params.company = filters.company
   if (filters.status.length > 0) params.status = filters.status.join(',')
-  if (filters.source) params.source = filters.source
+  if (filters.created_by_name) params.created_by_name = filters.created_by_name
   return params
 }
 
@@ -212,7 +217,7 @@ function handleSearch() {
 }
 
 function resetFilters() {
-  Object.assign(filters, { keyword: '', position: '', company: '', status: [], source: '', page: 1 })
+  Object.assign(filters, { keyword: '', position: '', company: '', status: [], created_by_name: '', page: 1 })
   fetchData()
 }
 
@@ -270,6 +275,10 @@ onUnmounted(() => {
 
 .filter-select-status {
   width: 200px;
+}
+
+.filter-input {
+  width: 160px;
 }
 
 /* 折叠/展开箭头行：桌面端隐藏，移动端显示 */
@@ -350,6 +359,11 @@ onUnmounted(() => {
 
   .filter-select-status {
     width: calc(50% - 4px);
+  }
+
+  .filter-input {
+    width: calc(50% - 4px);
+    min-width: 140px;
   }
 }
 

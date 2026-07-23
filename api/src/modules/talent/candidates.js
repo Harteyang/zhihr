@@ -74,6 +74,11 @@ async function listCandidates(request, env, corsHeaders) {
     }
     const source = url.searchParams.get('source')
     if (source) { conditions.push('talent_candidates.source = ?'); params.push(source) }
+    const createdByName = url.searchParams.get('created_by_name')
+    if (createdByName) {
+      conditions.push('EXISTS (SELECT 1 FROM users WHERE users.id = talent_candidates.created_by AND users.username LIKE ?)')
+      params.push(`%${createdByName}%`)
+    }
     const company = url.searchParams.get('company')
     if (company) {
       conditions.push('EXISTS (SELECT 1 FROM talent_work_experiences WHERE candidate_id = talent_candidates.id AND company = ?)')
