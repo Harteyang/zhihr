@@ -6,6 +6,7 @@ import * as miaodu from './modules/miaodu.js'
 import * as talent from './modules/talent/index.js'
 import * as talentAuth from './modules/talent_auth.js'
 import * as tasks from './modules/tasks.js'
+import { processPendingParseTasks } from './modules/talent/parse-queue.js'
 
 register(auth)
 register(reviews)
@@ -22,6 +23,9 @@ async function handleRequest(request, env, ctx) {
       headers: getCorsHeaders(request, env)
     })
   }
+
+  // 顺手消化待处理解析队列（不阻塞响应；cron 定时器仅作兜底）
+  ctx.waitUntil(processPendingParseTasks(env, ctx))
 
   const corsHeaders = getCorsHeaders(request, env)
   const url = new URL(request.url)
@@ -55,5 +59,9 @@ export default {
       const corsHeaders = getCorsHeaders(request, env)
       return jsonResponse({ success: false, message: '服务器内部错误，请稍后重试' }, 500, corsHeaders)
     }
+  },
+  // 每分钟定时触发，自动消化待处理的简历解析队列
+  async scheduled(event, env, ctx) {
+    await processPendingParseTasks(env, ctx)
   }
 }

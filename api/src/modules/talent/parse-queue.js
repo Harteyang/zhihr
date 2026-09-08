@@ -53,8 +53,8 @@ async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
       if (runningCount < MAX_CONCURRENT_TASKS) {
         const slots = MAX_CONCURRENT_TASKS - runningCount
         const pendingTasks = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
-        ).bind(slots).all()
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
+        ).bind(user.userId, slots).all()
 
         for (const nextTask of (pendingTasks.results || [])) {
           const claim = await env.DB.prepare(
@@ -138,6 +138,62 @@ async function processSingleParseTask(env, task, user) {
   return { candidateId, parsedData }
 }
 
+// 定时触发：消化全局待处理队列（不依赖用户轮询页面），防止任务长期卡在等待中
+async function processPendingParseTasks(env, ctx) {
+  try {
+    const runningCount = (await env.DB.prepare(
+      `SELECT COUNT(*) as count FROM talent_parse_tasks WHERE status = 'parsing'`
+    ).first()).count || 0
+
+    if (runningCount >= MAX_CONCURRENT_TASKS) return
+
+    const slots = MAX_CONCURRENT_TASKS - runningCount
+    const pendingTasks = await env.DB.prepare(
+      `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
+    ).bind(slots).all()
+
+    for (const nextTask of (pendingTasks.results || [])) {
+      const claim = await env.DB.prepare(
+        `UPDATE talent_parse_tasks SET status = 'parsing', progress = 5, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'`
+      ).bind(nextTask.id).run()
+
+      if (claim.meta.changes === 0) continue
+
+      const taskUser = await env.DB.prepare(
+        'SELECT id, username, role FROM users WHERE id = ?'
+      ).bind(nextTask.user_id).first()
+
+      if (!taskUser) {
+        await env.DB.prepare(
+          `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+        ).bind('任务所属用户已被删除', nextTask.id).run()
+        debugLog('ParseQueue', `Task ${nextTask.id} skipped: user ${nextTask.user_id} deleted`)
+        continue
+      }
+
+      const taskUserObj = { userId: taskUser.id, username: taskUser.username, role: taskUser.role }
+      const processPromise = (async () => {
+        try {
+          await processSingleParseTask(env, nextTask, taskUserObj)
+        } catch (parseErr) {
+          await env.DB.prepare(
+            `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+          ).bind(parseErr.message || '解析失败', nextTask.id).run()
+          debugLog('ParseQueue', `Task ${nextTask.id} failed:`, parseErr.message)
+        }
+      })()
+
+      if (ctx && typeof ctx.waitUntil === 'function') {
+        ctx.waitUntil(processPromise)
+      } else {
+        await processPromise
+      }
+    }
+  } catch (err) {
+    debugLog('ParseQueue', 'Scheduled processing error (non-fatal):', err.message)
+  }
+}
+
 async function getBatchStatus(request, env, corsHeaders, params, ctx) {
   const { user, error } = await requireAuth(request, env, corsHeaders)
   if (error) return error
@@ -185,8 +241,8 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
       if (runningCount < MAX_CONCURRENT_TASKS) {
         const slots = MAX_CONCURRENT_TASKS - runningCount
         const pendingTasks = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
-        ).bind(slots).all()
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
+        ).bind(user.userId, slots).all()
 
         for (const nextTask of (pendingTasks.results || [])) {
           const claim = await env.DB.prepare(
@@ -339,3 +395,5 @@ export const routes = [
   { method: 'GET', path: '/api/talent/parse-tasks/history', handler: getParseTaskHistory },
   { method: 'POST', path: '/api/talent/parse-tasks/:taskId/retry', handler: retryParseTask },
 ]
+
+export { processPendingParseTasks }

@@ -13,6 +13,13 @@ const AI_MODELS = [
     apiBase: 'https://api.agnes-ai.cn/v1',
     apiKeyEnv: 'AI_API_KEY',
     maxTokens: 8192
+  },
+  {
+    // 兜底模型：agnes 限流或失败时自动切换
+    name: 'deepseek-v4-flash',
+    apiBase: 'https://api.deepseek.com/v1',
+    apiKeyEnv: 'DEEPSEEK_API_KEY',
+    maxTokens: 8192
   }
 ]
 
@@ -139,7 +146,7 @@ async function callSingleModel(model, resumeText, apiKey, fileName) {
 async function callAIWithFallback(resumeText, env, fileName) {
   const configuredModels = AI_MODELS.filter(m => env[m.apiKeyEnv])
   if (configuredModels.length === 0) {
-    throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 AI_API_KEY')
+    throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 AI_API_KEY / DEEPSEEK_API_KEY')
   }
 
   const errors = []

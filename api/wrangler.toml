@@ -38,9 +38,15 @@ OSS_REGION = "cn-chengdu"
 
 # AI 模型 API Key 配置（至少配置一个）
 # AI_API_KEY：用于 agnes-2.5-flash 和 agnes-3.0-flash 模型
+# DEEPSEEK_API_KEY：用于 deepseek-v4-flash 兜底模型（agnes 限流/失败时自动切换）
 # 配置命令：
 # wrangler secret put AI_API_KEY
+# wrangler secret put DEEPSEEK_API_KEY
 
 # JWT_SECRET 必须通过 wrangler secret put JWT_SECRET 设置
 # ADMIN_SECRET 必须通过 wrangler secret put ADMIN_SECRET 设置
 # 切勿在此文件中写入密钥
+
+# 定时触发：每分钟自动消化待处理的简历解析队列
+[triggers]
+crons = ["*/1 * * * *"]
