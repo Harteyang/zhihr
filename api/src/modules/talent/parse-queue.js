@@ -6,7 +6,7 @@ import { getMimeType, createCandidateFromParse } from './candidates.js'
 
 const PARSE_TASK_RETENTION_DAYS = 30
 const PARSE_TASK_TIMEOUT_MINUTES = 5
-const MAX_CONCURRENT_TASKS = 2
+const MAX_CONCURRENT_TASKS = 1
 
 async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
   const { user, error } = await requireAuth(request, env, corsHeaders)

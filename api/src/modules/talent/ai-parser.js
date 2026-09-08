@@ -3,26 +3,31 @@ import { parseFile } from '../../modules/talent_parsers.js'
 
 const AI_MODELS = [
   {
-    name: 'deepseek-v4-flash',
-    apiBase: 'https://token.sensenova.cn/v1',
-    apiKeyEnv: 'SENSENOVA_API_KEY',
-    maxTokens: 4096
-  },
-  {
-    name: 'agnes-2.0-flash',
-    apiBase: 'https://apihub.agnes-ai.com/v1',
+    name: 'agnes-2.5-flash',
+    apiBase: 'https://api.agnes-ai.cn/v1',
     apiKeyEnv: 'AI_API_KEY',
-    maxTokens: 4096
+    maxTokens: 8192
   },
   {
-    name: 'sensenova-6.7-flash-lite',
-    apiBase: 'https://token.sensenova.cn/v1',
-    apiKeyEnv: 'SENSENOVA_API_KEY',
+    name: 'agnes-3.0-flash',
+    apiBase: 'https://api.agnes-ai.cn/v1',
+    apiKeyEnv: 'AI_API_KEY',
     maxTokens: 8192
   }
 ]
 
 const AI_CALL_TIMEOUT_MS = 30000
+
+// 可重试的临时性错误状态码（参考 Agnes 官方错误码文档建议）
+const RETRYABLE_HTTP_STATUS = new Set([408, 429, 500, 502, 503, 504, 520, 522, 524])
+// 每次重试前的等待时间（指数退避，用于缓解限流冷却）
+const RETRY_BACKOFF_MS = [2000, 4000]
+// 同 key 下切换模型前的短暂等待
+const MODEL_SWITCH_DELAY_MS = 1000
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 const AI_SYSTEM_PROMPT = `从简历文本提取结构化信息，仅返回JSON（不要markdown包裹）：
 {
@@ -62,7 +67,7 @@ function parseAIResponse(content) {
   return JSON.parse(cleanContent)
 }
 
-async function callSingleModel(model, resumeText, apiKey, parentSignal, fileName) {
+async function callSingleModel(model, resumeText, apiKey, fileName) {
   const url = `${model.apiBase}/chat/completions`
   const body = JSON.stringify({
     model: model.name,
@@ -74,64 +79,67 @@ async function callSingleModel(model, resumeText, apiKey, parentSignal, fileName
     max_tokens: model.maxTokens || 4096
   })
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS)
+  let lastError = null
 
-  if (parentSignal) {
-    if (parentSignal.aborted) {
-      controller.abort()
-      clearTimeout(timeoutId)
-    } else {
-      parentSignal.addEventListener('abort', () => {
-        controller.abort()
-        clearTimeout(timeoutId)
-      }, { once: true })
-    }
-  }
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body,
-      signal: controller.signal
-    })
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '')
-      throw new Error(`${model.name}: HTTP ${response.status} - ${errText.slice(0, 200)}`)
+  for (let attempt = 0; attempt <= RETRY_BACKOFF_MS.length; attempt++) {
+    if (attempt > 0) {
+      await sleep(RETRY_BACKOFF_MS[attempt - 1])
     }
 
-    const data = await response.json()
-    const message = data?.choices?.[0]?.message
-    const content = message?.content
-
-    if (!content || !content.trim()) {
-      const hasReasoning = !!(message?.reasoning && message.reasoning.trim())
-      throw new Error(
-        hasReasoning
-          ? `${model.name}: AI 返回 content 为空（reasoning 模式 max_tokens 不足）`
-          : `${model.name}: AI 返回内容为空`
-      )
-    }
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS)
 
     try {
-      return parseAIResponse(content)
-    } catch {
-      throw new Error(`${model.name}: AI 返回格式无法解析为 JSON`)
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body,
+        signal: controller.signal
+      })
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '')
+        const err = new Error(`${model.name}: HTTP ${response.status} - ${errText.slice(0, 200)}`)
+        if (RETRYABLE_HTTP_STATUS.has(response.status) && attempt < RETRY_BACKOFF_MS.length) {
+          lastError = err
+          continue
+        }
+        throw err
+      }
+
+      const data = await response.json()
+      const message = data?.choices?.[0]?.message
+      const content = message?.content
+
+      if (!content || !content.trim()) {
+        const hasReasoning = !!(message?.reasoning && message.reasoning.trim())
+        throw new Error(
+          hasReasoning
+            ? `${model.name}: AI 返回 content 为空（reasoning 模式 max_tokens 不足）`
+            : `${model.name}: AI 返回内容为空`
+        )
+      }
+
+      try {
+        return parseAIResponse(content)
+      } catch {
+        throw new Error(`${model.name}: AI 返回格式无法解析为 JSON`)
+      }
+    } finally {
+      clearTimeout(timeoutId)
     }
-  } finally {
-    clearTimeout(timeoutId)
   }
+
+  throw lastError || new Error(`${model.name}: 调用失败`)
 }
 
 async function callAIWithFallback(resumeText, env, fileName) {
   const configuredModels = AI_MODELS.filter(m => env[m.apiKeyEnv])
   if (configuredModels.length === 0) {
-    throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 SENSENOVA_API_KEY 或 AI_API_KEY')
+    throw new Error('未配置任何 AI 模型的 API Key，请在 Cloudflare Secrets 中配置 AI_API_KEY')
   }
 
   const errors = []
@@ -144,31 +152,23 @@ async function callAIWithFallback(resumeText, env, fileName) {
     modelsByKey.get(key).push(model)
   }
 
-  let prevController = null
+  // 同 key 下的模型按顺序串行调用（避免并发请求同一网关触发限流），
+  // 全部失败后才切换到下一组 key
   for (const [apiKeyEnv, models] of modelsByKey) {
     const apiKey = env[apiKeyEnv]
-    const controller = new AbortController()
 
-    if (prevController) prevController.abort()
-    prevController = controller
-
-    const promises = models.map(model =>
-      callSingleModel(model, resumeText, apiKey, controller.signal, fileName)
-        .then(result => {
-          controller.abort()
-          console.log(`[AI] 模型 ${model.name} 解析成功`)
-          return result
-        })
-        .catch(err => {
-          errors.push(err.message)
-          throw err
-        })
-    )
-
-    try {
-      return await Promise.any(promises)
-    } catch {
-      continue
+    for (let i = 0; i < models.length; i++) {
+      if (i > 0) {
+        await sleep(MODEL_SWITCH_DELAY_MS)
+      }
+      try {
+        const result = await callSingleModel(models[i], resumeText, apiKey, fileName)
+        console.log(`[AI] 模型 ${models[i].name} 解析成功`)
+        return result
+      } catch (err) {
+        errors.push(err.message)
+        console.log(`[AI] 模型 ${models[i].name} 解析失败: ${err.message}`)
+      }
     }
   }
 
