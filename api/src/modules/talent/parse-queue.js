@@ -141,6 +141,16 @@ async function processSingleParseTask(env, task, user) {
 // 定时触发：消化全局待处理队列（不依赖用户轮询页面），防止任务长期卡在等待中
 async function processPendingParseTasks(env, ctx) {
   try {
+    // 全局卡死检测：超过 5 分钟未更新的 parsing 任务直接标记失败，
+    // 避免死掉的 waitUntil 永久占用并发槽位、堵住整个队列
+    const staleCutoff = new Date(Date.now() - PARSE_TASK_TIMEOUT_MINUTES * 60 * 1000).toISOString()
+    const staleResult = await env.DB.prepare(
+      `UPDATE talent_parse_tasks SET status = 'failed', error_message = ?, progress = 0, updated_at = CURRENT_TIMESTAMP WHERE status = 'parsing' AND updated_at < ?`
+    ).bind(`任务处理超时（超过 ${PARSE_TASK_TIMEOUT_MINUTES} 分钟），已自动标记失败`, staleCutoff).run()
+    if (staleResult.meta.changes > 0) {
+      debugLog('ParseQueue', `Marked ${staleResult.meta.changes} stale parsing task(s) as failed`)
+    }
+
     const runningCount = (await env.DB.prepare(
       `SELECT COUNT(*) as count FROM talent_parse_tasks WHERE status = 'parsing'`
     ).first()).count || 0

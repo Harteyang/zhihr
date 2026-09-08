@@ -16,10 +16,12 @@ const AI_MODELS = [
   },
   {
     // 兜底模型：agnes 限流或失败时自动切换
+    // 注意：deepseek-v4-flash 为推理型模型，单次响应耗时长，需更大的超时与 max_tokens
     name: 'deepseek-v4-flash',
     apiBase: 'https://api.deepseek.com/v1',
     apiKeyEnv: 'DEEPSEEK_API_KEY',
-    maxTokens: 8192
+    maxTokens: 16384,
+    timeoutMs: 120000
   }
 ]
 
@@ -94,7 +96,7 @@ async function callSingleModel(model, resumeText, apiKey, fileName) {
     }
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), AI_CALL_TIMEOUT_MS)
+    const timeoutId = setTimeout(() => controller.abort(), model.timeoutMs || AI_CALL_TIMEOUT_MS)
 
     try {
       const response = await fetch(url, {
