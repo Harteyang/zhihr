@@ -1,6 +1,7 @@
 import { debugLog, jsonResponse, maskError, parsePagination, requireAuth, requireAdmin, getUserPositions, logOperation, getClientIp } from '../../utils/router.js'
 import { OSSClient } from '../../utils/oss.js'
 import { checkPositionPermission } from './permissions.js'
+import { buildIntakeProfileInsert } from './intake.js'
 
 const VALID_STATUSES = [
   'to_recommend',      // 待推荐
@@ -168,7 +169,7 @@ async function getCandidate(request, env, corsHeaders, params) {
     ).bind(id).all()
 
     const attachments = await env.DB.prepare(
-      'SELECT id, candidate_id, file_name, file_type, file_size, created_at FROM talent_attachments WHERE candidate_id = ? ORDER BY created_at DESC'
+      'SELECT id, candidate_id, file_name, file_type, file_size, kind, created_at FROM talent_attachments WHERE candidate_id = ? ORDER BY created_at DESC'
     ).bind(id).all()
 
     return jsonResponse({
@@ -262,6 +263,11 @@ async function createCandidate(request, env, corsHeaders) {
     ).run()
 
     const newId = result.meta.last_row_id
+
+    // 面试登记信息（简历解析回填或表单附带）
+    const intakeStmt = buildIntakeProfileInsert(env, newId, body.intake)
+    if (intakeStmt) await intakeStmt.run()
+
     await logOperation(env, user, 'create_candidate', 'candidate', String(newId), { name: body.name }, getClientIp(request))
 
     return getCandidate(request, env, corsHeaders, { id: newId })
@@ -393,6 +399,8 @@ async function deleteCandidate(request, env, corsHeaders, params) {
     await env.DB.batch([
       env.DB.prepare('DELETE FROM talent_work_experiences WHERE candidate_id = ?').bind(id),
       env.DB.prepare('DELETE FROM talent_attachments WHERE candidate_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM talent_intake_profiles WHERE candidate_id = ?').bind(id),
+      env.DB.prepare('DELETE FROM talent_intake_contacts WHERE candidate_id = ?').bind(id),
       env.DB.prepare('DELETE FROM talent_candidates WHERE id = ?').bind(id)
     ])
 
@@ -446,6 +454,10 @@ async function createCandidateFromParse(env, aiResult, task, createdBy) {
       await env.DB.batch(expStmts)
     }
   }
+
+  // AI 解析出的面试登记信息
+  const intakeStmt = buildIntakeProfileInsert(env, candidateId, aiResult)
+  if (intakeStmt) await intakeStmt.run()
 
   await env.DB.prepare(
     `INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size)

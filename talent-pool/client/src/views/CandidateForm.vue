@@ -174,7 +174,9 @@ const originalExperienceIds = ref([])
 const form = reactive({
   name: '', phone: '', email: '', position: '',
   skills: [], education: '', experience_years: null,
-  source: '', summary: '', experiences: []
+  source: '', summary: '', experiences: [],
+  // 面试登记信息（AI 解析回填，创建时随表单提交）
+  intake: {}
 })
 
 const rules = {
@@ -246,13 +248,20 @@ async function handleAiParse() {
     if (data.email) form.email = data.email
     if (data.position) form.position = data.position
     if (data.education) {
-      const validEducation = ['大专', '本科', '硕士', '博士', '其他']
       // 仅在合法学历范围内赋值，否则保留空值让用户手动选择
-      if (validEducation.includes(data.education)) {
+      if (EDUCATION_OPTIONS.includes(data.education)) {
         form.education = data.education
       }
     }
-    // 注意：AI 返回的 school/major 字段当前无对应数据库列和 UI 输入框，暂不处理（避免幽灵字段）
+    // AI 解析出的面试登记字段（性别/出生/民族/籍贯/院校/专业等），随表单提交写入登记表
+    const intakeFields = ['gender', 'birth_month', 'ethnicity', 'marital_status', 'hometown',
+      'address', 'health_status', 'height', 'political_status',
+      'school', 'major', 'graduation_start', 'graduation_end']
+    form.intake = {}
+    for (const f of intakeFields) {
+      const v = data[f]
+      if (v !== undefined && v !== null && v !== '') form.intake[f] = String(v)
+    }
     if (data.experience_years !== null && data.experience_years !== undefined) {
       form.experience_years = data.experience_years
     }

@@ -9,7 +9,42 @@ export const STATUS_OPTIONS = [
   { label: '筛选不通过', value: 'screening_failed' }
 ]
 
-export const EDUCATION_OPTIONS = ['大专', '本科', '硕士', '博士', '其他']
+export const EDUCATION_OPTIONS = ['大专', '本科', '硕士', '博士', 'MBA', '其他']
+
+// ====== 面试登记（对照入职信息登记字段表） ======
+
+export const GENDER_OPTIONS = ['男', '女']
+
+export const MARITAL_OPTIONS = ['已婚', '未婚', '离异']
+
+export const HOUSEHOLD_OPTIONS = ['农村', '城市']
+
+export const POLITICAL_OPTIONS = ['中共党员', '预备党员', '共青团员', '民主党派', '群众']
+
+export const ONBOARD_TIME_OPTIONS = ['随时到岗', '一周内', '两周内', '一个月内', '待定']
+
+export const YES_NO_OPTIONS = ['是', '否']
+
+export const UNIFIED_OPTIONS = ['统招', '非统招']
+
+export const RELATION_OPTIONS = ['父亲', '母亲', '配偶', '子女', '兄弟姐妹', '其他']
+
+// 附件用途（talent_attachments.kind）
+export const ATTACHMENT_KINDS = [
+  { label: '简历', value: 'resume' },
+  { label: '身份证（人像面）', value: 'id_card_front' },
+  { label: '身份证（国徽面）', value: 'id_card_back' },
+  { label: '学历证书', value: 'education_cert' },
+  { label: '学位证书', value: 'degree_cert' },
+  { label: '前公司离职证明', value: 'resignation_cert' },
+  { label: '个人照片', value: 'photo' },
+  { label: '候选人签名', value: 'signature' }
+]
+
+export const getAttachmentKindLabel = (value) => {
+  const found = ATTACHMENT_KINDS.find(k => k.value === value)
+  return found ? found.label : '简历'
+}
 
 export const EXPERIENCE_RANGES = [
   { label: '1年以下', min: 0, max: 1 },

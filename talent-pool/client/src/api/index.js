@@ -93,5 +93,6 @@ export * from './users.js'
 export * from './evaluations.js'
 export * from './share.js'
 export * from './resume-share.js'
+export * from './intake.js'
 
 export default api

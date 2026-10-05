@@ -113,7 +113,7 @@ async function confirmUpload(request, env, corsHeaders, params) {
   try {
     const candidateId = params.id
     const body = await request.json()
-    const { ossKey, fileName, fileType, fileSize } = body
+    const { ossKey, fileName, fileType, fileSize, kind } = body
     if (!ossKey || !fileName) {
       return jsonResponse({ success: false, message: '参数不完整' }, 400, corsHeaders)
     }
@@ -127,12 +127,12 @@ async function confirmUpload(request, env, corsHeaders, params) {
     }
 
     const result = await env.DB.prepare(`
-      INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size)
-      VALUES (?, ?, ?, ?, ?)
-    `).bind(candidateId, fileName, fileType || '', ossKey, fileSize || 0).run()
+      INSERT INTO talent_attachments (candidate_id, file_name, file_type, r2_key, file_size, kind)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(candidateId, fileName, fileType || '', ossKey, fileSize || 0, kind || 'resume').run()
 
     const attachment = await env.DB.prepare(
-      'SELECT id, candidate_id, file_name, file_type, file_size, created_at FROM talent_attachments WHERE id = ?'
+      'SELECT id, candidate_id, file_name, file_type, file_size, kind, created_at FROM talent_attachments WHERE id = ?'
     ).bind(result.meta.last_row_id).first()
 
     await logOperation(env, user, 'upload_attachment', 'attachment', String(attachment.id), { candidate_id: candidateId, file_name: fileName }, getClientIp(request))

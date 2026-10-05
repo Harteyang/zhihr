@@ -192,6 +192,102 @@
             </div>
           </div>
         </el-tab-pane>
+
+        <el-tab-pane label="面试登记" name="intake" lazy>
+          <div v-loading="intakeLoading">
+            <div class="intake-toolbar">
+              <span class="intake-hint">带 <span style="color: var(--el-color-primary);">AI</span> 标记的字段由简历解析自动回填，可直接修改补充</span>
+              <el-button type="primary" size="small" :loading="intakeSaving" @click="saveIntake">保存登记信息</el-button>
+            </div>
+
+            <div class="intake-section-title">基础信息</div>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="性别"><el-select v-model="intakeForm.gender" clearable placeholder="-"><el-option v-for="g in GENDER_OPTIONS" :key="g" :label="g" :value="g" /></el-select></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="出生日期"><el-date-picker v-model="intakeForm.birth_month" type="month" value-format="YYYY-MM" placeholder="选择月份" style="width: 100%;" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="民族"><el-input v-model="intakeForm.ethnicity" placeholder="如：汉族" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="婚姻状况"><el-select v-model="intakeForm.marital_status" clearable placeholder="-"><el-option v-for="m in MARITAL_OPTIONS" :key="m" :label="m" :value="m" /></el-select></el-form-item></el-col>
+            </el-row>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="籍贯（省+市）"><el-input v-model="intakeForm.hometown" placeholder="如：浙江省杭州市" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="户籍类型"><el-select v-model="intakeForm.household_type" clearable placeholder="-"><el-option v-for="h in HOUSEHOLD_OPTIONS" :key="h" :label="h" :value="h" /></el-select></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="住址（精确到区）"><el-input v-model="intakeForm.address" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="身体状况"><el-input v-model="intakeForm.health_status" placeholder="如：良好" /></el-form-item></el-col>
+            </el-row>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="身高"><el-input v-model="intakeForm.height" placeholder="如：175cm" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="政治面貌"><el-select v-model="intakeForm.political_status" clearable filterable allow-create placeholder="-"><el-option v-for="p in POLITICAL_OPTIONS" :key="p" :label="p" :value="p" /></el-select></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="微信号"><el-input v-model="intakeForm.wechat" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="填表日期"><el-date-picker v-model="intakeForm.filled_date" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item></el-col>
+            </el-row>
+
+            <div class="intake-section-title">证件信息</div>
+            <el-row :gutter="12">
+              <el-col :span="8"><el-form-item label="证件号码"><el-input v-model="intakeForm.id_number" placeholder="身份证号" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="证件有效期起"><el-date-picker v-model="intakeForm.id_expiry_start" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="证件有效期止"><el-date-picker v-model="intakeForm.id_expiry_end" type="date" value-format="YYYY-MM-DD" style="width: 100%;" /></el-form-item></el-col>
+            </el-row>
+
+            <div class="intake-section-title">求职信息</div>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="目前薪资（税前）"><el-input v-model="intakeForm.current_salary" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="期望薪资最低"><el-input v-model="intakeForm.expected_salary_min" placeholder="如：15000" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="期望薪资最高"><el-input v-model="intakeForm.expected_salary_max" placeholder="如：20000" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="到岗时间"><el-select v-model="intakeForm.onboard_time" clearable placeholder="-"><el-option v-for="t in ONBOARD_TIME_OPTIONS" :key="t" :label="t" :value="t" /></el-select></el-form-item></el-col>
+            </el-row>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="有亲属/朋友在本公司"><el-select v-model="intakeForm.has_referral" clearable placeholder="-"><el-option v-for="y in YES_NO_OPTIONS" :key="y" :label="y" :value="y" /></el-select></el-form-item></el-col>
+              <el-col :span="18"><el-form-item label="亲属/朋友说明"><el-input v-model="intakeForm.referral_text" placeholder="填写姓名与关系" /></el-form-item></el-col>
+            </el-row>
+
+            <div class="intake-section-title">教育背景</div>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="毕业院校"><el-input v-model="intakeForm.school" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="所学专业"><el-input v-model="intakeForm.major" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="教育开始时间"><el-date-picker v-model="intakeForm.graduation_start" type="month" value-format="YYYY-MM" style="width: 100%;" /></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="毕业时间"><el-date-picker v-model="intakeForm.graduation_end" type="month" value-format="YYYY-MM" style="width: 100%;" /></el-form-item></el-col>
+            </el-row>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="是否统招"><el-select v-model="intakeForm.is_unified" clearable placeholder="-"><el-option v-for="u in UNIFIED_OPTIONS" :key="u" :label="u" :value="u" /></el-select></el-form-item></el-col>
+              <el-col :span="18"><el-form-item label="职业资格证书"><el-input v-model="intakeForm.certificates" placeholder="证书名+时间+发证机构，多个用分号分隔" /></el-form-item></el-col>
+            </el-row>
+
+            <div class="intake-section-title">合规与财务</div>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="有竞业限制协议"><el-select v-model="intakeForm.non_compete" clearable placeholder="-"><el-option v-for="y in YES_NO_OPTIONS" :key="y" :label="y" :value="y" /></el-select></el-form-item></el-col>
+              <el-col :span="18"><el-form-item label="竞业限制说明"><el-input v-model="intakeForm.non_compete_note" placeholder="协议对象、期限等，如：与XX公司签订，期限1年" /></el-form-item></el-col>
+            </el-row>
+            <el-row :gutter="12">
+              <el-col :span="6"><el-form-item label="有劳动仲裁/诉讼"><el-select v-model="intakeForm.arbitration_record" clearable placeholder="-"><el-option v-for="y in YES_NO_OPTIONS" :key="y" :label="y" :value="y" /></el-select></el-form-item></el-col>
+              <el-col :span="6"><el-form-item label="银行卡号"><el-input v-model="intakeForm.bank_card" /></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="开户行"><el-input v-model="intakeForm.bank_name" placeholder="如：招商银行杭州分行" /></el-form-item></el-col>
+            </el-row>
+
+            <div class="intake-section-title">家人信息</div>
+            <div v-for="(c, idx) in familyContacts" :key="'family-' + idx" class="intake-contact-row">
+              <el-input v-model="c.name" placeholder="姓名" style="width: 140px;" />
+              <el-input v-model="c.relation" placeholder="关系" style="width: 130px;" />
+              <el-select v-model="c.gender" placeholder="性别" clearable style="width: 100px;">
+                <el-option v-for="g in GENDER_OPTIONS" :key="g" :label="g" :value="g" />
+              </el-select>
+              <el-date-picker v-model="c.birth_month" type="month" value-format="YYYY-MM" placeholder="生日" style="width: 150px;" />
+              <el-input v-model="c.phone" placeholder="电话" style="width: 160px;" />
+              <el-button type="danger" link @click="removeContact('family', idx)">删除</el-button>
+            </div>
+            <el-button size="small" @click="addContact('family')">+ 添加家人</el-button>
+
+            <div class="intake-section-title">紧急联系人</div>
+            <div v-for="(c, idx) in emergencyContacts" :key="'emergency-' + idx" class="intake-contact-row">
+              <el-input v-model="c.name" placeholder="姓名" style="width: 140px;" />
+              <el-input v-model="c.relation" placeholder="关系" style="width: 130px;" />
+              <el-input v-model="c.phone" placeholder="电话" style="width: 160px;" />
+              <el-button type="danger" link @click="removeContact('emergency', idx)">删除</el-button>
+            </div>
+            <el-button size="small" @click="addContact('emergency')">+ 添加紧急联系人</el-button>
+
+            <div class="intake-section-title">信息真实性承诺</div>
+            <el-checkbox v-model="intakeForm.truth_confirmed">本人承诺以上填写信息真实、准确、完整，如有虚假愿意承担相应责任</el-checkbox>
+          </div>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
 
@@ -201,6 +297,9 @@
         <span style="font-weight: 600;">附件 ({{ candidate.attachments?.length || 0 }})</span>
       </template>
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+        <el-select v-model="uploadKind" size="small" style="width: 170px;">
+          <el-option v-for="k in ATTACHMENT_KINDS" :key="k.value" :label="`类型：${k.label}`" :value="k.value" />
+        </el-select>
         <el-upload
           :auto-upload="true"
           action="#"
@@ -233,6 +332,9 @@
       <el-table :data="candidate.attachments || []" v-if="candidate.attachments && candidate.attachments.length > 0" stripe>
         <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
         <el-table-column prop="file_type" label="类型" width="80" />
+        <el-table-column label="用途" width="150">
+          <template #default="{ row }">{{ getAttachmentKindLabel(row.kind) }}</template>
+        </el-table-column>
         <el-table-column prop="file_size" label="大小" width="100">
           <template #default="{ row }">{{ row.file_size ? `${(row.file_size / 1024).toFixed(1)} KB` : '-' }}</template>
         </el-table-column>
@@ -401,12 +503,13 @@ import {
   getEvaluations, createEvaluation, updateEvaluation, deleteEvaluation,
   getShareLinks, createShareLink, deleteShareLink,
   getFollowRecords,
-  getResumeShareLinks, createResumeShareLink, deleteResumeShareLink
+  getResumeShareLinks, createResumeShareLink, deleteResumeShareLink,
+  getCandidateIntake, updateCandidateIntake
 } from '../api'
 import StatusSelect from '../components/StatusSelect.vue'
 import PdfPreview from '../components/PdfPreview.vue'
 import HtmlPreview from '../components/HtmlPreview.vue'
-import { getStatusLabel, getStatusType, formatTime } from '../utils/constants'
+import { getStatusLabel, getStatusType, formatTime, GENDER_OPTIONS, MARITAL_OPTIONS, HOUSEHOLD_OPTIONS, POLITICAL_OPTIONS, ONBOARD_TIME_OPTIONS, YES_NO_OPTIONS, UNIFIED_OPTIONS, ATTACHMENT_KINDS, getAttachmentKindLabel } from '../utils/constants'
 
 const route = useRoute()
 const router = useRouter()
@@ -462,6 +565,84 @@ const creatingRecommendLink = ref(false)
 const recommendLinks = ref([])
 const recommendLinksLoading = ref(false)
 
+// ====== 面试登记 ======
+const intakeLoading = ref(false)
+const intakeSaving = ref(false)
+const intakeLoaded = ref(false)
+
+function emptyIntakeForm() {
+  return {
+    gender: '', birth_month: '', ethnicity: '', marital_status: '', hometown: '',
+    household_type: '', address: '', health_status: '', height: '', political_status: '',
+    id_number: '', id_expiry_start: '', id_expiry_end: '', wechat: '',
+    current_salary: '', expected_salary_min: '', expected_salary_max: '',
+    onboard_time: '', has_referral: '', referral_text: '',
+    school: '', major: '', graduation_start: '', graduation_end: '',
+    is_unified: '', certificates: '',
+    non_compete: '', non_compete_note: '', arbitration_record: '',
+    bank_card: '', bank_name: '',
+    truth_confirmed: false, filled_date: ''
+  }
+}
+
+const intakeForm = ref(emptyIntakeForm())
+const familyContacts = ref([])
+const emergencyContacts = ref([])
+
+function addContact(type) {
+  const row = { contact_type: type, name: '', relation: '', gender: '', birth_month: '', phone: '' }
+  if (type === 'family') familyContacts.value.push(row)
+  else emergencyContacts.value.push({ contact_type: 'emergency', name: '', relation: '', gender: '', birth_month: '', phone: '' })
+}
+
+function removeContact(type, idx) {
+  if (type === 'family') familyContacts.value.splice(idx, 1)
+  else emergencyContacts.value.splice(idx, 1)
+}
+
+async function fetchIntake() {
+  intakeLoading.value = true
+  try {
+    const res = await getCandidateIntake(route.params.id)
+    const { profile, contacts } = res.data.data || {}
+    const form = emptyIntakeForm()
+    if (profile) {
+      for (const key of Object.keys(form)) {
+        if (profile[key] === null || profile[key] === undefined) continue
+        form[key] = key === 'truth_confirmed' ? !!profile[key] : profile[key]
+      }
+    }
+    intakeForm.value = form
+    familyContacts.value = (contacts || []).filter(c => c.contact_type === 'family')
+      .map(c => ({ contact_type: 'family', name: c.name || '', relation: c.relation || '', gender: c.gender || '', birth_month: c.birth_month || '', phone: c.phone || '' }))
+    emergencyContacts.value = (contacts || []).filter(c => c.contact_type === 'emergency')
+      .map(c => ({ contact_type: 'emergency', name: c.name || '', relation: c.relation || '', gender: c.gender || '', birth_month: c.birth_month || '', phone: c.phone || '' }))
+    intakeLoaded.value = true
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '加载面试登记信息失败')
+  } finally {
+    intakeLoading.value = false
+  }
+}
+
+async function saveIntake() {
+  intakeSaving.value = true
+  try {
+    await updateCandidateIntake(route.params.id, {
+      ...intakeForm.value,
+      contacts: [...familyContacts.value, ...emergencyContacts.value]
+    })
+    ElMessage.success('面试登记信息已保存')
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '保存失败')
+  } finally {
+    intakeSaving.value = false
+  }
+}
+
+// 附件上传用途
+const uploadKind = ref('resume')
+
 function goBack() {
   router.push('/candidates')
 }
@@ -514,7 +695,8 @@ async function handleUploadRequest(options) {
       ossKey,
       fileName,
       fileType,
-      fileSize: fileSize || file.size
+      fileSize: fileSize || file.size,
+      kind: uploadKind.value
     })
 
     onSuccess(confirmRes.data)
@@ -707,11 +889,13 @@ function getEventTimelineType(type) {
 }
 
 function handleTabChange(tab) {
-  // 切换到评价/跟进记录 tab 时始终拉取最新数据，确保状态变更后不展示陈旧内容
+  // 切换到评价/跟进记录/面试登记 tab 时始终拉取最新数据，确保状态变更后不展示陈旧内容
   if (tab === 'evaluations') {
     fetchEvaluations()
   } else if (tab === 'followRecords') {
     fetchFollowRecords()
+  } else if (tab === 'intake') {
+    fetchIntake()
   }
 }
 
@@ -1276,6 +1460,31 @@ onMounted(async () => {
   max-height: 0;
   margin-top: 0;
   transform: translateY(-8px);
+}
+
+.intake-section-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 18px 0 6px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-primary);
+}
+.intake-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.intake-hint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.intake-contact-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .follow-summary {

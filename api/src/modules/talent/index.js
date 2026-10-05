@@ -12,6 +12,7 @@ import { routes as sharePublicRoutes } from './share-public.js'
 import { routes as resumeSharesRoutes } from './resume-shares.js'
 import { routes as resumeSharePublicRoutes } from './resume-share-public.js'
 import { routes as followRecordsRoutes } from './follow-records.js'
+import { routes as intakeRoutes } from './intake.js'
 
 export const routes = [
   ...candidatesRoutes,
@@ -27,7 +28,8 @@ export const routes = [
   ...sharePublicRoutes,
   ...resumeSharesRoutes,
   ...resumeSharePublicRoutes,
-  ...followRecordsRoutes
+  ...followRecordsRoutes,
+  ...intakeRoutes
 ]
 
 export { checkPositionPermission } from './permissions.js'
