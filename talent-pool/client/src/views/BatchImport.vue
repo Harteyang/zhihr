@@ -22,6 +22,25 @@
           </template>
         </el-alert>
 
+        <!-- 职位指定（可选） -->
+        <el-form-item label="指定职位" style="margin-bottom: 16px; max-width: 420px;">
+          <el-select
+            v-model="selectedPosition"
+            placeholder="不指定则由 AI 从简历中识别"
+            clearable
+            filterable
+            allow-create
+            default-first-option
+            :loading="positionOptionsLoading"
+            style="width: 100%;"
+          >
+            <el-option v-for="p in positionOptions" :key="p" :label="p" :value="p" />
+          </el-select>
+          <div style="font-size: 12px; color: var(--el-text-color-secondary); line-height: 1.6; margin-top: 4px;">
+            可选项：选择后，本批所有简历将按该职位入库；留空则按 AI 识别的简历职位信息记录。
+          </div>
+        </el-form-item>
+
         <el-upload
           ref="uploadRef"
           drag
@@ -86,6 +105,12 @@
         <el-table :data="batchData?.tasks || []" style="width: 100%;" v-loading="batchLoading">
           <el-table-column label="#" type="index" width="50" />
           <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
+          <el-table-column label="指定职位" width="140">
+            <template #default="{ row }">
+              <el-tag v-if="row.override_position" size="small" type="primary">{{ row.override_position }}</el-tag>
+              <span v-else style="color: var(--el-text-color-secondary); font-size: 12px;">AI 识别</span>
+            </template>
+          </el-table-column>
           <el-table-column label="状态" width="120">
             <template #default="{ row }">
               <el-tag :type="getTaskDisplayStatus(row).type" size="small">
@@ -194,6 +219,12 @@
             </template>
             <el-table :data="batch.tasks" size="small">
               <el-table-column prop="file_name" label="文件名" min-width="200" show-overflow-tooltip />
+              <el-table-column label="指定职位" width="140">
+                <template #default="{ row }">
+                  <el-tag v-if="row.override_position" size="small" type="primary">{{ row.override_position }}</el-tag>
+                  <span v-else style="color: var(--el-text-color-secondary); font-size: 12px;">AI 识别</span>
+                </template>
+              </el-table-column>
               <el-table-column label="状态" width="100">
                 <template #default="{ row }">
                   <el-tag :type="getTaskDisplayStatus(row).type" size="small">{{ getTaskDisplayStatus(row).text }}</el-tag>
@@ -242,7 +273,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UploadFilled, Upload, Loading } from '@element-plus/icons-vue'
-import { getBatchUploadUrl, createBatchParseTasks, getBatchStatus, getParseTaskHistory, retryParseTask } from '../api'
+import { getBatchUploadUrl, createBatchParseTasks, getBatchStatus, getParseTaskHistory, retryParseTask, getAvailablePositions } from '../api'
 import { formatTime } from '../utils/constants'
 
 const MAX_FILES = 10
@@ -418,7 +449,10 @@ async function handleBatchUpload() {
     }
 
     // 3. 创建批量解析任务
-    const batchRes = await createBatchParseTasks({ files: successUploads })
+    const batchRes = await createBatchParseTasks({
+      files: successUploads,
+      position: selectedPosition.value || undefined
+    })
     currentBatchId.value = batchRes.data.data.batchId
 
     ElMessage.success(`上传成功！${successUploads.length} 个文件已加入解析队列${failedCount > 0 ? `，${failedCount} 个文件上传失败` : ''}`)
@@ -551,12 +585,31 @@ function handleTabChange(tab) {
   }
 }
 
+// 指定职位（可选）
+const selectedPosition = ref('')
+const positionOptions = ref([])
+const positionOptionsLoading = ref(false)
+
+async function loadPositionOptions() {
+  positionOptionsLoading.value = true
+  try {
+    const res = await getAvailablePositions()
+    positionOptions.value = res.data.data || []
+  } catch (e) {
+    // 职位选项加载失败不阻塞上传
+    positionOptions.value = []
+  } finally {
+    positionOptionsLoading.value = false
+  }
+}
+
 onMounted(() => {
   // 如果有正在进行的批次，直接跳到进度面板
   if (currentBatchId.value) {
     activeTab.value = 'progress'
     startPolling()
   }
+  loadPositionOptions()
 })
 
 onUnmounted(() => {

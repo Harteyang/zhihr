@@ -33,13 +33,15 @@ async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
     }
 
     const batchId = crypto.randomUUID()
+    // 可选指定职位：非空时解析完成后覆盖 AI 识别的职位
+    const overridePosition = typeof body.position === 'string' && body.position.trim() ? body.position.trim().slice(0, 100) : null
 
     const stmts = files.map(f => {
       const ext = f.fileName.substring(f.fileName.lastIndexOf('.')).toLowerCase().replace('.', '')
       return env.DB.prepare(
-        `INSERT INTO talent_parse_tasks (batch_id, user_id, file_name, file_type, file_size, oss_key, status, progress)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending', 0)`
-      ).bind(batchId, user.userId, f.fileName, ext, f.fileSize || null, f.ossKey)
+        `INSERT INTO talent_parse_tasks (batch_id, user_id, file_name, file_type, file_size, oss_key, override_position, status, progress)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 0)`
+      ).bind(batchId, user.userId, f.fileName, ext, f.fileSize || null, f.ossKey, overridePosition)
     })
     await env.DB.batch(stmts)
 
@@ -53,7 +55,7 @@ async function createBatchParseTasks(request, env, corsHeaders, params, ctx) {
       if (runningCount < MAX_CONCURRENT_TASKS) {
         const slots = MAX_CONCURRENT_TASKS - runningCount
         const pendingTasks = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key, override_position FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
         ).bind(user.userId, slots).all()
 
         for (const nextTask of (pendingTasks.results || [])) {
@@ -121,6 +123,11 @@ async function processSingleParseTask(env, task, user) {
 
   const aiResult = await callAIWithFallback(resumeText, env, task.file_name)
 
+  // 用户在批量上传时指定了职位：覆盖 AI 识别结果
+  if (task.override_position) {
+    aiResult.position = task.override_position
+  }
+
   await env.DB.prepare(
     `UPDATE talent_parse_tasks SET progress = 80, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
   ).bind(task.id).run()
@@ -159,7 +166,7 @@ async function processPendingParseTasks(env, ctx) {
 
     const slots = MAX_CONCURRENT_TASKS - runningCount
     const pendingTasks = await env.DB.prepare(
-      `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
+      `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key, override_position FROM talent_parse_tasks WHERE status = 'pending' ORDER BY created_at LIMIT ?`
     ).bind(slots).all()
 
     for (const nextTask of (pendingTasks.results || [])) {
@@ -212,7 +219,7 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
     const { batchId } = params
 
     const fetchTasks = () => env.DB.prepare(
-      `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
+      `SELECT id, file_name, file_type, file_size, status, progress, error_message, candidate_id, override_position, created_at, updated_at
        FROM talent_parse_tasks WHERE batch_id = ? AND user_id = ? ORDER BY id`
     ).bind(batchId, user.userId).all()
 
@@ -251,7 +258,7 @@ async function getBatchStatus(request, env, corsHeaders, params, ctx) {
       if (runningCount < MAX_CONCURRENT_TASKS) {
         const slots = MAX_CONCURRENT_TASKS - runningCount
         const pendingTasks = await env.DB.prepare(
-          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
+          `SELECT id, batch_id, user_id, file_name, file_type, file_size, oss_key, override_position FROM talent_parse_tasks WHERE status = 'pending' AND user_id = ? ORDER BY created_at LIMIT ?`
         ).bind(user.userId, slots).all()
 
         for (const nextTask of (pendingTasks.results || [])) {
@@ -343,7 +350,7 @@ async function getParseTaskHistory(request, env, corsHeaders) {
     const total = countRow.total
 
     const rows = await env.DB.prepare(
-      `SELECT id, batch_id, file_name, file_type, file_size, status, progress, error_message, candidate_id, created_at, updated_at
+      `SELECT id, batch_id, file_name, file_type, file_size, status, progress, error_message, candidate_id, override_position, created_at, updated_at
        FROM talent_parse_tasks ${where}
        ORDER BY created_at DESC LIMIT ? OFFSET ?`
     ).bind(user.userId, cutoffStr, pageSize, offset).all()
@@ -372,7 +379,7 @@ async function retryParseTask(request, env, corsHeaders, params) {
   try {
     const { taskId } = params
     const task = await env.DB.prepare(
-      'SELECT id, user_id, file_name, file_type, file_size, oss_key, status, updated_at FROM talent_parse_tasks WHERE id = ? AND user_id = ?'
+      'SELECT id, user_id, file_name, file_type, file_size, oss_key, override_position, status, updated_at FROM talent_parse_tasks WHERE id = ? AND user_id = ?'
     ).bind(taskId, user.userId).first()
 
     if (!task) {

@@ -228,6 +228,7 @@ CREATE TABLE IF NOT EXISTS talent_parse_tasks (
     file_type TEXT NOT NULL,
     file_size INTEGER,
     oss_key TEXT NOT NULL,
+    override_position TEXT,
     status TEXT DEFAULT 'pending',
     progress INTEGER DEFAULT 0,
     error_message TEXT,
