@@ -56,6 +56,17 @@
               @keyup.enter="handleSearch"
               class="filter-input"
             />
+            <div class="filter-range">
+              <el-input v-model="filters.age_min" placeholder="年龄≥" clearable @clear="handleSearch" @keyup.enter="handleSearch" class="filter-input filter-input-age" />
+              <span class="range-separator">-</span>
+              <el-input v-model="filters.age_max" placeholder="年龄≤" clearable @clear="handleSearch" @keyup.enter="handleSearch" class="filter-input filter-input-age" />
+            </div>
+            <el-select v-model="filters.gender" placeholder="性别" clearable @change="handleSearch" class="filter-select filter-select-narrow">
+              <el-option v-for="g in GENDER_OPTIONS" :key="g" :label="g" :value="g" />
+            </el-select>
+            <el-select v-model="filters.education" placeholder="学历" clearable @change="handleSearch" class="filter-select filter-select-narrow">
+              <el-option v-for="e in EDUCATION_OPTIONS" :key="e" :label="e" :value="e" />
+            </el-select>
             <el-select
               v-model="filters.created_by_name"
               placeholder="操作人"
@@ -153,13 +164,14 @@ import { Plus, ArrowDown, Edit } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
 import { deleteCandidate, updateCandidate, getUserOptions } from '../api'
-import { getStatusLabel, getStatusType } from '../utils/constants'
+import { getStatusLabel, getStatusType, GENDER_OPTIONS, EDUCATION_OPTIONS } from '../utils/constants'
 
 const store = useCandidateStore()
 
 const filters = reactive({
   keyword: '', position: '', company: '',
-  status: '', created_by_name: '', page: 1, pageSize: 20
+  status: '', age_min: '', age_max: '', gender: '', education: '',
+  created_by_name: '', page: 1, pageSize: 20
 })
 
 // 操作人下拉选项（系统账户）
@@ -240,6 +252,10 @@ function buildParams() {
   if (filters.position) params.position = filters.position
   if (filters.company) params.company = filters.company
   if (filters.status) params.status = filters.status
+  if (filters.age_min) params.age_min = filters.age_min
+  if (filters.age_max) params.age_max = filters.age_max
+  if (filters.gender) params.gender = filters.gender
+  if (filters.education) params.education = filters.education
   if (filters.created_by_name) params.created_by_name = filters.created_by_name
   return params
 }
@@ -254,7 +270,7 @@ function handleSearch() {
 }
 
 function resetFilters() {
-  Object.assign(filters, { keyword: '', position: '', company: '', status: '', created_by_name: '', page: 1 })
+  Object.assign(filters, { keyword: '', position: '', company: '', status: '', age_min: '', age_max: '', gender: '', education: '', created_by_name: '', page: 1 })
   fetchData()
 }
 
@@ -317,6 +333,25 @@ onUnmounted(() => {
 
 .filter-input {
   width: 160px;
+}
+
+/* 年龄区间组合 */
+.filter-range {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-input-age {
+  width: 90px;
+}
+
+.range-separator {
+  color: var(--el-text-color-secondary);
+}
+
+.filter-select-narrow {
+  width: 110px;
 }
 
 /* 折叠/展开箭头行：桌面端隐藏，移动端显示 */

@@ -79,6 +79,22 @@ async function listCandidates(request, env, corsHeaders) {
     if (position) { conditions.push('talent_candidates.position LIKE ?'); params.push(`%${position}%`) }
     const education = url.searchParams.get('education')
     if (education) { conditions.push('talent_candidates.education = ?'); params.push(education) }
+    // 性别/年龄来自面试登记表（talent_intake_profiles），无登记数据的候选人不会被命中
+    const gender = url.searchParams.get('gender')
+    if (gender) {
+      conditions.push('EXISTS (SELECT 1 FROM talent_intake_profiles tip WHERE tip.candidate_id = talent_candidates.id AND tip.gender = ?)')
+      params.push(gender)
+    }
+    const ageMin = url.searchParams.get('age_min')
+    const ageMax = url.searchParams.get('age_max')
+    if (ageMin || ageMax) {
+      // 按出生年份近似计算年龄：当前年 - 出生年
+      const ageExpr = `(CAST(strftime('%Y','now') AS INTEGER) - CAST(strftime('%Y', tip.birth_month || '-01') AS INTEGER))`
+      const ageConds = []
+      if (ageMin) { ageConds.push(`${ageExpr} >= ?`); params.push(Number(ageMin)) }
+      if (ageMax) { ageConds.push(`${ageExpr} <= ?`); params.push(Number(ageMax)) }
+      conditions.push(`EXISTS (SELECT 1 FROM talent_intake_profiles tip WHERE tip.candidate_id = talent_candidates.id AND tip.birth_month IS NOT NULL AND ${ageConds.join(' AND ')})`)
+    }
     const expMin = url.searchParams.get('experience_min')
     if (expMin !== null && expMin !== undefined && expMin !== '') {
       conditions.push('talent_candidates.experience_years >= ?'); params.push(Number(expMin))
