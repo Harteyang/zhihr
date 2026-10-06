@@ -14,6 +14,28 @@ const VALID_STATUSES = [
   'screening_failed'   // 筛选不通过
 ]
 
+// 状态中文标签映射：筛选输入支持直接输入中文
+const STATUS_LABEL_MAP = {
+  '待推荐': 'to_recommend',
+  '简历筛选通过': 'resume_passed',
+  '已安排面试': 'interview_scheduled',
+  '面试通过': 'interview_passed',
+  'offer沟通': 'offer_discussing',
+  '拒绝offer': 'offer_rejected',
+  '已录用': 'hired',
+  '筛选不通过': 'screening_failed'
+}
+
+// 解析状态筛选输入：支持英文 value 或中文标签（精确或包含匹配）
+function resolveStatusFilter(input) {
+  if (VALID_STATUSES.includes(input)) return [input]
+  if (STATUS_LABEL_MAP[input]) return [STATUS_LABEL_MAP[input]]
+  const matched = Object.entries(STATUS_LABEL_MAP)
+    .filter(([label]) => label.includes(input))
+    .map(([, value]) => value)
+  return [...new Set(matched)]
+}
+
 const MIME_TYPES = {
   '.pdf': 'application/pdf',
   '.doc': 'application/msword',
@@ -54,7 +76,7 @@ async function listCandidates(request, env, corsHeaders) {
       params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`)
     }
     const position = url.searchParams.get('position')
-    if (position) { conditions.push('talent_candidates.position = ?'); params.push(position) }
+    if (position) { conditions.push('talent_candidates.position LIKE ?'); params.push(`%${position}%`) }
     const education = url.searchParams.get('education')
     if (education) { conditions.push('talent_candidates.education = ?'); params.push(education) }
     const expMin = url.searchParams.get('experience_min')
@@ -67,7 +89,7 @@ async function listCandidates(request, env, corsHeaders) {
     }
     const status = url.searchParams.get('status')
     if (status) {
-      const statuses = status.split(',').filter(s => VALID_STATUSES.includes(s))
+      const statuses = status.split(',').flatMap(s => resolveStatusFilter(s.trim())).filter(Boolean)
       if (statuses.length > 0) {
         conditions.push(`talent_candidates.status IN (${statuses.map(() => '?').join(',')})`)
         params.push(...statuses)
@@ -82,8 +104,8 @@ async function listCandidates(request, env, corsHeaders) {
     }
     const company = url.searchParams.get('company')
     if (company) {
-      conditions.push('EXISTS (SELECT 1 FROM talent_work_experiences WHERE candidate_id = talent_candidates.id AND company = ?)')
-      params.push(company)
+      conditions.push('EXISTS (SELECT 1 FROM talent_work_experiences WHERE candidate_id = talent_candidates.id AND company LIKE ?)')
+      params.push(`%${company}%`)
     }
 
     const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''

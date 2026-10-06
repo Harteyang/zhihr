@@ -32,23 +32,43 @@
         <!-- 第二行：岗位、公司、状态、操作人 筛选器 -->
         <transition name="filters-slide">
           <div v-show="showFilters" class="search-row search-row-filters">
-            <el-select v-model="filters.position" placeholder="岗位" clearable @change="handleSearch" class="filter-select">
-              <el-option v-for="p in store.filterOptions.positions" :key="p" :label="p" :value="p" />
-            </el-select>
-            <el-select v-model="filters.company" placeholder="公司" clearable filterable @change="handleSearch" class="filter-select">
-              <el-option v-for="c in store.filterOptions.companies" :key="c" :label="c" :value="c" />
-            </el-select>
-            <el-select v-model="filters.status" placeholder="状态" clearable multiple collapse-tags @change="handleSearch" class="filter-select filter-select-status">
-              <el-option v-for="s in STATUS_OPTIONS" :key="s.value" :label="s.label" :value="s.value" />
-            </el-select>
             <el-input
-              v-model="filters.created_by_name"
-              placeholder="操作人"
+              v-model="filters.position"
+              placeholder="岗位"
               clearable
               @clear="handleSearch"
               @keyup.enter="handleSearch"
               class="filter-input"
             />
+            <el-input
+              v-model="filters.company"
+              placeholder="公司"
+              clearable
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+              class="filter-input"
+            />
+            <el-input
+              v-model="filters.status"
+              placeholder="状态（如：待推荐）"
+              clearable
+              @clear="handleSearch"
+              @keyup.enter="handleSearch"
+              class="filter-input"
+            />
+            <el-select
+              v-model="filters.created_by_name"
+              placeholder="操作人"
+              clearable
+              filterable
+              allow-create
+              default-first-option
+              :loading="userOptionsLoading"
+              @change="handleSearch"
+              class="filter-select"
+            >
+              <el-option v-for="u in userOptions" :key="u.id" :label="u.display_name ? `${u.display_name}（${u.username}）` : u.username" :value="u.username" />
+            </el-select>
           </div>
         </transition>
       </div>
@@ -132,15 +152,32 @@ import { reactive, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { Plus, ArrowDown, Edit } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCandidateStore } from '../stores/candidate'
-import { deleteCandidate, updateCandidate } from '../api'
-import { STATUS_OPTIONS, getStatusLabel, getStatusType } from '../utils/constants'
+import { deleteCandidate, updateCandidate, getUserOptions } from '../api'
+import { getStatusLabel, getStatusType } from '../utils/constants'
 
 const store = useCandidateStore()
 
 const filters = reactive({
   keyword: '', position: '', company: '',
-  status: [], created_by_name: '', page: 1, pageSize: 20
+  status: '', created_by_name: '', page: 1, pageSize: 20
 })
+
+// 操作人下拉选项（系统账户）
+const userOptions = ref([])
+const userOptionsLoading = ref(false)
+
+async function loadUserOptions() {
+  userOptionsLoading.value = true
+  try {
+    const res = await getUserOptions()
+    userOptions.value = res.data.data || []
+  } catch (e) {
+    // 加载失败不阻塞列表，下拉仍支持手动输入
+    userOptions.value = []
+  } finally {
+    userOptionsLoading.value = false
+  }
+}
 
 // 移动端筛选器折叠状态：桌面端默认展开，移动端默认折叠
 const showFilters = ref(true)
@@ -202,7 +239,7 @@ function buildParams() {
   if (filters.keyword) params.keyword = filters.keyword
   if (filters.position) params.position = filters.position
   if (filters.company) params.company = filters.company
-  if (filters.status.length > 0) params.status = filters.status.join(',')
+  if (filters.status) params.status = filters.status
   if (filters.created_by_name) params.created_by_name = filters.created_by_name
   return params
 }
@@ -217,7 +254,7 @@ function handleSearch() {
 }
 
 function resetFilters() {
-  Object.assign(filters, { keyword: '', position: '', company: '', status: [], created_by_name: '', page: 1 })
+  Object.assign(filters, { keyword: '', position: '', company: '', status: '', created_by_name: '', page: 1 })
   fetchData()
 }
 
@@ -236,6 +273,7 @@ onMounted(() => {
   window.addEventListener('resize', checkScreenWidth)
   store.fetchFilterOptions()
   fetchData()
+  loadUserOptions()
 })
 
 onUnmounted(() => {

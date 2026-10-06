@@ -413,11 +413,28 @@ async function setupAdmin(request, env, corsHeaders) {
   }
 }
 
+// 账户选项列表（登录即可访问，供筛选下拉使用，仅返回最小字段）
+async function listUserOptions(request, env, corsHeaders) {
+  const { error } = await requireAuth(request, env, corsHeaders)
+  if (error) return error
+
+  try {
+    const rows = await env.DB.prepare(
+      `SELECT id, username, display_name FROM users WHERE status = 'active' ORDER BY username`
+    ).all()
+    return jsonResponse({ success: true, data: rows.results }, 200, corsHeaders)
+  } catch (err) {
+    return jsonResponse({ success: false, message: err.message }, 500, corsHeaders)
+  }
+}
+
 // ========= 路由注册 =========
 
 export const routes = [
   { method: 'GET',    path: '/api/auth/users',                  handler: listUsers },
   { method: 'POST',   path: '/api/auth/users',                  handler: createUser },
+
+  { method: 'GET',    path: '/api/talent/users/options',        handler: listUserOptions },
 
   { method: 'PATCH',  path: '/api/auth/users/batch/status',     handler: batchUpdateStatus },
   { method: 'POST',   path: '/api/auth/users/batch/delete',     handler: batchDeleteUsers },

@@ -9,6 +9,8 @@ export const updateUserStatus = (id, status) => api.patch(`/auth/users/${id}/sta
 export const getUserPositions = (id) => api.get(`/auth/users/${id}/positions`)
 export const setUserPositions = (id, positions) => api.put(`/auth/users/${id}/positions`, { positions })
 export const getAvailablePositions = () => api.get('/talent/positions/available')
+// 账户选项（登录即可访问，供筛选下拉使用）
+export const getUserOptions = () => api.get('/talent/users/options')
 export const getOperationLogs = (params) => api.get('/auth/operation-logs', { params })
 export const batchUpdateUserStatus = (userIds, status) => api.patch('/auth/users/batch/status', { userIds, status })
 export const batchDeleteUsers = (userIds) => api.post('/auth/users/batch/delete', { userIds })
